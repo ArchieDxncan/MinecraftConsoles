@@ -698,6 +698,17 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+	// Declare DPI awareness so GetSystemMetrics returns physical pixels
+	SetProcessDPIAware();
+	g_iScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+	g_iScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	{
+		char buf[128];
+		sprintf(buf, "Screen resolution: %dx%d\n", g_iScreenWidth, g_iScreenHeight);
+		OutputDebugStringA(buf);
+	}
+
 	if(lpCmdLine)
 	{
 		if(lpCmdLine[0] == '1')
