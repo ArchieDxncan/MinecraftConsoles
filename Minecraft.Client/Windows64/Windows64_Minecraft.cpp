@@ -395,6 +395,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		KMInput.OnMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam));
 		break;
+	case WM_MOUSEMOVE:
+		KMInput.OnMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		break;
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE)
 			KMInput.SetCapture(false);
@@ -403,6 +406,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		KMInput.SetCapture(false);
 		KMInput.ClearAllState();
 		break;
+
+	case WM_SETCURSOR:
+		// Hide the OS cursor when an Iggy/Flash menu is displayed (it has its own Flash cursor)
+		if (LOWORD(lParam) == HTCLIENT && !KMInput.IsCaptured() && ui.GetMenuDisplayed(0))
+		{
+			SetCursor(NULL);
+			return TRUE;
+		}
+		return DefWindowProc(hWnd, message, wParam, lParam);
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -1184,7 +1196,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		// Update mouse capture: capture when in-game and no menu is open
 		{
 			static bool altToggleSuppressCapture = false;
-			bool shouldCapture = app.GetGameStarted() && !ui.GetMenuDisplayed(0);
+			bool shouldCapture = app.GetGameStarted() && !ui.GetMenuDisplayed(0) && pMinecraft->screen == NULL;
 			// Left Alt key toggles capture on/off for debugging
 			if (KMInput.IsKeyPressed(VK_MENU))
 			{
