@@ -247,15 +247,15 @@ void UIScene_AbstractContainerMenu::tick()
 			handleKeyDown(m_iPad, ACTION_MENU_Y, false);
 		}
 
-		// Mouse scroll wheel for tab switching
+		// Mouse scroll wheel for page scrolling
 		int scrollDelta = KMInput.ConsumeScrollDelta();
 		if (scrollDelta > 0)
 		{
-			handleKeyDown(m_iPad, ACTION_MENU_LEFT_SCROLL, false);
+			handleKeyDown(m_iPad, ACTION_MENU_OTHER_STICK_UP, false);
 		}
 		else if (scrollDelta < 0)
 		{
-			handleKeyDown(m_iPad, ACTION_MENU_RIGHT_SCROLL, false);
+			handleKeyDown(m_iPad, ACTION_MENU_OTHER_STICK_DOWN, false);
 		}
 
 		// ESC to close — must be last since it may destroy this scene
