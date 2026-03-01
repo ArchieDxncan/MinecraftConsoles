@@ -716,6 +716,16 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+
+	char exePath[MAX_PATH];
+	GetModuleFileNameA(NULL, exePath, MAX_PATH);
+	char* x64_pos = strstr(exePath, "\\x64\\");
+	if (x64_pos) {
+		*x64_pos = 0;
+		strcat_s(exePath, MAX_PATH, "\\Minecraft.Client");
+		SetCurrentDirectoryA(exePath);
+	}
+
 	// Declare DPI awareness so GetSystemMetrics returns physical pixels
 	SetProcessDPIAware();
 	g_iScreenWidth = GetSystemMetrics(SM_CXSCREEN);
