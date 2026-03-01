@@ -18,6 +18,10 @@ function(copy_tree_if_exists src_rel dst_rel)
   endif()
 endfunction()
 
+function(ensure_dir rel_path)
+  file(MAKE_DIRECTORY "${OUTPUT_DIR}/${rel_path}")
+endfunction()
+
 function(copy_file_if_exists src_rel dst_rel)
   set(_src "${PROJECT_SOURCE_DIR}/${src_rel}")
   set(_dst "${OUTPUT_DIR}/${dst_rel}")
@@ -60,6 +64,13 @@ else()
   copy_tree_if_exists("DurangoMedia" "Windows64Media")
   copy_tree_if_exists("Windows64Media" "Windows64Media")
 endif()
+
+# Some runtime code asserts if this directory tree is missing.
+ensure_dir("Windows64/GameHDD")
+
+# Keep legacy runtime redistributables in a familiar location.
+copy_tree_if_exists("Windows64/Miles/lib/redist64" "redist64")
+copy_tree_if_exists("Windows64/Iggy/lib/redist64" "redist64")
 
 # Runtime DLLs required at launch.
 copy_first_existing("iggy_w64.dll"
