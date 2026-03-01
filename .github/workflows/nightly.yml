@@ -25,7 +25,8 @@ jobs:
       run: 7z a -r LCEWindows64.zip ./x64/Release/*
 
     - name: Update release
-      uses: eine/tip@master
+      uses: andelf/nightly-release@main
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
