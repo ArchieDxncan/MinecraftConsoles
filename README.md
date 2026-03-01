@@ -25,5 +25,4 @@ This project contains the source code of Minecraft Legacy Console Edition v1.3.0
 ## Known Issues
 
 - Builds for other platforms have not been tested and are most likely non-functional
-- Sound effects are missing
 - Other unknown issues may exist
