@@ -2,7 +2,7 @@
 
 ## Visual Studio (`.sln`)
 
-1. Open `MinecraftConsoles.sln` in Visual Studio 2012.
+1. Open `MinecraftConsoles.sln` in Visual Studio 2022.
 2. Set `Minecraft.Client` as the Startup Project.
 3. Select configuration:
    - `Debug` (recommended), or
