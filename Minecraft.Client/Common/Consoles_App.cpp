@@ -3217,7 +3217,7 @@ void CMinecraftApp::HandleXuiActions(void)
 								bool gameStarted = false;
 								for(int i = 0; i < pMinecraft->levels.length; i++)
 								{
-									if (pMinecraft->levels.data[i] != nullptr)
+									if (pMinecraft->levels.data[i] != NULL)
 									{
 										gameStarted = true;
 										break;

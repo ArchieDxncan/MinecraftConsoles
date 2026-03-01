@@ -12,9 +12,11 @@ Input::Input()
 {
 	xa = 0;
 	ya = 0;
+	sprintForward = 0;
 	wasJumping = false;
 	jumping = false;
 	sneaking = false;
+	usingKeyboardMovement = false;
 
 	lReset = false;
     rReset = false;
@@ -40,16 +42,18 @@ void Input::tick(LocalPlayer *player)
 		ya = InputManager.GetJoypadStick_LY(iPad);
 	else
 		ya = 0.0f;
+	sprintForward = ya;
+	usingKeyboardMovement = false;
 
 #ifdef _WINDOWS64
 	// WASD movement (combine with gamepad)
 	if (iPad == 0)
 	{
 		float kbX = 0.0f, kbY = 0.0f;
-		if (KMInput.IsKeyDown('W')) kbY += 1.0f;
-		if (KMInput.IsKeyDown('S')) kbY -= 1.0f;
-		if (KMInput.IsKeyDown('A')) kbX += 1.0f;  // inverted like gamepad
-		if (KMInput.IsKeyDown('D')) kbX -= 1.0f;
+		if (KMInput.IsKeyDown('W')) { kbY += 1.0f; sprintForward += 1.0f; usingKeyboardMovement = true; }
+		if (KMInput.IsKeyDown('S')) { kbY -= 1.0f; sprintForward -= 1.0f; usingKeyboardMovement = true; }
+		if (KMInput.IsKeyDown('A')) { kbX += 1.0f; usingKeyboardMovement = true; }  // inverted like gamepad
+		if (KMInput.IsKeyDown('D')) { kbX -= 1.0f; usingKeyboardMovement = true; }
 		// Normalize diagonal
 		if (kbX != 0.0f && kbY != 0.0f) { kbX *= 0.707f; kbY *= 0.707f; }
 		if (pMinecraft->localgameModes[iPad]->isInputAllowed(MINECRAFT_ACTION_LEFT) || pMinecraft->localgameModes[iPad]->isInputAllowed(MINECRAFT_ACTION_RIGHT))
@@ -58,11 +62,13 @@ void Input::tick(LocalPlayer *player)
 			ya = max(min(ya + kbY, 1.0f), -1.0f);
 	}
 #endif
+	sprintForward = max(min(sprintForward, 1.0f), -1.0f);
 
 #ifndef _CONTENT_PACKAGE
 	if (app.GetFreezePlayers())
 	{
 		xa = ya = 0.0f;
+		sprintForward = 0.0f;
 		player->abilities.flying = true;
 	}
 #endif
@@ -74,6 +80,7 @@ void Input::tick(LocalPlayer *player)
             lReset = true;
         }
         xa = ya = 0.0f;
+		sprintForward = 0.0f;
     }
 
 	// 4J - in flying mode, don't actually toggle sneaking

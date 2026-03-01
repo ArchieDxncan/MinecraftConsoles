@@ -1242,6 +1242,15 @@ void UIScene_SkinSelectMenu::handlePackIndexChanged()
 	updatePackDisplay();
 }
 
+std::wstring fakeWideToRealWide(const wchar_t* original)
+{
+	const char* name = reinterpret_cast<const char*>(original);
+	int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
+	std::wstring wName(len, 0);
+	MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
+	return wName.c_str();
+}
+
 void UIScene_SkinSelectMenu::updatePackDisplay()
 {
 	m_currentPackCount = app.m_dlcManager.getPackCount(DLCManager::e_DLCType_Skin) + SKIN_SELECT_MAX_DEFAULTS;
@@ -1249,7 +1258,9 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(m_packIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(m_packIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		setCentreLabel(thisPack->getName().c_str());
+		// Fix the incorrect string type on title to display correctly
+		setCentreLabel(fakeWideToRealWide(thisPack->getName().c_str()));
+		//setCentreLabel(thisPack->getName().c_str());
 	}
 	else
 	{
@@ -1268,7 +1279,9 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(nextPackIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(nextPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		setRightLabel(thisPack->getName().c_str());
+		// Fix the incorrect string type on title to display correctly
+		setRightLabel(fakeWideToRealWide(thisPack->getName().c_str()));
+		//setRightLabel(thisPack->getName().c_str());
 	}
 	else
 	{
@@ -1287,7 +1300,9 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(previousPackIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(previousPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		setLeftLabel(thisPack->getName().c_str());
+		// Fix the incorrect string type on title to display correctly
+		setLeftLabel(fakeWideToRealWide(thisPack->getName().c_str()));
+		//setLeftLabel(thisPack->getName().c_str());
 	}
 	else
 	{
