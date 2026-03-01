@@ -9,7 +9,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Thanks :heart: for taking the time to fill out this feature request report!**
+        **Thanks for taking the time to fill out this feature request report!**
         We kindly ask that you search to see if an issue [already exists](https://github.com/smartcmd/MinecraftConsoles/issues) for your feature.
 
   - type: textarea
