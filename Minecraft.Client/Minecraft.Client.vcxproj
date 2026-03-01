@@ -1440,7 +1440,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Link>
     <PostBuildEvent>
-      <Message>Copying sound assets to output directory</Message>
+      <Message>Copying game assets to output directory</Message>
       <Command>xcopy /q /y /i /s /e "$(ProjectDir)music" "$(OutDir)music"
 xcopy /q /y /i /s /e "$(ProjectDir)Windows64\GameHDD" "$(OutDir)Windows64\GameHDD"
 xcopy /q /y /i /s /e "$(ProjectDir)Common\Media" "$(OutDir)Common\Media"
@@ -1448,7 +1448,8 @@ xcopy /q /y /i /s /e "$(ProjectDir)Common\res" "$(OutDir)Common\res"
 xcopy /q /y /i /s /e "$(ProjectDir)Common\Trial" "$(OutDir)Common\Trial"
 xcopy /q /y /i /s /e "$(ProjectDir)Common\Tutorial" "$(OutDir)Common\Tutorial"
 xcopy /q /y /i /s /e "$(ProjectDir)DurangoMedia" "$(OutDir)Windows64Media"
-xcopy /q /y /i /s /e "$(ProjectDir)Windows64Media" "$(OutDir)Windows64Media"</Command>
+xcopy /q /y /i /s /e "$(ProjectDir)Windows64Media" "$(OutDir)Windows64Media"
+mkdir "$(OutDir)Windows64\GameHDD" 2&gt;nul</Command>
     </PostBuildEvent>
     <ImageXex>
       <ConfigurationFile>$(ProjectDir)xbox\xex-dev.xml</ConfigurationFile>
