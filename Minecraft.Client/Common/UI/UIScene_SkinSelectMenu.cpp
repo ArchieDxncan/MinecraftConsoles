@@ -1242,6 +1242,15 @@ void UIScene_SkinSelectMenu::handlePackIndexChanged()
 	updatePackDisplay();
 }
 
+std::wstring fakeWideToRealWide(const wchar_t* original)
+{
+	const char* name = reinterpret_cast<const char*>(original);
+	int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
+	std::wstring wName(len, 0);
+	MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
+	return wName.c_str();
+}
+
 void UIScene_SkinSelectMenu::updatePackDisplay()
 {
 	m_currentPackCount = app.m_dlcManager.getPackCount(DLCManager::e_DLCType_Skin) + SKIN_SELECT_MAX_DEFAULTS;
@@ -1250,11 +1259,7 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(m_packIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
 		// Fix the incorrect string type on title to display correctly
-		const char* name = static_cast<const char*>(thisPack->getName().c_str());
-		int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
-		std::wstring wName(len, 0);
-		MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
-		setCentreLabel(wName.c_str());
+		setCentreLabel(fakeWideToRealWide(thisPack->getName().c_str()));
 		//setCentreLabel(thisPack->getName().c_str());
 	}
 	else
@@ -1275,11 +1280,7 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(nextPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
 		// Fix the incorrect string type on title to display correctly
-		const char* name = static_cast<const char*>(thisPack->getName().c_str());
-		int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
-		std::wstring wName(len, 0);
-		MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
-		setRightLabel(wName.c_str());
+		setRightLabel(fakeWideToRealWide(thisPack->getName().c_str()));
 		//setRightLabel(thisPack->getName().c_str());
 	}
 	else
@@ -1300,11 +1301,7 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(previousPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
 		// Fix the incorrect string type on title to display correctly
-		const char* name = static_cast<const char*>(thisPack->getName().c_str());
-		int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
-		std::wstring wName(len, 0);
-		MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
-		setLeftLabel(wName.c_str());
+		setLeftLabel(fakeWideToRealWide(thisPack->getName().c_str()));
 		//setLeftLabel(thisPack->getName().c_str());
 	}
 	else

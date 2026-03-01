@@ -418,3 +418,6 @@ Minecraft.World/x64/
 Minecraft.World/x64_Debug/
 Minecraft.World/Debug/
 Minecraft.World/Release/
+Minecraft.World/x64_Release/Minecraft.World.vcxproj.FileListAbsolute.txt
+Minecraft.World/x64_Release/Minecraft.World.lib
+Minecraft.World/x64_Release/Minecraft.World.lib.recipe
