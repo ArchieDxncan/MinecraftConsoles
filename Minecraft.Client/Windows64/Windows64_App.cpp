@@ -26,6 +26,8 @@ void CConsoleMinecraftApp::StoreLaunchData()
 }
 void CConsoleMinecraftApp::ExitGame()
 {
+	// This is likely not the correct way to exit the game, but it will do for now
+	ExitProcess(0);
 }
 void CConsoleMinecraftApp::FatalLoadError()
 {
