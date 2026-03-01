@@ -1,0 +1,19 @@
+name: Nightly Release
+
+on:
+  workflow-dispatch:
+  push:
+    branches:
+    - 'main'
+
+jobs:
+  build:
+    name: Build Windows64
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+    
+    - name: Build
+      runs: msbuild MinecraftConsoles.sln -t:Windows64 -p:Configuration=Release
