@@ -187,7 +187,7 @@ void UIScene_AbstractContainerMenu::tick()
 
 #ifdef _WINDOWS64
 	bool mouseActive = (m_iPad == 0 && !KMInput.IsCaptured());
-	bool useRawMousePointer = false;
+	bool drivePointerFromMouse = false;
 	float rawMouseMovieX = 0, rawMouseMovieY = 0;
 	int scrollDelta = 0;
 	// Map Windows mouse position to the virtual pointer in movie coordinates
@@ -215,11 +215,13 @@ void UIScene_AbstractContainerMenu::tick()
 			rawMouseMovieX = mx;
 			rawMouseMovieY = my;
 
-			// Only let the OS cursor drive the menu when the mouse is actively being used.
-			// Otherwise a stationary mouse will override the controller cursor every tick.
-			useRawMousePointer = mouseMoved || KMInput.IsMouseDown(0) || KMInput.IsMouseDown(1) || KMInput.IsMouseDown(2) || scrollDelta != 0;
-			if (useRawMousePointer)
+			// Once the mouse has taken over the container cursor, keep following the OS cursor
+			// until explicit controller input takes ownership back.
+			drivePointerFromMouse = m_bPointerDrivenByMouse || mouseMoved || KMInput.IsMouseDown(0) || KMInput.IsMouseDown(1) || KMInput.IsMouseDown(2) || scrollDelta != 0;
+			if (drivePointerFromMouse)
 			{
+				m_bPointerDrivenByMouse = true;
+				m_eCurrTapState = eTapStateNoInput;
 				m_pointerPos.x = mx;
 				m_pointerPos.y = my;
 			}
@@ -293,7 +295,7 @@ void UIScene_AbstractContainerMenu::tick()
 
 #ifdef _WINDOWS64
 	S32 x, y;
-	if (mouseActive && useRawMousePointer)
+	if (mouseActive && m_bPointerDrivenByMouse)
 	{
 		// Send raw mouse position directly as Iggy event to avoid coordinate round-trip errors
 		// Scale mouse client coords to the Iggy display space (which was set to getRenderDimensions())
@@ -386,6 +388,7 @@ void UIScene_AbstractContainerMenu::handleInput(int iPad, int key, bool repeat, 
 
 	if(pressed)
 	{
+		m_bPointerDrivenByMouse = false;
 		handled = handleKeyDown(m_iPad, key, repeat);
 	}
 }
