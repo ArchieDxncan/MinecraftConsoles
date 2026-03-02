@@ -1,5 +1,7 @@
 # MinecraftConsoles
 
+# [DOWNLOAD THE GAME](https://github.com/smartcmd/MinecraftConsoles/releases/tag/nightly)
+
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/5CSzhc9t)
 
 ![img.png](.github/IMG_8725.png)
