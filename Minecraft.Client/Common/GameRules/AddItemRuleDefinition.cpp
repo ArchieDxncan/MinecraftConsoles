@@ -118,9 +118,9 @@ bool AddItemRuleDefinition::addItemToContainer(std::shared_ptr<Container> contai
 			container->setItem( slotId, newItem );
 			added = true;
 		}
-		else if(dynamic_pointer_cast<Inventory>(container) != NULL)
+		else if(std::dynamic_pointer_cast<Inventory>(container) != NULL)
 		{
-			added = dynamic_pointer_cast<Inventory>(container)->add(newItem);
+			added = std::dynamic_pointer_cast<Inventory>(container)->add(newItem);
 		}
 	}
 	return added;
