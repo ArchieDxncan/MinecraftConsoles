@@ -25,6 +25,24 @@ This project contains the source code of Minecraft Legacy Console Edition v1.6.0
 - Device's screen resolution will be used as the game resolution instead of using a fixed resolution (1920x1080)
 - LAN Multiplayer & Discovery based on https://github.com/LCEMP/LCEMP/
 
+## Multiplayer
+
+Basic LAN multiplayer is available on the Windows build.
+
+- Hosting a multiplayer world automatically advertises it on the local network
+- Other players on the same LAN can discover the session from the in-game Join Game menu
+- Game connections use TCP port `25565` by default
+- LAN discovery uses UDP port `25566`
+- You can override your in-game username at launch with `-name`
+
+Example:
+
+```powershell
+Minecraft.Client.exe -name Steve
+```
+
+This feature was introduced from the work in [PR #96](https://github.com/smartcmd/MinecraftConsoles/pull/96) and is based on [LCEMP](https://github.com/LCEMP/LCEMP/).
+
 ## Controls (Keyboard & Mouse)
 
 - **Movement**: `W` `A` `S` `D`
