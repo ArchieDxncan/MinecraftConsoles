@@ -1318,6 +1318,38 @@ void SoundEngine::playMusicUpdate()
 			// 			char *SoundName = (char *)ConvertSoundPathToName(name);
 			// 			strcat((char *)szStreamName,SoundName);
 
+			const bool isCD = (m_musicID >= m_iStream_CD_1);
+			const char* folder = isCD ? "cds/" : "music/";
+
+			FILE* pFile = nullptr;
+			if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
+			{
+				fclose(pFile);
+			}
+			else
+			{
+				const char* extensions[] = { ".wav" }; // only wav works outside of binka files to my knowledge, i've only tested ogg, wav, mp3 and only wav worked out of the bunch
+				size_t count = sizeof(extensions) / sizeof(extensions[0]);
+				bool found = false;
+
+				for (size_t i = 0; i < count; i++)
+				{
+					int n = sprintf_s(reinterpret_cast<char*>(m_szStreamName), 512, "%s%s%s%s", m_szMusicPath, folder, m_szStreamFileA[m_musicID], extensions[i]);
+					if (n < 0) continue;
+
+					if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
+					{
+						fclose(pFile);
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					return;
+				}
+			}
 
 			app.DebugPrintf("Starting streaming - %s\n",m_szStreamName);
 
