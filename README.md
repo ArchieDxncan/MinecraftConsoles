@@ -8,7 +8,7 @@
 
 This project contains the source code of Minecraft Legacy Console Edition v1.3.0494.0 from https://archive.org/details/minecraft-legacy-console-edition-source-code, with some fixes and improvements applied
 
-[Download](https://github.com/smartcmd/MinecraftConsoles/releases/tag/nightly)
+[Nightly Build](https://github.com/smartcmd/MinecraftConsoles/releases/tag/nightly)
 
 ## Features
 
@@ -54,6 +54,8 @@ This project contains the source code of Minecraft Legacy Console Edition v1.3.0
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Debug --target MinecraftClient
 ```
+
+For more informatio, see [COMPILE.md](COMPILE.md)
 
 ## Known Issues
 
