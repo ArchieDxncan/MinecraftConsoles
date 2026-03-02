@@ -16,23 +16,32 @@ This project contains the source code of Minecraft Legacy Console Edition v1.3.0
 - Disabled V-Sync for better performance
 - Auto-detect native monitor resolution with DPI awareness, resulting in sharper visuals on high-resolution displays
 - Full support for keyboard and mouse input
+- **Configurable player username/nametag** — edit `username.txt` next to the exe to set your in-game name
+- **Persistent game settings** — gamma, music, sound, difficulty, HUD options, debug flags and all other settings now survive restarts (saved to `settings.dat` next to the exe)
+- **Correct world save names** — save slots now display the actual world name instead of a raw timestamp; save list is sorted newest-first and refreshes without restarting
 
 ## Controls (Keyboard & Mouse)
 
 - **Movement**: `W` `A` `S` `D`
 - **Jump / Fly (Up)**: `Space`
 - **Sneak / Fly (Down)**: `Shift` (Hold)
+- **Toggle Fly**: `F`
 - **Sprint**: `Ctrl` (Hold) or Double-tap `W`
 - **Inventory**: `E`
 - **Drop Item**: `Q`
 - **Crafting**: `C`
 - **Toggle View (FPS/TPS)**: `F5`
+- **Toggle Debug Info**: `F3`
+- **Open Debug Overlay**: `F4` (Debug builds only)
 - **Fullscreen**: `F11`
 - **Pause Menu**: `Esc`
 - **Toggle Mouse Capture**: `Left Alt` (for debugging)
 - **Attack / Destroy**: `Left Click`
 - **Use / Place**: `Right Click`
 - **Select Item**: `Mouse Wheel` or keys `1` to `9`
+- **Accept Tutorial Hint**: `Enter`
+- **Decline Tutorial Hint**: `B`
+- **Host Options / Player List**: `Tab`
 
 ## Build & Run
 
@@ -49,7 +58,17 @@ cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Debug --target MinecraftClient
 ```
 
+## Runtime Files
+
+Some features require files placed next to the built executable (`x64\Debug\` or `x64\Release\`):
+
+| File | Purpose |
+|------|---------|
+| `username.txt` | Plain text file — first line becomes your in-game name and nametag. Created automatically with default value `Windows` on first run if absent. |
+| `settings.dat` | Binary save of all game settings. Written automatically whenever you change a setting; loaded on startup. Delete it to reset all settings to defaults. |
+
 ## Known Issues
 
 - Builds for other platforms have not been tested and are most likely non-functional
 - There are some render bugs in the Release mode build
+- Changing the resource pack on an existing world while loading it may crash (`reloadAll` called during world load) — use the default resource pack or select it when creating a new world
