@@ -33,6 +33,8 @@ This project contains the source code of Minecraft Legacy Console Edition v1.3.0
 - **Select Item**: `Mouse Wheel` or keys `1` to `9`
 - **Accept or Decline Tutorial hints**: `Enter` to accept and `B` to decline
 - **Host Options**: `TAB`
+- **Toggle Debug Info**: `F3`
+- **Open Debug Overlay**: `F4`
 
 ## Build & Run
 
