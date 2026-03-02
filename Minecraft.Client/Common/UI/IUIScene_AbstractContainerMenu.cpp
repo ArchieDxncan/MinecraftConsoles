@@ -1323,7 +1323,15 @@ bool IUIScene_AbstractContainerMenu::handleKeyDown(int iPad, int iAction, bool b
 			// Standard right click
 			buttonNum = 1;
 			quickKeyHeld = FALSE;
-			ui.PlayUISFX(eSFX_Press);
+
+			if( IsSectionSlotList( m_eCurrSection ) )
+			{
+				int currentIndex = getCurrentIndex( m_eCurrSection ) - getSectionStartOffset(m_eCurrSection);
+
+				bool bSlotHasItem = !isSlotEmpty(m_eCurrSection, currentIndex);
+				if ( bSlotHasItem )
+					ui.PlayUISFX(eSFX_Press);
+			}
 		}
 		break;
 	case ACTION_MENU_Y:
@@ -1342,7 +1350,14 @@ bool IUIScene_AbstractContainerMenu::handleKeyDown(int iPad, int iAction, bool b
 				// Shift and left click
 				buttonNum = 0;
 				quickKeyHeld = TRUE;
-				ui.PlayUISFX(eSFX_Press);
+				if( IsSectionSlotList( m_eCurrSection ) )
+				{
+					int currentIndex = getCurrentIndex( m_eCurrSection ) - getSectionStartOffset(m_eCurrSection);
+
+					bool bSlotHasItem = !isSlotEmpty(m_eCurrSection, currentIndex);
+					if ( bSlotHasItem )
+						ui.PlayUISFX(eSFX_Press);
+				}
 			}
 		}
 		break;
