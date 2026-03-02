@@ -13,12 +13,12 @@ wstring MemoryLevelStorageSource::getName()
 	return L"Memory Storage";
 }
 
-shared_ptr<LevelStorage> MemoryLevelStorageSource::selectLevel(const wstring&  levelId, bool createPlayerDir) 
+std::shared_ptr<LevelStorage> MemoryLevelStorageSource::selectLevel(const wstring&  levelId, bool createPlayerDir)
 {
-	return shared_ptr<LevelStorage> () new MemoryLevelStorage());
+	return std::shared_ptr<LevelStorage> () new MemoryLevelStorage());
 }
 
-vector<LevelSummary *> *MemoryLevelStorageSource::getLevelList() 
+vector<LevelSummary *> *MemoryLevelStorageSource::getLevelList()
 {
 	return new vector<LevelSummary *>;
 }
@@ -32,12 +32,12 @@ LevelData *MemoryLevelStorageSource::getDataTagFor(const wstring&  levelId)
 	return NULL;
 }
 
-bool MemoryLevelStorageSource::isNewLevelIdAcceptable(const wstring&  levelId) 
+bool MemoryLevelStorageSource::isNewLevelIdAcceptable(const wstring&  levelId)
 {
 	return true;
 }
 
-void MemoryLevelStorageSource::deleteLevel(const wstring&  levelId) 
+void MemoryLevelStorageSource::deleteLevel(const wstring&  levelId)
 {
 }
 

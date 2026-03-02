@@ -20,8 +20,8 @@ public:
 	int floatDuration;
     double xTarget, yTarget, zTarget;
 
-private: 
-	shared_ptr<Entity> target;
+private:
+	std::shared_ptr<Entity> target;
     int retargetTime;
 
 public:

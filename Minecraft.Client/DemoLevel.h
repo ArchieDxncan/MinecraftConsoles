@@ -9,7 +9,7 @@ private:
     static const int DEMO_SPAWN_Y = 72;
     static const int DEMO_SPAWN_Z = -731;
 public:
-	DemoLevel(shared_ptr<LevelStorage> levelStorage, const wstring& levelName);
+	DemoLevel(std::shared_ptr<LevelStorage> levelStorage, const wstring& levelName);
     DemoLevel(Level *level, Dimension *dimension);
 protected:
 	virtual void setInitialSpawn();

@@ -15,7 +15,7 @@ private:
 	bool m_lastSceneMovedLeft;
 	bool m_bAllowFade;
 	Tutorial *m_tutorial;
-	shared_ptr<ItemInstance> m_iconItem;
+	std::shared_ptr<ItemInstance> m_iconItem;
 	bool m_iconIsFoil;
 	//int m_iLocalPlayerC;
 

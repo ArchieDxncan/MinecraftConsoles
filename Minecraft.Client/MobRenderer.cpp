@@ -31,11 +31,11 @@ float MobRenderer::rotlerp(float from, float to, float a)
 	return from + a * diff;
 }
 
-void MobRenderer::render(shared_ptr<Entity> _mob, double x, double y, double z, float rot, float a)
+void MobRenderer::render(std::shared_ptr<Entity> _mob, double x, double y, double z, float rot, float a)
 {
 	// 4J - added - this used to use generics so the input parameter could be a mob (or derived type), but we aren't
 	// able to do that so dynamically casting to get the more specific type here.
-	shared_ptr<Mob> mob = dynamic_pointer_cast<Mob>(_mob);
+	std::shared_ptr<Mob> mob = dynamic_pointer_cast<Mob>(_mob);
     glPushMatrix();
     glDisable(GL_CULL_FACE);
 
@@ -54,7 +54,7 @@ void MobRenderer::render(shared_ptr<Entity> _mob, double x, double y, double z, 
 
 		if (mob->isRiding() && dynamic_pointer_cast<Mob>(mob->riding))
 		{
-			shared_ptr<Mob> riding = dynamic_pointer_cast<Mob>(mob->riding);
+			std::shared_ptr<Mob> riding = dynamic_pointer_cast<Mob>(mob->riding);
 			bodyRot = rotlerp(riding->yBodyRotO, riding->yBodyRot, a);
 
 			float headDiff = Mth::wrapDegrees(headRot - bodyRot);
@@ -233,9 +233,9 @@ void MobRenderer::render(shared_ptr<Entity> _mob, double x, double y, double z, 
 	MemSect(0);
 }
 
-void MobRenderer::renderModel(shared_ptr<Entity> mob, float wp, float ws, float bob, float headRotMinusBodyRot, float headRotx, float scale)
+void MobRenderer::renderModel(std::shared_ptr<Entity> mob, float wp, float ws, float bob, float headRotMinusBodyRot, float headRotx, float scale)
 {
-	shared_ptr<Player> player = dynamic_pointer_cast<Player>(Minecraft::GetInstance()->player);
+	std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(Minecraft::GetInstance()->player);
 
 	bindTexture(mob->customTextureUrl, mob->getTexture());
 	if (!mob->isInvisible())
@@ -262,15 +262,15 @@ void MobRenderer::renderModel(shared_ptr<Entity> mob, float wp, float ws, float 
 	}
 }
 
-void MobRenderer::setupPosition(shared_ptr<Mob> mob, double x, double y, double z)
+void MobRenderer::setupPosition(std::shared_ptr<Mob> mob, double x, double y, double z)
 {
 	glTranslatef((float) x, (float) y, (float) z);
 }
 
-void MobRenderer::setupRotations(shared_ptr<Mob> mob, float bob, float bodyRot, float a)
+void MobRenderer::setupRotations(std::shared_ptr<Mob> mob, float bob, float bodyRot, float a)
 {
     glRotatef(180 - bodyRot, 0, 1, 0);
-    if (mob->deathTime > 0) 
+    if (mob->deathTime > 0)
 	{
         float fall = (mob->deathTime + a - 1) / 20.0f * 1.6f;
         fall = (float)sqrt(fall);
@@ -279,49 +279,49 @@ void MobRenderer::setupRotations(shared_ptr<Mob> mob, float bob, float bodyRot, 
     }
 }
 
-float MobRenderer::getAttackAnim(shared_ptr<Mob> mob, float a)
+float MobRenderer::getAttackAnim(std::shared_ptr<Mob> mob, float a)
 {
 	 return mob->getAttackAnim(a);
 }
 
-float MobRenderer::getBob(shared_ptr<Mob> mob, float a)
+float MobRenderer::getBob(std::shared_ptr<Mob> mob, float a)
 {
 	return (mob->tickCount + a);
 }
 
-void MobRenderer::additionalRendering(shared_ptr<Mob> mob, float a)
+void MobRenderer::additionalRendering(std::shared_ptr<Mob> mob, float a)
 {
 }
 
-int MobRenderer::prepareArmorOverlay(shared_ptr<Mob> mob, int layer, float a)
+int MobRenderer::prepareArmorOverlay(std::shared_ptr<Mob> mob, int layer, float a)
 {
 	return prepareArmor(mob, layer, a);
 }
 
-int MobRenderer::prepareArmor(shared_ptr<Mob> mob, int layer, float a)
+int MobRenderer::prepareArmor(std::shared_ptr<Mob> mob, int layer, float a)
 {
 	return -1;
 }
 
-void MobRenderer::prepareSecondPassArmor(shared_ptr<Mob> mob, int layer, float a)
+void MobRenderer::prepareSecondPassArmor(std::shared_ptr<Mob> mob, int layer, float a)
 {
 }
 
-float MobRenderer::getFlipDegrees(shared_ptr<Mob> mob)
+float MobRenderer::getFlipDegrees(std::shared_ptr<Mob> mob)
 {
 	return 90;
 }
 
-int MobRenderer::getOverlayColor(shared_ptr<Mob> mob, float br, float a)
+int MobRenderer::getOverlayColor(std::shared_ptr<Mob> mob, float br, float a)
 {
 	return 0;
 }
 
-void MobRenderer::scale(shared_ptr<Mob> mob, float a)
+void MobRenderer::scale(std::shared_ptr<Mob> mob, float a)
 {
 }
 
-void MobRenderer::renderName(shared_ptr<Mob> mob, double x, double y, double z)
+void MobRenderer::renderName(std::shared_ptr<Mob> mob, double x, double y, double z)
 {
     if (Minecraft::renderDebug())
 	{
@@ -330,7 +330,7 @@ void MobRenderer::renderName(shared_ptr<Mob> mob, double x, double y, double z)
 }
 
 // 4J Added parameter for color here so that we can colour players names
-void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName, double x, double y, double z, int maxDist, int color /*= 0xffffffff*/)
+void MobRenderer::renderNameTag(std::shared_ptr<Mob> mob, const wstring& OriginalName, double x, double y, double z, int maxDist, int color /*= 0xffffffff*/)
 {
 
 	if ( app.GetGameSettings(eGameSetting_DisplayHUD)==0 )
@@ -390,13 +390,13 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 
 	if( textOpacity < 0.0f ) textOpacity = 0.0f;
 	if( textOpacity > 1.0f ) textOpacity = 1.0f;
-	
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	Tesselator *t = Tesselator::getInstance();
 
 	int offs = 0;
-	shared_ptr<Player> player = dynamic_pointer_cast<Player>(mob);
+	std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(mob);
 	if (player != NULL && app.isXuidDeadmau5( player->getXuid() ) ) offs = -10;
 
 	wstring playerName;
@@ -415,7 +415,7 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		else
 		{
 			memset(wchName,0,sizeof(WCHAR)*2);
-			swprintf(wchName, 2, L"%d",player->getPlayerIndex()+1);		
+			swprintf(wchName, 2, L"%d",player->getPlayerIndex()+1);
 			playerName=wchName;
 			player->SetPlayerNameValidState(false);
 		}
@@ -425,8 +425,8 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		break;
 	case Player::ePlayerNameValid_False:
 		memset(wchName,0,sizeof(WCHAR)*2);
-		swprintf(wchName, 2, L"%d",player->getPlayerIndex()+1);		
-		playerName=wchName;	
+		swprintf(wchName, 2, L"%d",player->getPlayerIndex()+1);
+		playerName=wchName;
 		break;
 	}
 
@@ -459,7 +459,7 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		t->vertex((float)(+w + 1), (float)( +8 + offs + 1), (float)( 0));
 		t->vertex((float)(+w + 1), (float)( -1 + offs), (float)( 0));
 		t->end();
-		
+
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(true);
 		glDepthFunc(GL_ALWAYS);
@@ -479,7 +479,7 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		glEnable(GL_TEXTURE_2D);
 		font->draw(playerName, -font->width(playerName) / 2, offs, 0x20ffffff);
 		glEnable(GL_DEPTH_TEST);
-	
+
 		glDepthMask(true);
 	}
 
@@ -495,10 +495,10 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		t->vertex((float)(-w - 1), (float)( +8 + offs), (float)( 0));
 		t->vertex((float)(+w + 1), (float)( +8 + offs), (float)( 0));
 		t->vertex((float)(+w + 1), (float)( -1 + offs), (float)( 0));
-		t->end();		
+		t->end();
 		glDepthFunc(GL_LEQUAL);
 		glEnable(GL_TEXTURE_2D);
-		
+
         glTranslatef(0.0f, 0.0f, -0.04f);
 	}
 
@@ -507,7 +507,7 @@ void MobRenderer::renderNameTag(shared_ptr<Mob> mob, const wstring& OriginalName
 		int textColor = ( ( (int)(textOpacity*255) << 24 ) | 0xffffff );
 		font->draw(playerName, -font->width(playerName) / 2, offs, textColor);
 	}
-	
+
     glEnable(GL_LIGHTING);
     glDisable(GL_BLEND);
     glColor4f(1, 1, 1, 1);

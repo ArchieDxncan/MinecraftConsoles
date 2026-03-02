@@ -40,7 +40,7 @@ namespace std{
 
 namespace boost {
 template<class T>
-class shared_ptr;
+class std::shared_ptr;
 namespace serialization {
     class extended_type_info;
 } // namespace serialization
@@ -155,9 +155,9 @@ public:
 
 #include <boost/archive/detail/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 
-// note special treatment of shared_ptr. This type needs a special
+// note special treatment of std::shared_ptr. This type needs a special
 // structure associated with every archive.  We created a "mix-in"
-// class to provide this functionality.  Since shared_ptr holds a
+// class to provide this functionality.  Since std::shared_ptr holds a
 // special esteem in the boost library - we included it here by default.
 #include <boost/archive/shared_ptr_helper.hpp>
 

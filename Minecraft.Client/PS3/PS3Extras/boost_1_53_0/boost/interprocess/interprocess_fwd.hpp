@@ -393,7 +393,7 @@ template<class T, class VoidPointer>
 class intrusive_ptr;
 
 template<class T, class VoidAllocator, class Deleter>
-class shared_ptr;
+class std::shared_ptr;
 
 template<class T, class VoidAllocator, class Deleter>
 class weak_ptr;

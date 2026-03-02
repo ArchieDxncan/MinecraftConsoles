@@ -20,8 +20,8 @@ int SlotProgressControl::GetValue()
 	if( pvUserData != NULL )
 	{
 		SlotControlUserDataContainer* pUserDataContainer = (SlotControlUserDataContainer*)pvUserData;
-	
-		shared_ptr<ItemInstance> item = shared_ptr<ItemInstance>();
+
+		std::shared_ptr<ItemInstance> item = std::shared_ptr<ItemInstance>();
 
 		if( pUserDataContainer->slot != NULL )
 		{
@@ -68,8 +68,8 @@ void SlotProgressControl::GetRange(int *pnRangeMin, int *pnRangeMax)
 	if( pvUserData != NULL )
 	{
 		SlotControlUserDataContainer* pUserDataContainer = (SlotControlUserDataContainer*)pvUserData;
-	
-		shared_ptr<ItemInstance> item = shared_ptr<ItemInstance>();
+
+		std::shared_ptr<ItemInstance> item = std::shared_ptr<ItemInstance>();
 
 		if( pUserDataContainer->slot != NULL )
 		{

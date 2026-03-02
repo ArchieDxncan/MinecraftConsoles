@@ -14,7 +14,7 @@ private:
 	int64_t seed;
 
 protected:
-	shared_ptr<Layer>parent;
+	std::shared_ptr<Layer>parent;
 
 private:
 	int64_t rval;

@@ -215,7 +215,7 @@ void CXuiSceneBase::_TickAllBaseScenes()
 	}
 	else
 	{
-		shared_ptr<EnderDragon> boss = EnderDragonRenderer::bossInstance;
+		std::shared_ptr<EnderDragon> boss = EnderDragonRenderer::bossInstance;
 		EnderDragonRenderer::bossInstance = nullptr;
 		m_ticksWithNoBoss = 0;
 

@@ -597,7 +597,7 @@ void UIScene::customDraw(IggyCustomDrawCallbackRegion *region)
 	app.DebugPrintf("Handling custom draw for scene with no override!\n");
 }
 
-void UIScene::customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iPad, shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations)
+void UIScene::customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iPad, std::shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations)
 {
 	if (item!= NULL)
 	{
@@ -608,7 +608,7 @@ void UIScene::customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iP
 				//Make sure that pMinecraft->player is the correct player so that player specific rendering
 				// eg clock and compass, are rendered correctly
 				Minecraft *pMinecraft=Minecraft::GetInstance();
-				shared_ptr<MultiplayerLocalPlayer> oldPlayer = pMinecraft->player;
+				std::shared_ptr<MultiplayerLocalPlayer> oldPlayer = pMinecraft->player;
 				if( iPad >= 0 && iPad < XUSER_MAX_COUNT ) pMinecraft->player = pMinecraft->localplayers[iPad];
 
 				// Setup GDraw, normal game render states and matrices
@@ -688,7 +688,7 @@ void UIScene::customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iP
 
 			//Make sure that pMinecraft->player is the correct player so that player specific rendering
 			// eg clock and compass, are rendered correctly
-			shared_ptr<MultiplayerLocalPlayer> oldPlayer = pMinecraft->player;
+			std::shared_ptr<MultiplayerLocalPlayer> oldPlayer = pMinecraft->player;
 			if( iPad >= 0 && iPad < XUSER_MAX_COUNT ) pMinecraft->player = pMinecraft->localplayers[iPad];
 
 			_customDrawSlotControl(customDrawRegion, iPad, item, fAlpha, isFoil, bDecorations, false);
@@ -701,7 +701,7 @@ void UIScene::customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iP
 	}
 }
 
-void UIScene::_customDrawSlotControl(CustomDrawData *region, int iPad, shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations, bool usingCommandBuffer)
+void UIScene::_customDrawSlotControl(CustomDrawData *region, int iPad, std::shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations, bool usingCommandBuffer)
 {
 	Minecraft *pMinecraft=Minecraft::GetInstance();
 

@@ -187,7 +187,7 @@ public:
 
 protected:
 	//void customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iPad, int iID, int iCount, int iAuxVal, float fAlpha, bool isFoil, bool bDecorations);
-	void customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iPad, shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations);
+	void customDrawSlotControl(IggyCustomDrawCallbackRegion *region, int iPad, std::shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations);
 
 	bool m_cacheSlotRenders;
 	bool m_needsCacheRendered;
@@ -196,14 +196,14 @@ private:
 	typedef struct _CachedSlotDrawData
 	{
 		CustomDrawData *customDrawRegion;
-		shared_ptr<ItemInstance> item;
+		std::shared_ptr<ItemInstance> item;
 		float fAlpha;
 		bool isFoil;
 		bool bDecorations;
 	} CachedSlotDrawData;
 	vector<CachedSlotDrawData *> m_cachedSlotDraw;
 
-	void _customDrawSlotControl(CustomDrawData *region, int iPad, shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations, bool usingCommandBuffer);
+	void _customDrawSlotControl(CustomDrawData *region, int iPad, std::shared_ptr<ItemInstance> item, float fAlpha, bool isFoil, bool bDecorations, bool usingCommandBuffer);
 
 public:
 	// INPUT

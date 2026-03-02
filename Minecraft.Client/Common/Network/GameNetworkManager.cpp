@@ -316,7 +316,7 @@ bool	CGameNetworkManager::StartNetworkGame(Minecraft *minecraft, LPVOID lpParame
 		return false;
 	}
 
-	connection->send( shared_ptr<PreLoginPacket>( new PreLoginPacket(minecraft->user->name) ) );
+	connection->send( std::shared_ptr<PreLoginPacket>( new PreLoginPacket(minecraft->user->name) ) );
 
 	// Tick connection until we're ready to go. The stages involved in this are:
 	// (1) Creating the ClientConnection sends a prelogin packet to the server
@@ -403,7 +403,7 @@ bool	CGameNetworkManager::StartNetworkGame(Minecraft *minecraft, LPVOID lpParame
 			// Open the socket on the server end to accept incoming data
 			Socket::addIncomingSocket(socket);
 
-			connection->send( shared_ptr<PreLoginPacket>( new PreLoginPacket(convStringToWstring( ProfileManager.GetGamertag(idx) )) ) );
+			connection->send( std::shared_ptr<PreLoginPacket>( new PreLoginPacket(convStringToWstring( ProfileManager.GetGamertag(idx) )) ) );
 
 			createdConnections.push_back( connection );
 
@@ -1134,7 +1134,7 @@ int CGameNetworkManager::ChangeSessionTypeThreadProc( void* lpParam )
 		PlayerList *players = pServer->getPlayers();
 		for(AUTO_VAR(it, players->players.begin()); it < players->players.end(); ++it)
 		{
-			shared_ptr<ServerPlayer> servPlayer = *it;
+			std::shared_ptr<ServerPlayer> servPlayer = *it;
 			if( servPlayer->connection->isLocal() && !servPlayer->connection->isGuest() )
 			{
 				servPlayer->connection->connection->getSocket()->setPlayer(NULL);
@@ -1202,7 +1202,7 @@ int CGameNetworkManager::ChangeSessionTypeThreadProc( void* lpParam )
 				PlayerList *players = pServer->getPlayers();
 				for(AUTO_VAR(it, players->players.begin()); it < players->players.end(); ++it)
 				{
-					shared_ptr<ServerPlayer> servPlayer = *it;
+					std::shared_ptr<ServerPlayer> servPlayer = *it;
 					if( servPlayer->getXuid() == localPlayerXuid )
 					{
 						servPlayer->connection->connection->getSocket()->setPlayer( g_NetworkManager.GetLocalPlayerByUserIndex(index) );
@@ -1391,7 +1391,7 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 
 	Socket *socket = NULL;
-	shared_ptr<MultiplayerLocalPlayer> mpPlayer = pMinecraft->localplayers[pNetworkPlayer->GetUserIndex()];
+	std::shared_ptr<MultiplayerLocalPlayer> mpPlayer = pMinecraft->localplayers[pNetworkPlayer->GetUserIndex()];
 	if( localPlayer && mpPlayer != NULL && mpPlayer->connection != NULL)
 	{
 		// If we already have a MultiplayerLocalPlayer here then we are doing a session type change
@@ -1428,7 +1428,7 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 
 			if( connection->createdOk )
 			{
-				connection->send( shared_ptr<PreLoginPacket>( new PreLoginPacket( pNetworkPlayer->GetOnlineName() ) ) );
+				connection->send( std::shared_ptr<PreLoginPacket>( new PreLoginPacket( pNetworkPlayer->GetOnlineName() ) ) );
 				pMinecraft->addPendingLocalConnection(idx, connection);
 			}
 			else
