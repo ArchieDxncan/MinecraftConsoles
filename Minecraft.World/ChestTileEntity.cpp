@@ -165,19 +165,19 @@ void ChestTileEntity::checkNeighbors()
 
     if (level->getTile(x - 1, y, z) == Tile::chest_Id)
 	{
-        w = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x - 1, y, z));
+        w = dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x - 1, y, z));
     }
     if (level->getTile(x + 1, y, z) == Tile::chest_Id)
 	{
-        e = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x + 1, y, z));
+        e = dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x + 1, y, z));
     }
     if (level->getTile(x, y, z - 1) == Tile::chest_Id)
 	{
-        n = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x, y, z - 1));
+        n = dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x, y, z - 1));
     }
     if (level->getTile(x, y, z + 1) == Tile::chest_Id)
 	{
-        s = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x, y, z + 1));
+        s = dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(x, y, z + 1));
     }
 
     if (n.lock() != NULL) n.lock()->clearCache();
