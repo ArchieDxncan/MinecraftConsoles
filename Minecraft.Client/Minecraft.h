@@ -60,8 +60,10 @@ public:
 	//    void crash(CrashReport crash);
 	//    public abstract void onCrash(CrashReport crash);
 
+private:
 	static Minecraft *m_instance;
 
+public:
 	MultiPlayerGameMode *gameMode;
 
 private:
