@@ -51,7 +51,7 @@ public:
 
 	// All the hooks go here
 	void onUseTile(int tileId, int x, int y, int z);
-	void onCollectItem(std::shared_ptr<ItemInstance> item);
+	void onCollectItem(shared_ptr<ItemInstance> item);
 
 	// 4J-JEV: For saving.
 	//CompoundTag *toTags(unordered_map<GameRuleDefinition *, int> *map);

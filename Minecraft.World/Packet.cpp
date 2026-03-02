@@ -207,7 +207,7 @@ void Packet::map(int id, bool receiveOnClient, bool receiveOnServer, bool sendTo
 }
 
 // 4J Added to record data for outgoing packets
-void Packet::recordOutgoingPacket(std::shared_ptr<Packet> packet)
+void Packet::recordOutgoingPacket(shared_ptr<Packet> packet)
 {
 #ifndef _CONTENT_PACKAGE
 #if PACKET_ENABLE_STAT_TRACKING
@@ -285,7 +285,7 @@ int64_t Packet::getIndexedStatValue(unsigned int samplePos, unsigned int rendera
 }
 
 
-std::shared_ptr<Packet> Packet::getPacket(int id)
+shared_ptr<Packet> Packet::getPacket(int id)
 {
 	// 4J - removed try/catch
 	//    try
@@ -326,7 +326,7 @@ byteArray Packet::readBytes(DataInputStream *datainputstream)
 }
 
 
-bool Packet::canSendToAnyClient(std::shared_ptr<Packet> packet)
+bool Packet::canSendToAnyClient(shared_ptr<Packet> packet)
 {
 	int packetId = packet->getId();
 
@@ -345,10 +345,10 @@ unordered_map<int, Packet::PacketStatistics *> Packet::statistics = unordered_ma
 
 //int Packet::nextPrint = 0;
 
-std::shared_ptr<Packet> Packet::readPacket(DataInputStream *dis, bool isServer) // throws IOException TODO 4J JEV, should this declare a throws?
+shared_ptr<Packet> Packet::readPacket(DataInputStream *dis, bool isServer) // throws IOException TODO 4J JEV, should this declare a throws?
 {
 	int id = 0;
-	std::shared_ptr<Packet> packet = nullptr;
+	shared_ptr<Packet> packet = nullptr;
 
 	// 4J - removed try/catch
 	//    try
@@ -399,7 +399,7 @@ std::shared_ptr<Packet> Packet::readPacket(DataInputStream *dis, bool isServer) 
 	return packet;
 }
 
-void Packet::writePacket(std::shared_ptr<Packet> packet, DataOutputStream *dos) // throws IOException TODO 4J JEV, should this declare a throws?
+void Packet::writePacket(shared_ptr<Packet> packet, DataOutputStream *dos) // throws IOException TODO 4J JEV, should this declare a throws?
 {
 	//app.DebugPrintf("Writing packet %d\n", packet->getId());
 	dos->write(packet->getId());
@@ -519,7 +519,7 @@ bool Packet::canBeInvalidated()
 	return false;
 }
 
-bool Packet::isInvalidatedBy(std::shared_ptr<Packet> packet)
+bool Packet::isInvalidatedBy(shared_ptr<Packet> packet)
 {
 	return false;
 }
@@ -530,16 +530,16 @@ bool Packet::isAync()
 }
 
 // 4J Stu - Brought these functions forward for enchanting/game rules
-std::shared_ptr<ItemInstance> Packet::readItem(DataInputStream *dis)
+shared_ptr<ItemInstance> Packet::readItem(DataInputStream *dis)
 {
-	std::shared_ptr<ItemInstance> item = nullptr;
+	shared_ptr<ItemInstance> item = nullptr;
 	int id = dis->readShort();
 	if (id >= 0)
 	{
 		int count = dis->readByte();
 		int damage = dis->readShort();
 
-		item = std::shared_ptr<ItemInstance>( new ItemInstance(id, count, damage) );
+		item = shared_ptr<ItemInstance>( new ItemInstance(id, count, damage) );
 		// 4J Stu - Always read/write the tag
 		//if (Item.items[id].canBeDepleted() || Item.items[id].shouldOverrideMultiplayerNBT())
 		{
@@ -550,7 +550,7 @@ std::shared_ptr<ItemInstance> Packet::readItem(DataInputStream *dis)
 	return item;
 }
 
-void Packet::writeItem(std::shared_ptr<ItemInstance> item, DataOutputStream *dos)
+void Packet::writeItem(shared_ptr<ItemInstance> item, DataOutputStream *dos)
 {
 	if (item == NULL)
 	{

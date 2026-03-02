@@ -365,7 +365,7 @@ void CMinecraftApp::HandleButtonPresses(int iPad)
 //  		ProfileManager.WriteToProfile(iPad,true);
 }
 
-bool CMinecraftApp::LoadInventoryMenu(int iPad,std::shared_ptr<LocalPlayer> player,bool bNavigateBack)
+bool CMinecraftApp::LoadInventoryMenu(int iPad,shared_ptr<LocalPlayer> player,bool bNavigateBack)
 {
 	bool success = true;
 
@@ -388,7 +388,7 @@ bool CMinecraftApp::LoadInventoryMenu(int iPad,std::shared_ptr<LocalPlayer> play
 	return success;
 }
 
-bool CMinecraftApp::LoadCreativeMenu(int iPad,std::shared_ptr<LocalPlayer> player,bool bNavigateBack)
+bool CMinecraftApp::LoadCreativeMenu(int iPad,shared_ptr<LocalPlayer> player,bool bNavigateBack)
 {
 	bool success = true;
 
@@ -411,7 +411,7 @@ bool CMinecraftApp::LoadCreativeMenu(int iPad,std::shared_ptr<LocalPlayer> playe
 	return success;
 }
 
-bool CMinecraftApp::LoadCrafting2x2Menu(int iPad,std::shared_ptr<LocalPlayer> player)
+bool CMinecraftApp::LoadCrafting2x2Menu(int iPad,shared_ptr<LocalPlayer> player)
 {
 	bool success = true;
 
@@ -437,7 +437,7 @@ bool CMinecraftApp::LoadCrafting2x2Menu(int iPad,std::shared_ptr<LocalPlayer> pl
 	return success;
 }
 
-bool CMinecraftApp::LoadCrafting3x3Menu(int iPad,std::shared_ptr<LocalPlayer> player, int x, int y, int z)
+bool CMinecraftApp::LoadCrafting3x3Menu(int iPad,shared_ptr<LocalPlayer> player, int x, int y, int z)
 {
 	bool success = true;
 
@@ -463,7 +463,7 @@ bool CMinecraftApp::LoadCrafting3x3Menu(int iPad,std::shared_ptr<LocalPlayer> pl
 	return success;
 }
 
-bool CMinecraftApp::LoadEnchantingMenu(int iPad,std::shared_ptr<Inventory> inventory, int x, int y, int z, Level *level)
+bool CMinecraftApp::LoadEnchantingMenu(int iPad,shared_ptr<Inventory> inventory, int x, int y, int z, Level *level)
 {
 	bool success = true;
 
@@ -489,7 +489,7 @@ bool CMinecraftApp::LoadEnchantingMenu(int iPad,std::shared_ptr<Inventory> inven
 	return success;
 }
 
-bool CMinecraftApp::LoadFurnaceMenu(int iPad,std::shared_ptr<Inventory> inventory, std::shared_ptr<FurnaceTileEntity> furnace)
+bool CMinecraftApp::LoadFurnaceMenu(int iPad,shared_ptr<Inventory> inventory, shared_ptr<FurnaceTileEntity> furnace)
 {
 	bool success = true;
 
@@ -514,7 +514,7 @@ bool CMinecraftApp::LoadFurnaceMenu(int iPad,std::shared_ptr<Inventory> inventor
 	return success;
 }
 
-bool CMinecraftApp::LoadBrewingStandMenu(int iPad,std::shared_ptr<Inventory> inventory, std::shared_ptr<BrewingStandTileEntity> brewingStand)
+bool CMinecraftApp::LoadBrewingStandMenu(int iPad,shared_ptr<Inventory> inventory, shared_ptr<BrewingStandTileEntity> brewingStand)
 {
 	bool success = true;
 
@@ -540,7 +540,7 @@ bool CMinecraftApp::LoadBrewingStandMenu(int iPad,std::shared_ptr<Inventory> inv
 }
 
 
-bool CMinecraftApp::LoadContainerMenu(int iPad,std::shared_ptr<Container> inventory, std::shared_ptr<Container> container)
+bool CMinecraftApp::LoadContainerMenu(int iPad,shared_ptr<Container> inventory, shared_ptr<Container> container)
 {
 	bool success = true;
 
@@ -574,7 +574,7 @@ bool CMinecraftApp::LoadContainerMenu(int iPad,std::shared_ptr<Container> invent
 	return success;
 }
 
-bool CMinecraftApp::LoadTrapMenu(int iPad,std::shared_ptr<Container> inventory, std::shared_ptr<DispenserTileEntity> trap)
+bool CMinecraftApp::LoadTrapMenu(int iPad,shared_ptr<Container> inventory, shared_ptr<DispenserTileEntity> trap)
 {
 	bool success = true;
 
@@ -599,7 +599,7 @@ bool CMinecraftApp::LoadTrapMenu(int iPad,std::shared_ptr<Container> inventory, 
 	return success;
 }
 
-bool CMinecraftApp::LoadSignEntryMenu(int iPad,std::shared_ptr<SignTileEntity> sign)
+bool CMinecraftApp::LoadSignEntryMenu(int iPad,shared_ptr<SignTileEntity> sign)
 {
 	bool success = true;
 
@@ -615,7 +615,7 @@ bool CMinecraftApp::LoadSignEntryMenu(int iPad,std::shared_ptr<SignTileEntity> s
 	return success;
 }
 
-bool CMinecraftApp::LoadRepairingMenu(int iPad,std::shared_ptr<Inventory> inventory, Level *level, int x, int y, int z)
+bool CMinecraftApp::LoadRepairingMenu(int iPad,shared_ptr<Inventory> inventory, Level *level, int x, int y, int z)
 {
 	bool success = true;
 
@@ -634,7 +634,7 @@ bool CMinecraftApp::LoadRepairingMenu(int iPad,std::shared_ptr<Inventory> invent
 	return success;
 }
 
-bool CMinecraftApp::LoadTradingMenu(int iPad, std::shared_ptr<Inventory> inventory, std::shared_ptr<Merchant> trader, Level *level)
+bool CMinecraftApp::LoadTradingMenu(int iPad, shared_ptr<Inventory> inventory, shared_ptr<Merchant> trader, Level *level)
 {
 	bool success = true;
 
@@ -1272,7 +1272,7 @@ void CMinecraftApp::ActionGameSettings(int iPad,eGameSetting eVal)
 				PlayerList *players = MinecraftServer::getInstance()->getPlayerList();
 				for(AUTO_VAR(it3, players->players.begin()); it3 != players->players.end(); ++it3)
 				{
-					std::shared_ptr<ServerPlayer> decorationPlayer = *it3;
+					shared_ptr<ServerPlayer> decorationPlayer = *it3;
 					decorationPlayer->setShowOnMaps((app.GetGameHostOption(eGameHostOption_Gamertags)!=0)?true:false);
 				}
 			}
@@ -2240,7 +2240,7 @@ unsigned int CMinecraftApp::GetGameSettingsDebugMask(int iPad,bool bOverridePlay
 	}
 	if(iPad < 0) iPad = 0;
 
-	std::shared_ptr<Player> player = Minecraft::GetInstance()->localplayers[iPad];
+	shared_ptr<Player> player = Minecraft::GetInstance()->localplayers[iPad];
 
 	if(bOverridePlayer || player==NULL)
 	{
@@ -2260,7 +2260,7 @@ void CMinecraftApp::SetGameSettingsDebugMask(int iPad, unsigned int uiVal)
 	GameSettingsA[iPad]->uiDebugBitmask=uiVal;
 
 	// update the value so the network server can use it
-	std::shared_ptr<Player> player = Minecraft::GetInstance()->localplayers[iPad];
+	shared_ptr<Player> player = Minecraft::GetInstance()->localplayers[iPad];
 
 	if(player)
 	{
@@ -2427,7 +2427,7 @@ void CMinecraftApp::HandleXuiActions(void)
 	eTMSAction eTMS;
 	LPVOID param;
 	Minecraft *pMinecraft=Minecraft::GetInstance();
-	std::shared_ptr<MultiplayerLocalPlayer> player;
+	shared_ptr<MultiplayerLocalPlayer> player;
 
 	// are there any global actions to deal with?
 	eAction = app.GetGlobalXuiAction();

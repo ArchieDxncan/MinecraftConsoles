@@ -39,7 +39,7 @@ namespace std{
 
 namespace boost {
 template<class T>
-class std::shared_ptr;
+class shared_ptr;
 namespace serialization {
     class extended_type_info;
 } // namespace serialization

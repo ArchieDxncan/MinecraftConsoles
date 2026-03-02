@@ -90,11 +90,11 @@ public:
 
 	MultiPlayerLevel *level;
 	LevelRenderer *levelRenderer;
-	std::shared_ptr<MultiplayerLocalPlayer> player;
+	shared_ptr<MultiplayerLocalPlayer> player;
 
 	MultiPlayerLevelArray levels;
 
-	std::shared_ptr<MultiplayerLocalPlayer> localplayers[XUSER_MAX_COUNT];
+	shared_ptr<MultiplayerLocalPlayer> localplayers[XUSER_MAX_COUNT];
 	MultiPlayerGameMode *localgameModes[XUSER_MAX_COUNT];
 	int localPlayerIdx;
 	ItemInHandRenderer *localitemInHandRenderers[XUSER_MAX_COUNT];
@@ -110,7 +110,7 @@ public:
 	void addPendingLocalConnection(int idx, ClientConnection *connection);
 	void connectionDisconnected(int idx, DisconnectPacket::eDisconnectReason reason) { m_connectionFailed[idx] = true; m_connectionFailedReason[idx] = reason; }
 
-	std::shared_ptr<MultiplayerLocalPlayer> createExtraLocalPlayer(int idx, const wstring& name, int pad, int iDimension, ClientConnection *clientConnection = NULL,MultiPlayerLevel *levelpassedin=NULL);
+	shared_ptr<MultiplayerLocalPlayer> createExtraLocalPlayer(int idx, const wstring& name, int pad, int iDimension, ClientConnection *clientConnection = NULL,MultiPlayerLevel *levelpassedin=NULL);
 	void createPrimaryLocalPlayer(int iPad);
 	bool setLocalPlayerIdx(int idx);
 	int getLocalPlayerIdx();
@@ -119,7 +119,7 @@ public:
 	void updatePlayerViewportAssignments();
 	int unoccupiedQuadrant;	// 4J - added
 
-	std::shared_ptr<Mob> cameraTargetPlayer;
+	shared_ptr<Mob> cameraTargetPlayer;
 	ParticleEngine *particleEngine;
 	User *user;
 	wstring serverDomain;
@@ -276,7 +276,7 @@ public:
 	// 4J Stu - Added the doForceStatsSave param
 	//void setLevel(Level *level, bool doForceStatsSave = true);
 	//void setLevel(Level *level, const wstring& message, bool doForceStatsSave = true);
-	void setLevel(MultiPlayerLevel *level, int message = -1, std::shared_ptr<Player> forceInsertPlayer = nullptr, bool doForceStatsSave = true,bool bPrimaryPlayerSignedOut=false);
+	void setLevel(MultiPlayerLevel *level, int message = -1, shared_ptr<Player> forceInsertPlayer = nullptr, bool doForceStatsSave = true,bool bPrimaryPlayerSignedOut=false);
 	// 4J-PB - added to force in the 'other' level when the main player creates the level at game load time
 	void forceaddLevel(MultiPlayerLevel *level);
 	void prepareLevel(int title);	// 4J - changed to public

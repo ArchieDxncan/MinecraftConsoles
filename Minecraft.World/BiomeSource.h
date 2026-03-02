@@ -13,8 +13,8 @@ class LevelType;
 class BiomeSource
 {
 private:
-	std::shared_ptr<Layer> layer;
-	std::shared_ptr<Layer> zoomedLayer;
+	shared_ptr<Layer> layer;
+	shared_ptr<Layer> zoomedLayer;
 public:
 	static const int CACHE_DIAMETER = 256;
 

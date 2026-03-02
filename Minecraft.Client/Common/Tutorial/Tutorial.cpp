@@ -1681,7 +1681,7 @@ void Tutorial::showTutorialPopup(bool show)
 	}
 }
 
-void Tutorial::useItemOn(Level *level, std::shared_ptr<ItemInstance> item, int x, int y, int z, bool bTestUseOnly)
+void Tutorial::useItemOn(Level *level, shared_ptr<ItemInstance> item, int x, int y, int z, bool bTestUseOnly)
 {
 	for(AUTO_VAR(it, activeTasks[m_CurrentState].begin()); it < activeTasks[m_CurrentState].end(); ++it)
 	{
@@ -1690,7 +1690,7 @@ void Tutorial::useItemOn(Level *level, std::shared_ptr<ItemInstance> item, int x
 	}
 }
 
-void Tutorial::useItemOn(std::shared_ptr<ItemInstance> item, bool bTestUseOnly)
+void Tutorial::useItemOn(shared_ptr<ItemInstance> item, bool bTestUseOnly)
 {
 	for(AUTO_VAR(it, activeTasks[m_CurrentState].begin()); it < activeTasks[m_CurrentState].end(); ++it)
 	{
@@ -1699,7 +1699,7 @@ void Tutorial::useItemOn(std::shared_ptr<ItemInstance> item, bool bTestUseOnly)
 	}
 }
 
-void Tutorial::completeUsingItem(std::shared_ptr<ItemInstance> item)
+void Tutorial::completeUsingItem(shared_ptr<ItemInstance> item)
 {
 	for(AUTO_VAR(it, activeTasks[m_CurrentState].begin()); it < activeTasks[m_CurrentState].end(); ++it)
 	{
@@ -1718,7 +1718,7 @@ void Tutorial::completeUsingItem(std::shared_ptr<ItemInstance> item)
 	}
 }
 
-void Tutorial::startDestroyBlock(std::shared_ptr<ItemInstance> item, Tile *tile)
+void Tutorial::startDestroyBlock(shared_ptr<ItemInstance> item, Tile *tile)
 {
 	int hintNeeded = -1;
 	for(AUTO_VAR(it, hints[m_CurrentState].begin()); it < hints[m_CurrentState].end(); ++it)
@@ -1754,7 +1754,7 @@ void Tutorial::destroyBlock(Tile *tile)
 	}
 }
 
-void Tutorial::attack(std::shared_ptr<Player> player, std::shared_ptr<Entity> entity)
+void Tutorial::attack(shared_ptr<Player> player, shared_ptr<Entity> entity)
 {
 	int hintNeeded = -1;
 	for(AUTO_VAR(it, hints[m_CurrentState].begin()); it < hints[m_CurrentState].end(); ++it)
@@ -1772,7 +1772,7 @@ void Tutorial::attack(std::shared_ptr<Player> player, std::shared_ptr<Entity> en
 	}
 }
 
-void Tutorial::itemDamaged(std::shared_ptr<ItemInstance> item)
+void Tutorial::itemDamaged(shared_ptr<ItemInstance> item)
 {
 	int hintNeeded = -1;
 	for(AUTO_VAR(it, hints[m_CurrentState].begin()); it < hints[m_CurrentState].end(); ++it)
@@ -1803,7 +1803,7 @@ void Tutorial::handleUIInput(int iAction)
 		currentTask[m_CurrentState]->handleUIInput(iAction);
 }
 
-void Tutorial::createItemSelected(std::shared_ptr<ItemInstance> item, bool canMake)
+void Tutorial::createItemSelected(shared_ptr<ItemInstance> item, bool canMake)
 {
 	int hintNeeded = -1;
 	for(AUTO_VAR(it, hints[m_CurrentState].begin()); it < hints[m_CurrentState].end(); ++it)
@@ -1821,7 +1821,7 @@ void Tutorial::createItemSelected(std::shared_ptr<ItemInstance> item, bool canMa
 	}
 }
 
-void Tutorial::onCrafted(std::shared_ptr<ItemInstance> item)
+void Tutorial::onCrafted(shared_ptr<ItemInstance> item)
 {
 	for(unsigned int state = 0; state < e_Tutorial_State_Max; ++state)
 	{
@@ -1833,7 +1833,7 @@ void Tutorial::onCrafted(std::shared_ptr<ItemInstance> item)
 	}
 }
 
-void Tutorial::onTake(std::shared_ptr<ItemInstance> item, unsigned int invItemCountAnyAux, unsigned int invItemCountThisAux)
+void Tutorial::onTake(shared_ptr<ItemInstance> item, unsigned int invItemCountAnyAux, unsigned int invItemCountThisAux)
 {
 	if( !m_hintDisplayed )
 	{
@@ -1860,7 +1860,7 @@ void Tutorial::onTake(std::shared_ptr<ItemInstance> item, unsigned int invItemCo
 	}
 }
 
-void Tutorial::onSelectedItemChanged(std::shared_ptr<ItemInstance> item)
+void Tutorial::onSelectedItemChanged(shared_ptr<ItemInstance> item)
 {
 	// We only handle this if we are in a state that allows changing based on the selected item
 	// Menus and states like riding in a minecart will NOT allow this

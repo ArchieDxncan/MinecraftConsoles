@@ -125,18 +125,18 @@ public:
 	bool			GetGameStarted()																								{return m_bGameStarted;}
 	void			SetGameStarted(bool bVal)																						{ if(bVal) DebugPrintf("SetGameStarted - true\n"); else DebugPrintf("SetGameStarted - false\n"); m_bGameStarted = bVal; m_bIsAppPaused = !bVal;}
 	int				GetLocalPlayerCount(void);
-	bool			LoadInventoryMenu(int iPad,std::shared_ptr<LocalPlayer> player, bool bNavigateBack=false);
-	bool			LoadCreativeMenu(int iPad,std::shared_ptr<LocalPlayer> player,bool bNavigateBack=false);
-	bool			LoadEnchantingMenu(int iPad,std::shared_ptr<Inventory> inventory, int x, int y, int z, Level *level);
-	bool			LoadFurnaceMenu(int iPad,std::shared_ptr<Inventory> inventory, std::shared_ptr<FurnaceTileEntity> furnace);
-	bool			LoadBrewingStandMenu(int iPad,std::shared_ptr<Inventory> inventory, std::shared_ptr<BrewingStandTileEntity> brewingStand);
-	bool			LoadContainerMenu(int iPad,std::shared_ptr<Container> inventory, std::shared_ptr<Container> container);
-	bool			LoadTrapMenu(int iPad,std::shared_ptr<Container> inventory, std::shared_ptr<DispenserTileEntity> trap);
-	bool			LoadCrafting2x2Menu(int iPad,std::shared_ptr<LocalPlayer> player);
-	bool			LoadCrafting3x3Menu(int iPad,std::shared_ptr<LocalPlayer> player, int x, int y, int z);
-	bool			LoadSignEntryMenu(int iPad,std::shared_ptr<SignTileEntity> sign);
-	bool			LoadRepairingMenu(int iPad,std::shared_ptr<Inventory> inventory, Level *level, int x, int y, int z);
-	bool			LoadTradingMenu(int iPad, std::shared_ptr<Inventory> inventory, std::shared_ptr<Merchant> trader, Level *level);
+	bool			LoadInventoryMenu(int iPad,shared_ptr<LocalPlayer> player, bool bNavigateBack=false);
+	bool			LoadCreativeMenu(int iPad,shared_ptr<LocalPlayer> player,bool bNavigateBack=false);
+	bool			LoadEnchantingMenu(int iPad,shared_ptr<Inventory> inventory, int x, int y, int z, Level *level);
+	bool			LoadFurnaceMenu(int iPad,shared_ptr<Inventory> inventory, shared_ptr<FurnaceTileEntity> furnace);
+	bool			LoadBrewingStandMenu(int iPad,shared_ptr<Inventory> inventory, shared_ptr<BrewingStandTileEntity> brewingStand);
+	bool			LoadContainerMenu(int iPad,shared_ptr<Container> inventory, shared_ptr<Container> container);
+	bool			LoadTrapMenu(int iPad,shared_ptr<Container> inventory, shared_ptr<DispenserTileEntity> trap);
+	bool			LoadCrafting2x2Menu(int iPad,shared_ptr<LocalPlayer> player);
+	bool			LoadCrafting3x3Menu(int iPad,shared_ptr<LocalPlayer> player, int x, int y, int z);
+	bool			LoadSignEntryMenu(int iPad,shared_ptr<SignTileEntity> sign);
+	bool			LoadRepairingMenu(int iPad,shared_ptr<Inventory> inventory, Level *level, int x, int y, int z);
+	bool			LoadTradingMenu(int iPad, shared_ptr<Inventory> inventory, shared_ptr<Merchant> trader, Level *level);
 
 	bool			GetTutorialMode()																									{ return m_bTutorialMode;}
 	void			SetTutorialMode(bool bSet)																							{m_bTutorialMode=bSet;}

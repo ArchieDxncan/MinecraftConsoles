@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "net.minecraft.world.level.newbiome.layer.h"
 
-SmoothLayer::SmoothLayer(int64_t seedMixup, std::shared_ptr<Layer>parent) : Layer(seedMixup)
+SmoothLayer::SmoothLayer(int64_t seedMixup, shared_ptr<Layer>parent) : Layer(seedMixup)
 {
 	this->parent = parent;
 }

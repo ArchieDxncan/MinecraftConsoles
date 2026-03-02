@@ -352,13 +352,13 @@ void GameRenderer::pick(float a)
     Vec3 *to = from->add(b->x * range, b->y * range, b->z * range);
     hovered = nullptr;
     float overlap = 1;
-    vector<std::shared_ptr<Entity> > *objects = mc->level->getEntities(mc->cameraTargetPlayer, mc->cameraTargetPlayer->bb->expand(b->x * (range), b->y * (range), b->z * (range))->grow(overlap, overlap, overlap));
+    vector<shared_ptr<Entity> > *objects = mc->level->getEntities(mc->cameraTargetPlayer, mc->cameraTargetPlayer->bb->expand(b->x * (range), b->y * (range), b->z * (range))->grow(overlap, overlap, overlap));
     double nearest = dist;
 
 	AUTO_VAR(itEnd, objects->end());
 	for (AUTO_VAR(it, objects->begin()); it != itEnd; it++)
 	{
-        std::shared_ptr<Entity> e = *it; //objects->at(i);
+        shared_ptr<Entity> e = *it; //objects->at(i);
         if (!e->isPickable()) continue;
 
 		float rr = e->getPickRadius();
@@ -407,7 +407,7 @@ float GameRenderer::GetFovVal()
 
 void GameRenderer::tickFov()
 {
-	std::shared_ptr<LocalPlayer>player = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
+	shared_ptr<LocalPlayer>player = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
 
 	int playerIdx = player ? player->GetXboxPad() : 0;
     tFov[playerIdx] = player->getFieldOfViewModifier();
@@ -420,7 +420,7 @@ float GameRenderer::getFov(float a, bool applyEffects)
 {
 	if (cameraFlip > 0 ) return 90;
 
-	std::shared_ptr<LocalPlayer> player = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
+	shared_ptr<LocalPlayer> player = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
 	int playerIdx = player ? player->GetXboxPad() : 0;
 	float fov = m_fov;//70;
     if (applyEffects)
@@ -444,7 +444,7 @@ float GameRenderer::getFov(float a, bool applyEffects)
 
 void GameRenderer::bobHurt(float a)
 {
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
 
 	float hurt = player->hurtTime - a;
 
@@ -470,12 +470,12 @@ void GameRenderer::bobHurt(float a)
 
 void GameRenderer::bobView(float a)
 {
-	std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(mc->cameraTargetPlayer);
+	shared_ptr<Player> player = dynamic_pointer_cast<Player>(mc->cameraTargetPlayer);
 	if(player==NULL)
 	{
 		return;
 	}
-	//std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(mc->cameraTargetPlayer);
+	//shared_ptr<Player> player = dynamic_pointer_cast<Player>(mc->cameraTargetPlayer);
 
 	float wda = player->walkDist - player->walkDistO;
 	float b = -(player->walkDist + wda * a);
@@ -489,8 +489,8 @@ void GameRenderer::bobView(float a)
 
 void GameRenderer::moveCameraToPlayer(float a)
 {
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
-	std::shared_ptr<LocalPlayer> localplayer = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<LocalPlayer> localplayer = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
 	float heightOffset = player->heightOffset - 1.62f;
 
 	double x = player->xo + (player->x - player->xo) * a;
@@ -719,12 +719,12 @@ void GameRenderer::renderItemInHand(float a, int eye)
 {
 	if (cameraFlip > 0) return;
 
-	std::shared_ptr<LocalPlayer> localplayer = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
+	shared_ptr<LocalPlayer> localplayer = dynamic_pointer_cast<LocalPlayer>(mc->cameraTargetPlayer);
 
 	// 4J-PB - to turn off the hand for screenshots, but not when the item held is a map
 	if ( localplayer!=NULL)
 	{
-		std::shared_ptr<ItemInstance> item = localplayer->inventory->getSelected();
+		shared_ptr<ItemInstance> item = localplayer->inventory->getSelected();
 		if(!(item && item->getItem()->id==Item::map_Id)  && app.GetGameSettings(localplayer->GetXboxPad(),eGameSetting_DisplayHand)==0 ) return;
 	}
 
@@ -864,7 +864,7 @@ void GameRenderer::updateLightTexture(float a)
 	for(int j = 0; j < XUSER_MAX_COUNT; j++ )
 	{
 		// Loop over all the players
-		std::shared_ptr<MultiplayerLocalPlayer> player = Minecraft::GetInstance()->localplayers[j];
+		shared_ptr<MultiplayerLocalPlayer> player = Minecraft::GetInstance()->localplayers[j];
 		if (player == NULL) continue;
 
 		Level *level = player->level;		// 4J - was mc->level when it was just to update the one light texture
@@ -969,7 +969,7 @@ void GameRenderer::updateLightTexture(float a)
 	}
 }
 
-float GameRenderer::getNightVisionScale(std::shared_ptr<Player> player, float a)
+float GameRenderer::getNightVisionScale(shared_ptr<Player> player, float a)
 {
 	int duration = player->getEffect(MobEffect::nightVision)->getDuration();
 	if (duration > (SharedConstants::TICKS_PER_SECOND * 10))
@@ -1269,7 +1269,7 @@ void GameRenderer::renderLevel(float a, int64_t until)
 	}
 	pick(a);
 
-	std::shared_ptr<Mob> cameraEntity = mc->cameraTargetPlayer;
+	shared_ptr<Mob> cameraEntity = mc->cameraTargetPlayer;
 	LevelRenderer *levelRenderer = mc->levelRenderer;
 	ParticleEngine *particleEngine = mc->particleEngine;
 	double xOff = cameraEntity->xOld + (cameraEntity->x - cameraEntity->xOld) * a;
@@ -1383,10 +1383,10 @@ void GameRenderer::renderLevel(float a, int64_t until)
 			PIXEndNamedEvent();
 			turnOffLightLayer(a);		// 4J - brought forward from 1.8.2
 
-			std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
+			shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
 			if (mc->hitResult != NULL && cameraEntity->isUnderLiquid(Material::water) && player!=NULL) //&& !mc->options.hideGui)
 			{
-				//std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
+				//shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
 				glDisable(GL_ALPHA_TEST);
 				levelRenderer->renderHit(player, mc->hitResult, 0, player->inventory->getSelected(), a);
 				levelRenderer->renderHitOutline(player, mc->hitResult, 0, player->inventory->getSelected(), a);
@@ -1445,7 +1445,7 @@ void GameRenderer::renderLevel(float a, int64_t until)
 		{
 			if (mc->hitResult != NULL && !cameraEntity->isUnderLiquid(Material::water))
 			{
-				std::shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
+				shared_ptr<Player> player = dynamic_pointer_cast<Player>(cameraEntity);
 				glDisable(GL_ALPHA_TEST);
 				levelRenderer->renderHit(player, mc->hitResult, 0, player->inventory->getSelected(), a);
 				levelRenderer->renderHitOutline(player, mc->hitResult, 0, player->inventory->getSelected(), a);
@@ -1512,7 +1512,7 @@ void GameRenderer::tickRain()
 	rainLevel /= ( mc->levelRenderer->activePlayers() + 1 );
 
 	random->setSeed(_tick * 312987231l);
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
 	Level *level = mc->level;
 
 	int x0 = Mth::floor(player->x);
@@ -1549,7 +1549,7 @@ void GameRenderer::tickRain()
 			{
 				if (Tile::tiles[t]->material == Material::lava)
 				{
-					mc->particleEngine->add( std::shared_ptr<SmokeParticle>( new SmokeParticle(level, x + xa, y + 0.1f - Tile::tiles[t]->getShapeY0(), z + za, 0, 0, 0) ) );
+					mc->particleEngine->add( shared_ptr<SmokeParticle>( new SmokeParticle(level, x + xa, y + 0.1f - Tile::tiles[t]->getShapeY0(), z + za, 0, 0, 0) ) );
 				}
 				else
 				{
@@ -1559,7 +1559,7 @@ void GameRenderer::tickRain()
 						rainPosY = y + 0.1f - Tile::tiles[t]->getShapeY0();
 						rainPosZ = z + za;
 					}
-					mc->particleEngine->add( std::shared_ptr<WaterDropParticle>( new WaterDropParticle(level, x + xa, y + 0.1f - Tile::tiles[t]->getShapeY0(), z + za) ) );
+					mc->particleEngine->add( shared_ptr<WaterDropParticle>( new WaterDropParticle(level, x + xa, y + 0.1f - Tile::tiles[t]->getShapeY0(), z + za) ) );
 				}
 			}
 		}
@@ -1612,7 +1612,7 @@ void GameRenderer::renderSnowAndRain(float a)
         }
     }
 
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
 	Level *level = mc->level;
 
 	int x0 = Mth::floor(player->x);
@@ -1796,7 +1796,7 @@ void GameRenderer::setupGuiScreen(int forceScale /*=-1*/)
 void GameRenderer::setupClearColor(float a)
 {
 	Level *level = mc->level;
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
 
 	float whiteness = 1.0f / (4 - mc->options->viewDistance);
 	whiteness = 1 - (float) pow((double)whiteness, 0.25);
@@ -1953,7 +1953,7 @@ void GameRenderer::setupClearColor(float a)
 
 void GameRenderer::setupFog(int i, float alpha)
 {
-	std::shared_ptr<Mob> player = mc->cameraTargetPlayer;
+	shared_ptr<Mob> player = mc->cameraTargetPlayer;
 
 	// 4J - check for creative mode brought forward from 1.2.3
     bool creative = false;
