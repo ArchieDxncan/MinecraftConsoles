@@ -41,5 +41,6 @@ cd .\build\Debug
 
 Notes:
 - The CMake build is Windows-only and x64-only.
+- Contributors on macOS or Linux need a Windows machine or VM to build the project. Running the game via Wine is separate from having a supported build environment.
 - Post-build asset copy is automatic for `MinecraftClient` in CMake (Debug and Release variants).
 - The game relies on relative paths (for example `Common\Media\...`), so launching from the output directory is required.

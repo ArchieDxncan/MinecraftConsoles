@@ -10,6 +10,11 @@ This project contains the source code of Minecraft Legacy Console Edition v1.3.0
 
 [Nightly Build](https://github.com/smartcmd/MinecraftConsoles/releases/tag/nightly)
 
+## Platform Support
+
+- **Windows**: Supported for building and running the project
+- **macOS / Linux**: The Windows nightly build may run through Wine or CrossOver based on community reports, but this is unofficial and not currently tested by the maintainers
+
 ## Features
 
 - Fixed compilation and execution in both Debug and Release mode on Windows using Visual Studio 2022
@@ -59,8 +64,7 @@ For more information, see [COMPILE.md](COMPILE.md)
 
 ## Known Issues
 
-- Builds for other platforms have not been tested and are most likely non-functional
-- There are some render bugs in the Release mode build
+- Native builds for platforms other than Windows have not been tested and are most likely non-functional. The Windows nightly build may still run on macOS and Linux through Wine or CrossOver, but that path is unofficial and not currently supported
 
 ## Star History
 
