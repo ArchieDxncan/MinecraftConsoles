@@ -22,7 +22,7 @@ CompoundTag *DerivedLevelData::createTag(vector<shared_ptr<Player> > *players)
 	return wrapped->createTag(players);
 }
 
-__int64 DerivedLevelData::getSeed()
+int64_t DerivedLevelData::getSeed()
 {
 	return wrapped->getSeed();
 }
@@ -43,12 +43,12 @@ int DerivedLevelData::getZSpawn()
 	return wrapped->getZSpawn();
 }
 
-__int64 DerivedLevelData::getTime()
+int64_t DerivedLevelData::getTime()
 {
 	return wrapped->getTime();
 }
 
-__int64 DerivedLevelData::getSizeOnDisk()
+int64_t DerivedLevelData::getSizeOnDisk()
 {
 	return wrapped->getSizeOnDisk();
 }
@@ -68,7 +68,7 @@ int DerivedLevelData::getVersion()
 	return wrapped->getVersion();
 }
 
-__int64 DerivedLevelData::getLastPlayed()
+int64_t DerivedLevelData::getLastPlayed()
 {
 	return wrapped->getLastPlayed();
 }
@@ -98,7 +98,7 @@ GameType *DerivedLevelData::getGameType()
 	return wrapped->getGameType();
 }
 
-void DerivedLevelData::setSeed(__int64 seed)
+void DerivedLevelData::setSeed(int64_t seed)
 {
 }
 
@@ -114,11 +114,11 @@ void DerivedLevelData::setZSpawn(int zSpawn)
 {
 }
 
-void DerivedLevelData::setTime(__int64 time)
+void DerivedLevelData::setTime(int64_t time)
 {
 }
 
-void DerivedLevelData::setSizeOnDisk(__int64 sizeOnDisk)
+void DerivedLevelData::setSizeOnDisk(int64_t sizeOnDisk)
 {
 }
 

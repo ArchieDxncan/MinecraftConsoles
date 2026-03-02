@@ -15,17 +15,17 @@ typedef shared_ptr<Packet> (*packetCreateFn)();
 class Packet
 {
 public:
-	class PacketStatistics 
+	class PacketStatistics
 	{
 	private:
 		int count;
 		int totalSize;
 
 		// 4J Added
-		__int64 countSamples[512];
-		__int64 sizeSamples[512];
+		int64_t countSamples[512];
+		int64_t sizeSamples[512];
 		int samplesPos;
-		__int64 firstSampleTime;
+		int64_t firstSampleTime;
 
 
 	public:
@@ -39,7 +39,7 @@ public:
 
 		// 4J Added
 		void renderStats();
-		__int64 getCountSample(int samplePos);
+		int64_t getCountSample(int samplePos);
 		wstring getLegendString();
 	};
 
@@ -58,7 +58,7 @@ public:
 	static void map(int id, bool receiveOnClient, bool receiveOnServer, bool sendToAnyClient, bool renderStats, const type_info& clazz, packetCreateFn );
 
 public:
-	const __int64 createTime;
+	const int64_t createTime;
 
 	Packet();
 
@@ -84,7 +84,7 @@ public:
 	static void renderPacketStats(int id);
 	static void renderAllPacketStats();
 	static void renderAllPacketStatsKey();
-	static __int64 getIndexedStatValue(unsigned int samplePos, unsigned int renderableId);
+	static int64_t getIndexedStatValue(unsigned int samplePos, unsigned int renderableId);
 
 private :
 	static unordered_map<int, PacketStatistics *> statistics;
