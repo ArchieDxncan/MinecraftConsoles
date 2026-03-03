@@ -805,20 +805,6 @@ void CleanupDevice()
 	if( g_pd3dDevice ) g_pd3dDevice->Release();
 }
 
-typedef HRESULT(__stdcall* SetProcessDpiAwareness_f)(PROCESS_DPI_AWARENESS);
-static HRESULT dyn_SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value) 
-{
-  static const auto ptr = reinterpret_cast<SetProcessDpiAwareness_f>(
-      reinterpret_cast<void*>(::GetProcAddress(static_cast<HMODULE>(LoadLibraryExW(L"Shcore.dll", nullptr, 0)), "SetProcessDpiAwareness")));
-  if (ptr == nullptr) 
-  {
-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
-    return E_NOTIMPL;
-  }
-
-  return ptr(value);
-}
-
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 					   _In_opt_ HINSTANCE hPrevInstance,
 					   _In_ LPTSTR    lpCmdLine,
