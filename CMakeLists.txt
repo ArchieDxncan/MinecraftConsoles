@@ -14,7 +14,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 function(configure_msvc_target target)
   target_compile_options(${target} PRIVATE
-    $<$<COMPILE_LANGUAGE:C,CXX>:/W3>
+    $<$<AND:$<NOT:$<CONFIG:Release>>,$<COMPILE_LANGUAGE:C,CXX>>:/W3>
+    $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:C,CXX>>:/W0>
     $<$<COMPILE_LANGUAGE:C,CXX>:/MP>
     $<$<COMPILE_LANGUAGE:CXX>:/EHsc>
     $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:C,CXX>>:/GL /O2 /Ob3 /Oi /GT /GF>
