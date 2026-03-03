@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(MinecraftConsoles LANGUAGES C CXX ASM_MASM)
+project(MinecraftConsoles LANGUAGES C CXX RC ASM_MASM)
 
 if(NOT WIN32)
   message(FATAL_ERROR "This CMake build currently supports Windows only.")
@@ -17,6 +17,9 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ClientSources.cmake")
 
 list(TRANSFORM MINECRAFT_WORLD_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.World/")
 list(TRANSFORM MINECRAFT_CLIENT_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/")
+list(APPEND MINECRAFT_CLIENT_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Xbox/MinecraftWindows.rc"
+)
 
 add_library(MinecraftWorld STATIC ${MINECRAFT_WORLD_SOURCES})
 target_include_directories(MinecraftWorld PRIVATE
