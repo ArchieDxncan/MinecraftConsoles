@@ -53,8 +53,7 @@ extern UINT g_ScreenHeight;
 
 void gluPerspective(float fovy, float aspect, float zNear, float zFar)
 {
-	float dynamicAspect = (float)g_ScreenWidth / (float)g_ScreenHeight;
-	RenderManager.MatrixPerspective(fovy, dynamicAspect, zNear, zFar);
+	RenderManager.MatrixPerspective(fovy,aspect,zNear,zFar);
 }
 
 void glOrtho(float left,float right,float bottom,float top,float zNear,float zFar)
