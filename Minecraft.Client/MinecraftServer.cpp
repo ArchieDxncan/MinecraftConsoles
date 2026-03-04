@@ -613,7 +613,7 @@ bool MinecraftServer::initServer(__int64 seed, NetworkGameInitData *initData, DW
 	//localIp = settings->getString(L"server-ip", L"");
 	//onlineMode = settings->getBoolean(L"online-mode", true);
 	//motd = settings->getString(L"motd", L"A Minecraft Server");
-	//motd.replace('§', '$');
+	//motd.replace('ï¿½', '$');
 
 	setAnimals(settings->getBoolean(L"spawn-animals", true));
 	setNpcsEnabled(settings->getBoolean(L"spawn-npcs", true));
@@ -667,8 +667,8 @@ bool MinecraftServer::initServer(__int64 seed, NetworkGameInitData *initData, DW
 
 	__int64 levelNanoTime = System::nanoTime();
 
-	wstring levelName = settings->getString(L"level-name", L"world");
-	wstring levelTypeString;
+        wstring levelName = (initData && !initData->levelName.empty()) ? initData->levelName : settings->getString(L"level-name", L"world");
+		wstring levelTypeString;
 
 	bool gameRuleUseFlatWorld = false;
 	if(app.getLevelGenerationOptions() != NULL)
