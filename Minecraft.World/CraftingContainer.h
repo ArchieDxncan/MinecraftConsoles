@@ -18,15 +18,18 @@ public:
 	virtual unsigned int getContainerSize();
 	virtual shared_ptr<ItemInstance> getItem(unsigned int slot);
 	shared_ptr<ItemInstance> getItem(unsigned int x, unsigned int y);
-	virtual int getName();
+	virtual wstring getName();
+	virtual wstring getCustomName();
+	virtual bool hasCustomName();
 	virtual shared_ptr<ItemInstance> removeItemNoUpdate(int slot);
 	virtual shared_ptr<ItemInstance> removeItem(unsigned int slot, int count);
 	virtual void setItem(unsigned int slot, shared_ptr<ItemInstance> item);
-	virtual int getMaxStackSize();
+	virtual int getMaxStackSize() const;
 	virtual void setChanged();
 	bool stillValid(shared_ptr<Player> player);
 
 	void startOpen() { } // TODO Auto-generated method stub
 	void stopOpen() { } // TODO Auto-generated method stub
 
+	virtual bool canPlaceItem(int slot, shared_ptr<ItemInstance> item);
 };

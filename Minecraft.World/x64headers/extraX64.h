@@ -50,9 +50,9 @@ typedef SQRNetworkManager::PresenceSyncInfo INVITE_INFO;
 #include <np.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "..\..\Minecraft.Client\PSVita\PSVita_PlayerUID.h"
 #include "..\..\Minecraft.Client\PSVita\Network\SQRNetworkManager_Vita.h"
 #include "..\..\Minecraft.Client\PSVita\Network\SQRNetworkManager_AdHoc_Vita.h"
+#include "..\..\Minecraft.Client\PSVita\4JLibs\inc\4J_Profile.h"
 typedef SQRNetworkManager_Vita::SessionID SessionID;
 typedef SQRNetworkManager_Vita::PresenceSyncInfo INVITE_INFO;
 
@@ -70,7 +70,7 @@ class INVITE_INFO;
 
 #endif //  __PS3__
 
-#ifndef _DURANGO
+#if !(defined _DURANGO || defined __PSVITA__)
 typedef PlayerUID *PPlayerUID;
 #endif
 typedef struct _XUIOBJ* HXUIOBJ;
@@ -215,9 +215,16 @@ public:
 	int GetUserIndex();
 	void SetCustomDataValue(ULONG_PTR ulpCustomDataValue);
 	ULONG_PTR GetCustomDataValue();
+
+    BYTE m_smallId;
+    bool m_isRemote;
+    bool m_isHostPlayer;
+    wchar_t m_gamertag[32];
 private:
 	ULONG_PTR m_customData;
 };
+
+void Win64_SetupRemoteQNetPlayer(IQNetPlayer* player, BYTE smallId, bool isHost, bool isLocal);
 
 const int QNET_GETSENDQUEUESIZE_SECONDARY_TYPE = 0;
 const int QNET_GETSENDQUEUESIZE_MESSAGES = 0;
@@ -309,9 +316,12 @@ public:
 	bool IsHost();
 	HRESULT JoinGameFromInviteInfo(DWORD dwUserIndex, DWORD dwUserMask, const INVITE_INFO *pInviteInfo);
 	void HostGame();
-	void EndGame();
+    void ClientJoinGame();
+    void EndGame();
 
-	static IQNetPlayer m_player[4];
+    static IQNetPlayer m_player[MINECRAFT_NET_MAX_PLAYERS];
+    static DWORD s_playerCount;
+    static bool s_isHosting;
 };
 
 #ifdef _DURANGO
@@ -332,6 +342,7 @@ void XSetThreadProcessor(HANDLE a, int b);
 
 const int QNET_SENDDATA_LOW_PRIORITY = 0;
 const int QNET_SENDDATA_SECONDARY = 0;
+
 #if defined(__PS3__) || defined(__ORBIS__) || defined(_DURANGO) || defined(__PSVITA__)
 #define INVALID_XUID PlayerUID()
 #else
@@ -560,7 +571,7 @@ const int XC_LANGUAGE_DUTCH               =0x10;
 const int XC_LANGUAGE_SCHINESE            =0x11;
 
 // for Sony
-const int XC_LANGUAGE_LATINAMERICANSPANISH	=0xF0;
+// const int XC_LANGUAGE_LATINAMERICANSPANISH	=0xF0; // 4J-JEV: Now differentiated via XC_LOCALE_LATIN_AMERICA
 const int XC_LANGUAGE_FINISH				=0xF1;
 const int XC_LANGUAGE_GREEK					=0xF2;
 const int XC_LANGUAGE_DANISH				=0xF3;

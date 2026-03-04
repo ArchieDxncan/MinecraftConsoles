@@ -7,6 +7,7 @@
 #include "TutorialConstraints.h"
 #include "ChoiceTask.h"
 #include "..\..\..\Minecraft.World\Material.h"
+#include "..\..\Windows64\KeyboardMouseInput.h"
 
 ChoiceTask::ChoiceTask(Tutorial *tutorial, int descriptionId, int promptId /*= -1*/, bool requiresUserInput /*= false*/,
 	int iConfirmMapping /*= 0*/, int iCancelMapping /*= 0*/,
@@ -33,7 +34,11 @@ ChoiceTask::ChoiceTask(Tutorial *tutorial, int descriptionId, int promptId /*= -
 
 bool ChoiceTask::isCompleted()
 {
-	Minecraft *pMinecraft = Minecraft::GetInstance();
+	Minecraft* pMinecraft = Minecraft::GetInstance();
+	if (!pMinecraft || !pMinecraft->player)
+		return false;
+
+	int xboxPad = pMinecraft->player->GetXboxPad();
 
 	if( m_bConfirmMappingComplete || m_bCancelMappingComplete )
 	{
@@ -49,24 +54,38 @@ bool ChoiceTask::isCompleted()
 	else
 	{
 		// If the player is under water then allow all keypresses so they can jump out
-		if( pMinecraft->localplayers[tutorial->getPad()]->isUnderLiquid(Material::water) ) return false;
-
-		if(!m_bConfirmMappingComplete && InputManager.GetValue(pMinecraft->player->GetXboxPad(), m_iConfirmMapping) > 0 )
+		if (pMinecraft->localplayers[tutorial->getPad()]->isUnderLiquid(Material::water)) return false;
+#ifdef _WINDOWS64
+		if (!m_bConfirmMappingComplete &&
+			(InputManager.GetValue(xboxPad, m_iConfirmMapping) > 0
+				|| KMInput.IsKeyDown(VK_RETURN)))
+#else
+		if (!m_bConfirmMappingComplete &&
+			InputManager.GetValue(xboxPad, m_iConfirmMapping) > 0)
+#endif
 		{
 			m_bConfirmMappingComplete = true;
 		}
-		if(!m_bCancelMappingComplete && InputManager.GetValue(pMinecraft->player->GetXboxPad(), m_iCancelMapping) > 0 )
+
+#ifdef _WINDOWS64
+		if (!m_bCancelMappingComplete &&
+			(InputManager.GetValue(xboxPad, m_iCancelMapping) > 0
+				|| KMInput.IsKeyDown('B')))
+#else
+		if (!m_bCancelMappingComplete &&
+			InputManager.GetValue(xboxPad, m_iCancelMapping) > 0)
+#endif
 		{
 			m_bCancelMappingComplete = true;
 		}
-	}
 
-	if(m_bConfirmMappingComplete || m_bCancelMappingComplete)
-	{
-		sendTelemetry();
-		enableConstraints(false, true);
+		if (m_bConfirmMappingComplete || m_bCancelMappingComplete)
+		{
+			sendTelemetry();
+			enableConstraints(false, true);
+		}
+		return m_bConfirmMappingComplete || m_bCancelMappingComplete;
 	}
-	return m_bConfirmMappingComplete || m_bCancelMappingComplete;
 }
 
 eTutorial_CompletionAction ChoiceTask::getCompletionAction()
@@ -99,11 +118,11 @@ void ChoiceTask::handleUIInput(int iAction)
 {
 	if(bHasBeenActivated && m_bShownForMinimumTime)
 	{
-		if( iAction == m_iConfirmMapping )
+		if( iAction == m_iConfirmMapping)
 		{
 			m_bConfirmMappingComplete = true;
 		}
-		else if(iAction == m_iCancelMapping )
+		else if(iAction == m_iCancelMapping)
 		{
 			m_bCancelMappingComplete = true;
 		}

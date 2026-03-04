@@ -16,6 +16,9 @@
 #include "..\Minecraft.World\net.minecraft.world.h"
 #include "..\Minecraft.World\net.minecraft.world.level.h"
 #include "..\Minecraft.World\StringHelpers.h"
+#include "ResourceLocation.h"
+#include "..\Minecraft.World\ItemEntity.h"
+#include "TextureAtlas.h"
 
 bool Textures::MIPMAP = true;
 C4JRender::eTextureFormat Textures::TEXTURE_FORMAT = C4JRender::TEXTURE_FORMAT_RxGyBzAw;
@@ -119,6 +122,44 @@ wchar_t *Textures::preLoaded[TN_COUNT] =
 	// TU 14
 	L"mob/wolf_collar",
 	L"mob/zombie_villager",
+
+	// 1.6.4
+	L"item/lead_knot",
+
+	L"misc/beacon_beam",
+
+	L"mob/bat",
+
+	L"mob/horse/donkey",
+	L"mob/horse/horse_black",
+	L"mob/horse/horse_brown",
+	L"mob/horse/horse_chestnut",
+	L"mob/horse/horse_creamy",
+	L"mob/horse/horse_darkbrown",
+	L"mob/horse/horse_gray",
+	L"mob/horse/horse_markings_blackdots",
+	L"mob/horse/horse_markings_white",
+	L"mob/horse/horse_markings_whitedots",
+	L"mob/horse/horse_markings_whitefield",
+	L"mob/horse/horse_skeleton",
+	L"mob/horse/horse_white",
+	L"mob/horse/horse_zombie",
+	L"mob/horse/mule",
+	
+	L"mob/horse/armor/horse_armor_diamond",
+	L"mob/horse/armor/horse_armor_gold",
+	L"mob/horse/armor/horse_armor_iron",
+
+	L"mob/witch",
+
+	L"mob/wither/wither",
+	L"mob/wither/wither_armor",
+	L"mob/wither/wither_invulnerable",
+
+	L"item/trapped",
+	L"item/trapped_double",
+	//L"item/christmas",
+	//L"item/christmas_double",
 
 #ifdef _LARGE_WORLDS
 	L"misc/additionalmapicons",
@@ -367,9 +408,125 @@ void Textures::bindTexture(const wstring &resourceName)
 }
 
 // 4J Added
-void Textures::bindTexture(int resourceId)
+void Textures::bindTexture(ResourceLocation *resource)
 {
-	bind(loadTexture(resourceId));
+	if(resource->isPreloaded())
+	{
+		bind(loadTexture(resource->getTexture()));
+	}
+	else
+	{
+		bind(loadTexture(TN_COUNT, resource->getPath()));
+	}
+}
+
+void Textures::bindTextureLayers(ResourceLocation *resource)
+{
+	assert(resource->isPreloaded());
+
+	// Hack: 4JLibs on Windows does not currently reproduce Minecraft's layered horse texture path reliably.
+	// Merge the layers on the CPU and bind the cached result as a normal single texture instead.
+	wstring cacheKey = L"%layered%";
+	int layers = resource->getTextureCount();
+	for( int i = 0; i < layers; i++ )
+	{
+		cacheKey += std::to_wstring(resource->getTexture(i));
+		cacheKey += L"/";
+	}
+
+	int id = -1;
+	bool inMap = ( idMap.find(cacheKey) != idMap.end() );
+	if( inMap )
+	{
+		id = idMap[cacheKey];
+	}
+	else
+	{
+		// Cache by layer signature so the merge cost is only paid once per horse texture combination.
+		intArray mergedPixels;
+		int mergedWidth = 0;
+		int mergedHeight = 0;
+		bool hasMergedPixels = false;
+
+		for( int i = 0; i < layers; i++ )
+		{
+			TEXTURE_NAME textureName = resource->getTexture(i);
+			if( textureName == (_TEXTURE_NAME)-1 )
+			{
+				continue;
+			}
+
+			wstring resourceName = wstring(preLoaded[textureName]) + L".png";
+			BufferedImage *image = readImage(textureName, resourceName);
+			if( image == NULL )
+			{
+				continue;
+			}
+
+			int width = image->getWidth();
+			int height = image->getHeight();
+			intArray layerPixels = loadTexturePixels(image);
+			delete image;
+
+			if( !hasMergedPixels )
+			{
+				mergedWidth = width;
+				mergedHeight = height;
+				mergedPixels = intArray(width * height);
+				memcpy(mergedPixels.data, layerPixels.data, width * height * sizeof(int));
+				hasMergedPixels = true;
+			}
+			else if( width == mergedWidth && height == mergedHeight )
+			{
+				for( int p = 0; p < width * height; p++ )
+				{
+					int dst = mergedPixels[p];
+					int src = layerPixels[p];
+
+					float srcAlpha = ((src >> 24) & 0xff) / 255.0f;
+					if( srcAlpha <= 0.0f )
+					{
+						continue;
+					}
+
+					float dstAlpha = ((dst >> 24) & 0xff) / 255.0f;
+					float outAlpha = srcAlpha + dstAlpha * (1.0f - srcAlpha);
+					if( outAlpha <= 0.0f )
+					{
+						mergedPixels[p] = 0;
+						continue;
+					}
+
+					float srcFactor = srcAlpha / outAlpha;
+					float dstFactor = (dstAlpha * (1.0f - srcAlpha)) / outAlpha;
+
+					int outA = (int)(outAlpha * 255.0f + 0.5f);
+					int outR = (int)((((src >> 16) & 0xff) * srcFactor) + (((dst >> 16) & 0xff) * dstFactor) + 0.5f);
+					int outG = (int)((((src >> 8) & 0xff) * srcFactor) + (((dst >> 8) & 0xff) * dstFactor) + 0.5f);
+					int outB = (int)(((src & 0xff) * srcFactor) + ((dst & 0xff) * dstFactor) + 0.5f);
+					mergedPixels[p] = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+				}
+			}
+
+			delete[] layerPixels.data;
+		}
+
+		if( hasMergedPixels )
+		{
+			BufferedImage *mergedImage = new BufferedImage(mergedWidth, mergedHeight, BufferedImage::TYPE_INT_ARGB);
+			memcpy(mergedImage->getData(), mergedPixels.data, mergedWidth * mergedHeight * sizeof(int));
+			delete[] mergedPixels.data;
+			id = getTexture(mergedImage, C4JRender::TEXTURE_FORMAT_RxGyBzAw, false);
+		}
+		else
+		{
+			id = 0;
+		}
+
+		idMap[cacheKey] = id;
+	}
+
+	RenderManager.TextureBind(id);
 }
 
 void Textures::bind(int id)
@@ -379,6 +536,26 @@ void Textures::bind(int id)
 		if(id < 0) return;
 		glBindTexture(GL_TEXTURE_2D, id);
 	//	lastBoundId = id;
+	}
+}
+
+ResourceLocation *Textures::getTextureLocation(shared_ptr<Entity> entity)
+{
+	shared_ptr<ItemEntity> item = dynamic_pointer_cast<ItemEntity>(entity);
+	int iconType = item->getItem()->getIconType();
+	return getTextureLocation(iconType);
+}
+
+ResourceLocation *Textures::getTextureLocation(int iconType)
+{
+	switch(iconType)
+	{
+	case Icon::TYPE_TERRAIN:
+		return &TextureAtlas::LOCATION_BLOCKS;
+		break;
+	case Icon::TYPE_ITEM:
+		return &TextureAtlas::LOCATION_ITEMS;
+		break;
 	}
 }
 
@@ -1300,6 +1477,42 @@ TEXTURE_NAME TUImages[] =
 	TN_PARTICLES,
 	TN_MOB_ZOMBIE_VILLAGER,
 
+	TN_ITEM_LEASHKNOT,
+
+	TN_MISC_BEACON_BEAM,
+
+	TN_MOB_BAT,
+
+	TN_MOB_DONKEY,
+	TN_MOB_HORSE_BLACK,
+	TN_MOB_HORSE_BROWN,
+	TN_MOB_HORSE_CHESTNUT,
+	TN_MOB_HORSE_CREAMY,
+	TN_MOB_HORSE_DARKBROWN,
+	TN_MOB_HORSE_GRAY,
+	TN_MOB_HORSE_MARKINGS_BLACKDOTS,
+	TN_MOB_HORSE_MARKINGS_WHITE,
+	TN_MOB_HORSE_MARKINGS_WHITEDOTS,
+	TN_MOB_HORSE_MARKINGS_WHITEFIELD,
+	TN_MOB_HORSE_SKELETON,
+	TN_MOB_HORSE_WHITE,
+	TN_MOB_HORSE_ZOMBIE,
+	TN_MOB_MULE,
+	TN_MOB_HORSE_ARMOR_DIAMOND,
+	TN_MOB_HORSE_ARMOR_GOLD,
+	TN_MOB_HORSE_ARMOR_IRON,
+
+	TN_MOB_WITCH,
+
+	TN_MOB_WITHER,
+	TN_MOB_WITHER_ARMOR,
+	TN_MOB_WITHER_INVULNERABLE,
+
+	TN_TILE_TRAP_CHEST,
+	TN_TILE_LARGE_TRAP_CHEST,
+	//TN_TILE_XMAS_CHEST,	
+	//TN_TILE_LARGE_XMAS_CHEST,
+
 #ifdef _LARGE_WORLDS
 	TN_MISC_ADDITIONALMAPICONS,
 #endif
@@ -1323,6 +1536,8 @@ wchar_t *TUImagePaths[] =
 	L"armor/cloth_1_b.png",
 	L"armor/cloth_2.png",
 	L"armor/cloth_2_b.png",
+
+	//
 
 	NULL
 };

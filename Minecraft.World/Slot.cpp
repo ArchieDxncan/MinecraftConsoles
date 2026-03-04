@@ -91,7 +91,7 @@ void Slot::setChanged()
 	container->setChanged();
 }
 
-int Slot::getMaxStackSize()
+int Slot::getMaxStackSize() const
 {
 	return container->getMaxStackSize();
 }
@@ -112,6 +112,11 @@ bool Slot::isAt(shared_ptr<Container> c, int s)
 }
 
 bool Slot::mayPickup(shared_ptr<Player> player)
+{
+	return true;
+}
+
+bool Slot::isActive()
 {
 	return true;
 }

@@ -90,12 +90,22 @@ void MerchantContainer::setItem(unsigned int slot, shared_ptr<ItemInstance> item
 	}
 }
 
-int MerchantContainer::getName()
+wstring MerchantContainer::getName()
 {
 	return merchant->getDisplayName();
 }
 
-int MerchantContainer::getMaxStackSize()
+wstring MerchantContainer::getCustomName()
+{
+	return L"";
+}
+
+bool MerchantContainer::hasCustomName()
+{
+	return false;
+}
+
+int MerchantContainer::getMaxStackSize() const
 {
 	return Container::LARGE_MAX_STACK_SIZE;
 }
@@ -111,6 +121,11 @@ void MerchantContainer::startOpen()
 
 void MerchantContainer::stopOpen()
 {
+}
+
+bool MerchantContainer::canPlaceItem(int slot, shared_ptr<ItemInstance> item)
+{
+	return true;
 }
 
 void MerchantContainer::setChanged()

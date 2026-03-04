@@ -31,11 +31,12 @@ public:
 	virtual bool hasItem();
 	virtual void set(shared_ptr<ItemInstance> item);
 	virtual void setChanged();
-	virtual int getMaxStackSize();
+	virtual int getMaxStackSize() const;
 	virtual Icon *getNoItemIcon();
 	virtual shared_ptr<ItemInstance> remove(int c);
 	virtual bool isAt(shared_ptr<Container> c, int s);
 	virtual bool mayPickup(shared_ptr<Player> player);
+	virtual bool isActive();
 	virtual bool mayCombine(shared_ptr<ItemInstance> item); // 4J Added
 	virtual shared_ptr<ItemInstance> combine(shared_ptr<ItemInstance> item); // 4J Added
 };

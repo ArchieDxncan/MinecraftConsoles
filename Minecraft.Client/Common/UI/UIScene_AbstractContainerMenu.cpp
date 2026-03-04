@@ -30,6 +30,14 @@ UIScene_AbstractContainerMenu::UIScene_AbstractContainerMenu(int iPad, UILayer *
 	m_bIgnoreInput=false;
 #ifdef _WINDOWS64
 	m_bMouseDragSlider=false;
+	m_bHasMousePosition = false;
+	m_lastMouseX = 0;
+	m_lastMouseY = 0;
+
+	for (int btn = 0; btn < 3; btn++)
+	{
+		KMInput.ConsumeMousePress(btn);
+	}
 #endif
 }
 
@@ -50,7 +58,10 @@ void UIScene_AbstractContainerMenu::handleDestroy()
 
 	// 4J Stu - Fix for #11302 - TCR 001: Network Connectivity: Host crashed after being killed by the client while accessing a chest during burst packet loss.
 	// We need to make sure that we call closeContainer() anytime this menu is closed, even if it is forced to close by some other reason (like the player dying)	
-	if(pMinecraft->localplayers[m_iPad] != NULL) pMinecraft->localplayers[m_iPad]->closeContainer();
+	if(pMinecraft->localplayers[m_iPad] != NULL && pMinecraft->localplayers[m_iPad]->containerMenu->containerId == m_menu->containerId)
+	{
+		pMinecraft->localplayers[m_iPad]->closeContainer();
+	}
 
 	ui.OverrideSFX(m_iPad,ACTION_MENU_A,false);
 	ui.OverrideSFX(m_iPad,ACTION_MENU_OK,false);
@@ -181,7 +192,9 @@ void UIScene_AbstractContainerMenu::tick()
 
 #ifdef _WINDOWS64
 	bool mouseActive = (m_iPad == 0 && !KMInput.IsCaptured());
+	bool drivePointerFromMouse = false;
 	float rawMouseMovieX = 0, rawMouseMovieY = 0;
+	int scrollDelta = 0;
 	// Map Windows mouse position to the virtual pointer in movie coordinates
 	if (mouseActive)
 	{
@@ -193,15 +206,30 @@ void UIScene_AbstractContainerMenu::tick()
 		{
 			int mouseX = KMInput.GetMouseX();
 			int mouseY = KMInput.GetMouseY();
+			bool mouseMoved = !m_bHasMousePosition || mouseX != m_lastMouseX || mouseY != m_lastMouseY;
+
+			m_bHasMousePosition = true;
+			m_lastMouseX = mouseX;
+			m_lastMouseY = mouseY;
+			scrollDelta = KMInput.ConsumeScrollDelta();
 
 			// Convert mouse position to movie coordinates using the movie/client ratio
-			float mx = (float)mouseX * ((float)m_movieWidth / (float)clientWidth);
-			float my = (float)mouseY * ((float)m_movieHeight / (float)clientHeight);
+			float mx = (float)mouseX * ((float)m_movieWidth / (float)clientWidth) - (float)m_controlMainPanel.getXPos();
+			float my = (float)mouseY * ((float)m_movieHeight / (float)clientHeight) - (float)m_controlMainPanel.getYPos();
 
-			m_pointerPos.x = mx;
-			m_pointerPos.y = my;
 			rawMouseMovieX = mx;
 			rawMouseMovieY = my;
+
+			// Once the mouse has taken over the container cursor, keep following the OS cursor
+			// until explicit controller input takes ownership back.
+			drivePointerFromMouse = m_bPointerDrivenByMouse || mouseMoved || KMInput.IsMouseDown(0) || KMInput.IsMouseDown(1) || KMInput.IsMouseDown(2) || scrollDelta != 0;
+			if (drivePointerFromMouse)
+			{
+				m_bPointerDrivenByMouse = true;
+				m_eCurrTapState = eTapStateNoInput;
+				m_pointerPos.x = mx;
+				m_pointerPos.y = my;
+			}
 		}
 	}
 #endif
@@ -248,7 +276,6 @@ void UIScene_AbstractContainerMenu::tick()
 		}
 
 		// Mouse scroll wheel for page scrolling
-		int scrollDelta = KMInput.ConsumeScrollDelta();
 		if (scrollDelta > 0)
 		{
 			handleKeyDown(m_iPad, ACTION_MENU_OTHER_STICK_UP, false);
@@ -273,14 +300,19 @@ void UIScene_AbstractContainerMenu::tick()
 
 #ifdef _WINDOWS64
 	S32 x, y;
-	if (mouseActive)
+	if (mouseActive && m_bPointerDrivenByMouse)
 	{
 		// Send raw mouse position directly as Iggy event to avoid coordinate round-trip errors
 		// Scale mouse client coords to the Iggy display space (which was set to getRenderDimensions())
 		RECT clientRect;
 		GetClientRect(KMInput.GetHWnd(), &clientRect);
-		x = (S32)((float)KMInput.GetMouseX() * ((float)width / (float)clientRect.right));
-		y = (S32)((float)KMInput.GetMouseY() * ((float)height / (float)clientRect.bottom));
+		float mouseMovieX = (float)KMInput.GetMouseX() * ((float)m_movieWidth / (float)clientRect.right);
+		float mouseMovieY = (float)KMInput.GetMouseY() * ((float)m_movieHeight / (float)clientRect.bottom);
+		float mouseLocalX = mouseMovieX - (float)m_controlMainPanel.getXPos();
+		float mouseLocalY = mouseMovieY - (float)m_controlMainPanel.getYPos();
+
+		x = (S32)(mouseLocalX * ((float)width / m_movieWidth));
+		y = (S32)(mouseLocalY * ((float)height / m_movieHeight));
 	}
 	else
 	{
@@ -311,7 +343,7 @@ void UIScene_AbstractContainerMenu::render(S32 width, S32 height, C4JRender::eVi
 
 	if(m_needsCacheRendered)
 	{
-		m_expectedCachedSlotCount = 0;
+		m_expectedCachedSlotCount = GetBaseSlotCount();
 		unsigned int count = m_menu->getSize();
 		for(unsigned int i = 0; i < count; ++i)
 		{
@@ -333,6 +365,7 @@ void UIScene_AbstractContainerMenu::customDraw(IggyCustomDrawCallbackRegion *reg
 	if(pMinecraft->localplayers[m_iPad] == NULL || pMinecraft->localgameModes[m_iPad] == NULL) return;
 
 	shared_ptr<ItemInstance> item = nullptr;
+	int slotId = -1;
 	if(wcscmp((wchar_t *)region->name,L"pointerIcon")==0)
 	{		
 		m_cacheSlotRenders = false;
@@ -340,7 +373,6 @@ void UIScene_AbstractContainerMenu::customDraw(IggyCustomDrawCallbackRegion *reg
 	}
 	else
 	{
-		int slotId = -1;
 		swscanf((wchar_t*)region->name,L"slot_%d",&slotId);
 		if (slotId == -1)
 		{
@@ -354,7 +386,7 @@ void UIScene_AbstractContainerMenu::customDraw(IggyCustomDrawCallbackRegion *reg
 		}
 	}
 
-	if(item != NULL) customDrawSlotControl(region,m_iPad,item,1.0f,item->isFoil(),true);
+	if(item != NULL) customDrawSlotControl(region,m_iPad,item,m_menu->isValidIngredient(item, slotId)?1.0f:0.5f,item->isFoil(),true);
 }
 
 void UIScene_AbstractContainerMenu::handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled)
@@ -366,25 +398,29 @@ void UIScene_AbstractContainerMenu::handleInput(int iPad, int key, bool repeat, 
 
 	if(pressed)
 	{
+		m_bPointerDrivenByMouse = false;
 		handled = handleKeyDown(m_iPad, key, repeat);
 	}
 }
 
-void UIScene_AbstractContainerMenu::SetPointerText(const wstring &description, vector<wstring> &unformattedStrings, bool newSlot)
+void UIScene_AbstractContainerMenu::SetPointerText(vector<HtmlString> *description, bool newSlot)
 {
-	//app.DebugPrintf("Setting pointer text\n");
-	m_cursorPath.setLabel(description,false,newSlot);
+	m_cursorPath.setLabel(HtmlString::Compose(description), false, newSlot);
 }
 
 void UIScene_AbstractContainerMenu::setSectionFocus(ESceneSection eSection, int iPad)
 {
+	UIControl *newFocus = getSection(eSection);
+	if(newFocus) newFocus->setFocus(true);
+
 	if(m_focusSection != eSectionNone)
 	{
 		UIControl *currentFocus = getSection(m_focusSection);
-		if(currentFocus) currentFocus->setFocus(false);
+		// 4J-TomK only set current focus to false if it differs from last (previously this continuously fired iggy functions when they were identical!
+		if(currentFocus != newFocus)
+			if(currentFocus) currentFocus->setFocus(false);
 	}
-	UIControl *newFocus = getSection(eSection);
-	if(newFocus) newFocus->setFocus(true);
+
 	m_focusSection = eSection;
 }
 
@@ -403,6 +439,13 @@ shared_ptr<ItemInstance> UIScene_AbstractContainerMenu::getSlotItem(ESceneSectio
 	Slot *slot = m_menu->getSlot( getSectionStartOffset(eSection) + iSlot );
 	if(slot) return slot->getItem();
 	else return nullptr;
+}
+
+Slot *UIScene_AbstractContainerMenu::getSlot(ESceneSection eSection, int iSlot)
+{
+	Slot *slot = m_menu->getSlot( getSectionStartOffset(eSection) + iSlot );
+	if(slot) return slot;
+	else return NULL;
 }
 
 bool UIScene_AbstractContainerMenu::isSlotEmpty(ESceneSection eSection, int iSlot)

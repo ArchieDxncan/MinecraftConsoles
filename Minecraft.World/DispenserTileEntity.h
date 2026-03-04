@@ -18,11 +18,14 @@ public:
 	static TileEntity *create() { return new DispenserTileEntity(); }
 
 
-using TileEntity::setChanged;
+	using TileEntity::setChanged;
 
 private:
-	ItemInstanceArray *items;
+	ItemInstanceArray items;
 	Random *random;
+
+protected:
+	wstring name;
 
 public:
 	DispenserTileEntity();
@@ -31,22 +34,26 @@ public:
 	virtual unsigned int getContainerSize();
 	virtual shared_ptr<ItemInstance> getItem(unsigned int slot);
 	virtual shared_ptr<ItemInstance> removeItem(unsigned int slot, int count);
-	shared_ptr<ItemInstance> removeItemNoUpdate(int slot);
-	bool removeProjectile(int itemId);
-	int getRandomSlot();
+	virtual shared_ptr<ItemInstance> removeItemNoUpdate(int slot);
+	virtual bool removeProjectile(int itemId);
+	virtual int getRandomSlot();
 	virtual void setItem(unsigned int slot, shared_ptr<ItemInstance> item);
 	virtual int addItem(shared_ptr<ItemInstance> item);
-	virtual int getName();
+	virtual wstring getName();
+	virtual wstring getCustomName();
+	virtual void setCustomName(const wstring &name);
+	virtual bool hasCustomName();
 	virtual void load(CompoundTag *base);
 	virtual void save(CompoundTag *base);
-	virtual int getMaxStackSize();
+	virtual int getMaxStackSize() const;
 	virtual bool stillValid(shared_ptr<Player> player);
 	virtual void setChanged();
 
-    void startOpen();
-    void stopOpen();
+	virtual void startOpen();
+	virtual void stopOpen();
+	virtual bool canPlaceItem(int slot, shared_ptr<ItemInstance> item);
 
 	// 4J Added
 	virtual shared_ptr<TileEntity> clone();
-	void AddItemBack(shared_ptr<ItemInstance>item, unsigned int slot); 
+	void AddItemBack(shared_ptr<ItemInstance>item, unsigned int slot);
 };

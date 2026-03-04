@@ -490,6 +490,12 @@ void SoundEngine::updateMiles()
 						case eSoundType_MOB_ENDERDRAGON_HIT:
 							distanceScaler=100.0f;
 							break;
+						case eSoundType_FIREWORKS_BLAST:
+						case eSoundType_FIREWORKS_BLAST_FAR:
+						case eSoundType_FIREWORKS_LARGE_BLAST:
+						case eSoundType_FIREWORKS_LARGE_BLAST_FAR:
+							distanceScaler=100.0f;
+							break;
 						case eSoundType_MOB_GHAST_MOAN:
 						case eSoundType_MOB_GHAST_SCREAM:
 						case eSoundType_MOB_GHAST_DEATH:
@@ -624,6 +630,7 @@ static S32 running = AIL_ms_count();
 
 void SoundEngine::tick(shared_ptr<Mob> *players, float a)
 {
+	ConsoleSoundEngine::tick();
 #ifdef __DISABLE_MILES__
 	return;
 #endif
@@ -1129,6 +1136,11 @@ int SoundEngine::OpenStreamThreadProc( void* lpParameter )
 #endif
 	SoundEngine *soundEngine = (SoundEngine *)lpParameter;
 	soundEngine->m_hStream = AIL_open_stream(soundEngine->m_hDriver,soundEngine->m_szStreamName,0);
+
+	if(soundEngine->m_hStream==0)
+	{
+		app.DebugPrintf("SoundEngine::OpenStreamThreadProc - Could not open - %s\n",soundEngine->m_szStreamName);
+	}
 	return 0;
 }
 
@@ -1225,7 +1237,11 @@ void SoundEngine::playMusicUpdate()
 					char szName[255];
 					wcstombs(szName,wstrSoundName.c_str(),255);
 
+#if defined __PS3__ || defined __ORBIS__ || defined __PSVITA__
+					string strFile="TPACK:/Data/" + string(szName) + ".binka";
+#else
 					string strFile="TPACK:\\Data\\" + string(szName) + ".binka";
+#endif
 					std::string mountedPath = StorageManager.GetMountedPath(strFile);
 					strcpy(m_szStreamName,mountedPath.c_str());
 #endif
@@ -1318,6 +1334,38 @@ void SoundEngine::playMusicUpdate()
 			// 			char *SoundName = (char *)ConvertSoundPathToName(name);
 			// 			strcat((char *)szStreamName,SoundName);
 
+			const bool isCD = (m_musicID >= m_iStream_CD_1);
+			const char* folder = isCD ? "cds/" : "music/";
+
+			FILE* pFile = nullptr;
+			if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
+			{
+				fclose(pFile);
+			}
+			else
+			{
+				const char* extensions[] = { ".wav" }; // only wav works outside of binka files to my knowledge, i've only tested ogg, wav, mp3 and only wav worked out of the bunch
+				size_t count = sizeof(extensions) / sizeof(extensions[0]);
+				bool found = false;
+
+				for (size_t i = 0; i < count; i++)
+				{
+					int n = sprintf_s(reinterpret_cast<char*>(m_szStreamName), 512, "%s%s%s%s", m_szMusicPath, folder, m_szStreamFileA[m_musicID], extensions[i]);
+					if (n < 0) continue;
+
+					if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
+					{
+						fclose(pFile);
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					return;
+				}
+			}
 
 			app.DebugPrintf("Starting streaming - %s\n",m_szStreamName);
 

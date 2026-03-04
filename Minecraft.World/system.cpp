@@ -52,7 +52,22 @@ void System::arraycopy(arrayWithLength<int> src, unsigned int srcPos, arrayWithL
 //The current value of the system timer, in nanoseconds.
 __int64 System::nanoTime()
 {
+#if defined _WINDOWS64 || defined _XBOX || defined _WIN32
+	static LARGE_INTEGER s_frequency = { 0 };
+	if (s_frequency.QuadPart == 0)
+	{
+		QueryPerformanceFrequency(&s_frequency);
+	}
+
+	LARGE_INTEGER counter;
+	QueryPerformanceCounter(&counter);
+
+	// Using double to avoid 64-bit overflow during multiplication for long uptime
+	// Precision is sufficient for ~100 days of uptime.
+	return (__int64)((double)counter.QuadPart * 1000000000.0 / (double)s_frequency.QuadPart);
+#else
 	return GetTickCount() * 1000000LL;
+#endif
 }
 
 //Returns the current time in milliseconds. Note that while the unit of time of the return value is a millisecond,
@@ -109,10 +124,9 @@ __int64 System::currentTimeMillis()
 __int64 System::currentRealTimeMillis()
 {
 #ifdef __PSVITA__
-	SceDateTime Time;
-	sceRtcGetCurrentClockLocalTime(&Time);
-	__int64 systTime = (((((((Time.day * 24) + Time.hour) * 60) + Time.minute) * 60) + Time.second) * 1000) + (Time.microsecond / 1000);
-	return systTime;
+	SceFiosDate fileTime = sceFiosDateGetCurrent();
+
+	return fileTime/1000000;
 #else
 	return currentTimeMillis();
 #endif

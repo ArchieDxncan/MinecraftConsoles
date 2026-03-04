@@ -47,7 +47,7 @@ void Input::tick(LocalPlayer *player)
 
 #ifdef _WINDOWS64
 	// WASD movement (combine with gamepad)
-	if (iPad == 0)
+	if (iPad == 0 && KMInput.IsCaptured())
 	{
 		float kbX = 0.0f, kbY = 0.0f;
 		if (KMInput.IsKeyDown('W')) { kbY += 1.0f; sprintForward += 1.0f; usingKeyboardMovement = true; }
@@ -83,8 +83,8 @@ void Input::tick(LocalPlayer *player)
 		sprintForward = 0.0f;
     }
 
-	// 4J - in flying mode, don't actually toggle sneaking
-	if(!player->abilities.flying)
+	// 4J: In flying mode, don't actually toggle sneaking (unless we're riding in which case we need to sneak to dismount)
+	if(!player->abilities.flying || player->riding != NULL)
 	{
 		if((player->ullButtonsPressed&(1LL<<MINECRAFT_ACTION_SNEAK_TOGGLE)) && pMinecraft->localgameModes[iPad]->isInputAllowed(MINECRAFT_ACTION_SNEAK_TOGGLE))
 		{
@@ -95,7 +95,7 @@ void Input::tick(LocalPlayer *player)
 
 #ifdef _WINDOWS64
 	// Keyboard hold-to-sneak (overrides gamepad toggle)
-	if (iPad == 0 && KMInput.IsKeyDown(VK_SHIFT) && !player->abilities.flying)
+	if (iPad == 0 && KMInput.IsCaptured() && KMInput.IsKeyDown(VK_SHIFT) && !player->abilities.flying)
 		sneaking = true;
 #endif
 
@@ -145,7 +145,7 @@ void Input::tick(LocalPlayer *player)
 		// Delta should normally be 0 since applyFrameMouseLook() already consumed it
 		if (rawDx != 0.0f || rawDy != 0.0f)
 		{
-			float mouseSensitivity = 0.5f;
+			float mouseSensitivity = ((float)app.GetGameSettings(iPad, eGameSetting_Sensitivity_InGame)) / 100.0f;
 			float mdx = rawDx * mouseSensitivity;
 			float mdy = -rawDy * mouseSensitivity;
 			if (app.GetGameSettings(iPad, eGameSetting_ControlInvertLook))
@@ -166,7 +166,7 @@ void Input::tick(LocalPlayer *player)
 
 #ifdef _WINDOWS64
 	// Keyboard jump (Space)
-	if (iPad == 0 && KMInput.IsKeyDown(VK_SPACE) && pMinecraft->localgameModes[iPad]->isInputAllowed(MINECRAFT_ACTION_JUMP))
+	if (iPad == 0 && KMInput.IsCaptured() && KMInput.IsKeyDown(VK_SPACE) && pMinecraft->localgameModes[iPad]->isInputAllowed(MINECRAFT_ACTION_JUMP))
 		jumping = true;
 #endif
 
