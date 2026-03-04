@@ -38,12 +38,12 @@ This feature is based on [LCEMP](https://github.com/LCEMP/LCEMP/)
 
 ### Launch Arguments
 
-| Argument           | Description                                                                                                    |
-|--------------------|----------------------------------------------------------------------------------------------------------------|
-| `-name <username>` | Sets your in-game username                                                                                     |
-| `-server`          | Launches a headless server instead of the client                                                               |
-| `-ip <address>`    | Client mode: manually connect to an IP. Server mode: override the bind IP from `server.properties`            |
-| `-port <port>`     | Client mode: override the join port. Server mode: override the listen port from `server.properties`           |
+| Argument           | Description                                                                                         |
+|--------------------|-----------------------------------------------------------------------------------------------------|
+| `-name <username>` | Sets your in-game username                                                                          |
+| `-server`          | Launches a headless server instead of the client                                                    |
+| `-ip <address>`    | Client mode: manually connect to an IP. Server mode: override the bind IP from `server.properties`  |
+| `-port <port>`     | Client mode: override the join port. Server mode: override the listen port from `server.properties` |
 
 Example:
 ```
