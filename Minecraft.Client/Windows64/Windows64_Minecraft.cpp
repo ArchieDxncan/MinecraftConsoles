@@ -766,33 +766,44 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			//g_iScreenHeight = 544;
 		}
 
-		// Default username will be "Windows"
-		strncpy_s(g_Win64Username, sizeof(g_Win64Username), "Windows", _TRUNCATE);
+		char cmdLineA[1024];
+		strncpy_s(cmdLineA, sizeof(cmdLineA), lpCmdLine, _TRUNCATE);
 
-		char exePath[MAX_PATH] = {};
-		GetModuleFileNameA(NULL, exePath, MAX_PATH);
-		char* lastSlash = strrchr(exePath, '\\');
-		if (lastSlash) *(lastSlash + 1) = '\0';
-
-		char filePath[MAX_PATH] = {};
-		_snprintf_s(filePath, sizeof(filePath), _TRUNCATE, "%susername.txt", exePath);
-
-		FILE* f = nullptr;
-		if (fopen_s(&f, filePath, "r") == 0 && f)
+		char *nameArg = strstr(cmdLineA, "-name ");
+		if (nameArg)
 		{
-			char buf[128] = {};
-			if (fgets(buf, sizeof(buf), f))
-			{
-				int len = (int)strlen(buf);
-				while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r' || buf[len - 1] == ' '))
-					buf[--len] = '\0';
+			nameArg += 6;
+			while (*nameArg == ' ') nameArg++;
+			char nameBuf[17];
+			int n = 0;
+			while (nameArg[n] && nameArg[n] != ' ' && n < 16) { nameBuf[n] = nameArg[n]; n++; }
+			nameBuf[n] = 0;
+			strncpy_s(g_Win64Username, 17, nameBuf, _TRUNCATE);
+		}
 
-				if (len > 0)
-				{
-					strncpy_s(g_Win64Username, sizeof(g_Win64Username), buf, _TRUNCATE);
-				}
-			}
-			fclose(f);
+		char *ipArg = strstr(cmdLineA, "-ip ");
+		if (ipArg)
+		{
+			ipArg += 4;
+			while (*ipArg == ' ') ipArg++;
+			char ipBuf[256];
+			int n = 0;
+			while (ipArg[n] && ipArg[n] != ' ' && n < 255) { ipBuf[n] = ipArg[n]; n++; }
+			ipBuf[n] = 0;
+			strncpy_s(g_Win64MultiplayerIP, 256, ipBuf, _TRUNCATE);
+			g_Win64MultiplayerJoin = true;
+		}
+
+		char *portArg = strstr(cmdLineA, "-port ");
+		if (portArg)
+		{
+			portArg += 6;
+			while (*portArg == ' ') portArg++;
+			char portBuf[16];
+			int n = 0;
+			while (portArg[n] && portArg[n] != ' ' && n < 15) { portBuf[n] = portArg[n]; n++; }
+			portBuf[n] = 0;
+			g_Win64MultiplayerPort = atoi(portBuf);
 		}
 	}
 
