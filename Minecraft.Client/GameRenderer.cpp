@@ -186,7 +186,7 @@ GameRenderer::~GameRenderer()
 }
 
 void GameRenderer::tick(bool first)		// 4J - add bFirst
-{ 
+{
 	tickFov();
 	tickLightTexture();		// 4J - change brought forward from 1.8.2
 	fogBrO = fogBr;
@@ -308,11 +308,9 @@ void GameRenderer::pick(float a)
 	vector<shared_ptr<Entity> > *objects = mc->level->getEntities(mc->cameraTargetPlayer, mc->cameraTargetPlayer->bb->expand(b->x * (range), b->y * (range), b->z * (range))->grow(overlap, overlap, overlap));
 	double nearest = dist;
 
-	AUTO_VAR(itEnd, objects->end());
-	for (AUTO_VAR(it, objects->begin()); it != itEnd; it++)
-	{
-		shared_ptr<Entity> e = *it; //objects->at(i);
-		if (!e->isPickable()) continue;
+    for (auto& e : *objects )
+    {
+		if ( e == nullptr || !e->isPickable() ) continue;
 
 		float rr = e->getPickRadius();
 		AABB *bb = e->bb->grow(rr, rr, rr);
@@ -325,7 +323,7 @@ void GameRenderer::pick(float a)
 				nearest = 0;
 			}
 		}
-		else if (p != NULL)
+		else if (p != nullptr)
 		{
 			double dd = from->distanceTo(p->pos);
 			if (e == mc->cameraTargetPlayer->riding != NULL)
@@ -335,7 +333,7 @@ void GameRenderer::pick(float a)
 					hovered = e;
 				}
 			}
-			else 
+			else
 			{
 				hovered = e;
 				nearest = dd;
@@ -595,7 +593,7 @@ void GameRenderer::unZoomRegion()
 void GameRenderer::getFovAndAspect(float& fov, float& aspect, float a, bool applyEffects)
 {
 	// 4J - split out aspect ratio and fov here so we can adjust for viewports - we might need to revisit these as
-	// they are maybe be too generous for performance. 
+	// they are maybe be too generous for performance.
 	aspect = mc->width / (float) mc->height;
 	fov = getFov(a, applyEffects);
 
@@ -735,14 +733,14 @@ void GameRenderer::renderItemInHand(float a, int eye)
 	bool bNoLegAnim =(localplayer->getAnimOverrideBitmask()&( (1<<HumanoidModel::eAnim_NoLegAnim) | (1<<HumanoidModel::eAnim_NoBobbing) ))!=0;
 	if(app.GetGameSettings(localplayer->GetXboxPad(),eGameSetting_ViewBob) && !localplayer->abilities.flying && !bNoLegAnim) bobView(a);
 
-	// 4J: Skip hand rendering if render hand is off 
+	// 4J: Skip hand rendering if render hand is off
 	if (renderHand)
 	{
 		// 4J-PB - changing this to be per player
 		//if (!mc->options->thirdPersonView && !mc->cameraTargetPlayer->isSleeping())
 		if (!localplayer->ThirdPersonView() && !mc->cameraTargetPlayer->isSleeping())
 		{
-			if (!mc->options->hideGui && !mc->gameMode->isCutScene()) 
+			if (!mc->options->hideGui && !mc->gameMode->isCutScene())
 			{
 				turnOnLightLayer(a);
 				PIXBeginNamedEvent(0,"Item in hand render");
@@ -770,7 +768,7 @@ void GameRenderer::renderItemInHand(float a, int eye)
 // 4J - change brought forward from 1.8.2
 void GameRenderer::turnOffLightLayer(double alpha)
 {	// 4J - TODO
-#if 0	
+#if 0
 	if (SharedConstants::TEXTURE_LIGHTING)
 	{
 		glClientActiveTexture(GL_TEXTURE1);
@@ -1111,7 +1109,7 @@ int GameRenderer::runUpdate(LPVOID lpParam)
 	Vec3::CreateNewThreadStorage();
 	AABB::CreateNewThreadStorage();
 	IntCache::CreateNewThreadStorage();
-	Tesselator::CreateNewThreadStorage(1024*1024);	
+	Tesselator::CreateNewThreadStorage(1024*1024);
 	Compression::UseDefaultThreadStorage();
 	RenderManager.InitialiseContext();
 #ifdef _LARGE_WORLDS
@@ -1185,7 +1183,7 @@ int GameRenderer::runUpdate(LPVOID lpParam)
 
 		AABB::resetPool();
 		Vec3::resetPool();
-		IntCache::Reset();	
+		IntCache::Reset();
 		m_updateEvents->Set(eUpdateEventIsFinished);
 	}
 
@@ -1217,7 +1215,7 @@ void GameRenderer::DisableUpdateThread()
 	if( !updateRunning) return;
 	app.DebugPrintf("------------------DisableUpdateThread--------------------\n");
 	updateRunning = false;
-	m_updateEvents->Clear(eUpdateCanRun);	
+	m_updateEvents->Clear(eUpdateCanRun);
 	m_updateEvents->WaitForSingle(eUpdateEventIsFinished,INFINITE);
 #endif
 }
@@ -1588,7 +1586,7 @@ void GameRenderer::renderSnowAndRain(float a)
 
 	turnOnLightLayer(a);
 
-	if (rainXa == NULL) 
+	if (rainXa == NULL)
 	{
 		rainXa = new float[32 * 32];
 		rainZa = new float[32 * 32];
@@ -1709,9 +1707,9 @@ void GameRenderer::renderSnowAndRain(float a)
 					float Alpha = ((1 - dd * dd) * 0.5f + 0.5f) * rainLevel;
 					int tex2 = (level->getLightColor(x, yl, z, 0) * 3 + 0xf000f0) / 4;
 					t->tileRainQuad(x - xa + 0.5, yy0, z - za + 0.5, 0 * s, yy0 * s / 4.0f + ra * s,
-						x + xa + 0.5, yy0, z + za + 0.5, 1 * s, yy0 * s / 4.0f + ra * s, 
-						x + xa + 0.5, yy1, z + za + 0.5, 1 * s, yy1 * s / 4.0f + ra * s, 
-						x - xa + 0.5, yy1, z - za + 0.5, 0 * s, yy1 * s / 4.0f + ra * s, 
+						x + xa + 0.5, yy0, z + za + 0.5, 1 * s, yy0 * s / 4.0f + ra * s,
+						x + xa + 0.5, yy1, z + za + 0.5, 1 * s, yy1 * s / 4.0f + ra * s,
+						x - xa + 0.5, yy1, z - za + 0.5, 0 * s, yy1 * s / 4.0f + ra * s,
 						br, br, br, Alpha, br, br, br, 0, tex2);
 #else
 					t->tex2(level->getLightColor(x, yl, z, 0));
@@ -1747,9 +1745,9 @@ void GameRenderer::renderSnowAndRain(float a)
 					float Alpha = ((1 - dd * dd) * 0.3f + 0.5f) * rainLevel;
 					int tex2 = (level->getLightColor(x, yl, z, 0) * 3 + 0xf000f0) / 4;
 					t->tileRainQuad(x - xa + 0.5, yy0, z - za + 0.5, 0 * s + uo, yy0 * s / 4.0f + ra * s + vo,
-						x + xa + 0.5, yy0, z + za + 0.5, 1 * s + uo, yy0 * s / 4.0f + ra * s + vo, 
-						x + xa + 0.5, yy1, z + za + 0.5, 1 * s + uo, yy1 * s / 4.0f + ra * s + vo, 
-						x - xa + 0.5, yy1, z - za + 0.5, 0 * s + uo, yy1 * s / 4.0f + ra * s + vo, 
+						x + xa + 0.5, yy0, z + za + 0.5, 1 * s + uo, yy0 * s / 4.0f + ra * s + vo,
+						x + xa + 0.5, yy1, z + za + 0.5, 1 * s + uo, yy1 * s / 4.0f + ra * s + vo,
+						x - xa + 0.5, yy1, z - za + 0.5, 0 * s + uo, yy1 * s / 4.0f + ra * s + vo,
 						br, br, br, Alpha, br, br, br, Alpha, tex2);
 #else
 					t->tex2((level->getLightColor(x, yl, z, 0) * 3 + 0xf000f0) / 4);
