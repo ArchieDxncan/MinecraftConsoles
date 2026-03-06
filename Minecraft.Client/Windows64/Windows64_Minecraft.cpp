@@ -110,6 +110,7 @@ struct Win64LaunchOptions
 {
 	int screenMode;
 	bool serverMode;
+	bool fullscreen;
 };
 
 static void CopyWideArgToAnsi(LPCWSTR source, char* dest, size_t destSize)
@@ -256,6 +257,8 @@ static Win64LaunchOptions ParseLaunchOptions()
 					g_Win64MultiplayerPort = (int)port;
 			}
 		}
+		else if (_wcsicmp(argv[i], L"-fullscreen") == 0)
+			options.fullscreen = true;
 	}
 
 	LocalFree(argv);
@@ -1245,7 +1248,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	// Restore fullscreen state from previous session
-	if (LoadFullscreenOption() && !g_isFullscreen)
+	if (LoadFullscreenOption() && !g_isFullscreen || launchOptions.fullscreen)
 	{
 		ToggleFullscreen();
 	}
