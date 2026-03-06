@@ -767,9 +767,6 @@ int LevelRenderer::renderChunks(int from, int to, int layer, double alpha)
 	glPushMatrix();
 	glTranslatef((float)-xOff, (float)-yOff, (float)-zOff);
 
-	if (layer == 1)
-		glDepthMask(false);
-
 #ifdef __PSVITA__
 	// AP - also set the camera position so we can work out if a chunk is fogged or not
 	RenderManager.SetCameraPosition((float)-xOff, (float)-yOff, (float)-zOff);
@@ -847,10 +844,6 @@ int LevelRenderer::renderChunks(int from, int to, int layer, double alpha)
 #endif // __PS3__
 
 	glPopMatrix();
-
-	if (layer == 1)
-		glDepthMask(true);
-
 	mc->gameRenderer->turnOffLightLayer(alpha);		// 4J - brought forward from 1.8.2
 
 #else
