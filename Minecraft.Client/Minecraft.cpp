@@ -1522,7 +1522,7 @@ void Minecraft::run_middle()
 					}
 #endif
 
-#ifndef _FINAL_BUILD
+#if _DEBUG // ndef _FINAL_BUILD // Disable conflicting debug functionality in release builds
 					if( app.DebugSettingsOn() && app.GetUseDPadForDebug() )
 					{
 						localplayers[i]->ullDpad_last = 0;
