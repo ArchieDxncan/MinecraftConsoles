@@ -144,7 +144,7 @@ extern "C" void *__real_malloc(size_t t);
 extern "C" void __real_free(void *t);
 #endif
 
-__int64 UIController::iggyAllocCount = 0;
+int64_t UIController::iggyAllocCount = 0;
 static unordered_map<void *,size_t> allocations;
 static void * RADLINK AllocateFunction ( void * alloc_callback_user_data , size_t size_requested , size_t * size_returned )
 {
@@ -502,7 +502,7 @@ void UIController::tick()
 	}
 
 	// Clear out the cached movie file data
-	__int64 currentTime = System::currentTimeMillis();
+	int64_t currentTime = System::currentTimeMillis();
     for (auto it = m_cachedMovieData.begin(); it != m_cachedMovieData.end();)
     {
 		if(it->second.m_expiry < currentTime)
@@ -622,7 +622,7 @@ IggyLibrary UIController::loadSkin(const wstring &skinPath, const wstring &skinN
 		IggyMemoryUseInfo memoryInfo;
 		rrbool res;
 		int iteration = 0;
-		__int64 totalStatic = 0;
+		int64_t totalStatic = 0;
 		while(res = IggyDebugGetMemoryUseInfo ( NULL ,
 			lib ,
 			"" ,
@@ -753,7 +753,7 @@ void UIController::CleanUpSkinReload()
 byteArray UIController::getMovieData(const wstring &filename)
 {
 	// Cache everything we load in the current tick
-	__int64 targetTime = System::currentTimeMillis() + (1000LL * 60);
+	int64_t targetTime = System::currentTimeMillis() + (1000LL * 60);
     auto it = m_cachedMovieData.find(filename);
     if(it == m_cachedMovieData.end() )
 	{
@@ -1441,8 +1441,8 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 		//!(app.GetGameSettingsDebugMask(ProfileManager.GetPrimaryPad())&(1L<<eDebugSetting_ToggleFont)) &&
 		key == ACTION_MENU_STICK_PRESS)
 	{
-		__int64 totalStatic = 0;
-		__int64 totalDynamic = 0;
+		int64_t totalStatic = 0;
+		int64_t totalDynamic = 0;
 		app.DebugPrintf(app.USER_SR, "********************************\n");
 		app.DebugPrintf(app.USER_SR, "BEGIN TOTAL SWF MEMORY USAGE\n\n");
 		for(unsigned int i = 0; i < eUIGroup_COUNT; ++i)
@@ -1451,8 +1451,8 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 		}
 		for(unsigned int i = 0; i < eLibrary_Count; ++i)
 		{
-			__int64 libraryStatic = 0;
-			__int64 libraryDynamic = 0;
+			int64_t libraryStatic = 0;
+			int64_t libraryDynamic = 0;
 
 			if(m_iggyLibraries[i] != IGGY_INVALID_LIBRARY)
 			{
@@ -2481,7 +2481,7 @@ void UIController::OverrideSFX(int iPad, int iAction,bool bVal)
 
 void UIController::PlayUISFX(ESoundEffect eSound)
 {
-	__uint64 time = System::currentTimeMillis();
+	uint64_t time = System::currentTimeMillis();
 
 	// Don't play multiple SFX on the same tick
 	// (prevents horrible sounds when programmatically setting multiple checkboxes)
