@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "lce_filesystem.h"
 
 #ifdef _WINDOWS64
