@@ -25,7 +25,7 @@ However, we would accept changes that...
 - Add support for things like Steamworks Networking and other P2P networking and auth strategies
 - Improve Keyboard and Mouse control support
 - Add minimal, non-invasive Quality of Life features that don't otherwise compromise the LCE experience
- - For example, adjusting certain crafting recipes or change item behaviors like non-stackable doors
+  - For example, adjusting certain crafting recipes or change item behaviors like non-stackable doors
 
 
 ## Current Goals
