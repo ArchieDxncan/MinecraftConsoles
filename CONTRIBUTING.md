@@ -10,6 +10,7 @@ We are attempting to keep our version of LCE as close to visual and experience p
 - Redesign UI components different than LCE
 - Break controller support, or otherwise do not support play with a controller
 - Add custom texture packs or DLC that never existed in LCE
+- Add any gameplay content (block, item, mob) that has no existing point of reference in any official LCE build
 
 However, we would accept changes that...
 - Fix legitimately buggy or inconsistent behavior in LCE that causes unexpected outcomes
@@ -25,7 +26,7 @@ However, we would accept changes that...
 - Add support for things like Steamworks Networking and other P2P networking and auth strategies
 - Improve Keyboard and Mouse control support
 - Add minimal, non-invasive Quality of Life features that don't otherwise compromise the LCE experience
-  - For example, adjusting certain crafting recipes or change item behaviors like non-stackable doors
+  - For example, adjusting certain crafting recipes or change item behaviors like non-stackable doors 
 
 
 ## Current Goals
