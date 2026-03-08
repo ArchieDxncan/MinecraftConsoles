@@ -78,7 +78,7 @@ void ServerConnection::tick()
 	//            uc.disconnect("Internal server error");
 	//            logger.log(Level.WARNING, "Failed to handle packet: " + e, e);
 	//        }
-			if(uc->connection != NULL) uc->connection->flush();
+			if(uc->connection != nullptr) uc->connection->flush();
 		}
 	}
 
@@ -167,7 +167,7 @@ void ServerConnection::handleServerSettingsChanged(shared_ptr<ServerSettingsChan
 	{
 		for(unsigned int i = 0; i < pMinecraft->levels.length; ++i)
 		{
-			if( pMinecraft->levels[i] != NULL )
+			if( pMinecraft->levels[i] != nullptr )
 			{
 				app.DebugPrintf("ClientConnection::handleServerSettingsChanged - Difficulty = %d",packet->data);
 				pMinecraft->levels[i]->difficulty = packet->data;

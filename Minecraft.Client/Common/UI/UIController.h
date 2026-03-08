@@ -293,7 +293,7 @@ protected:
 	static GDrawTexture * RADLINK TextureSubstitutionCreateCallback( void * user_callback_data , IggyUTF16 * texture_name , S32 * width , S32 * height , void **destroy_callback_data );
 	static void RADLINK TextureSubstitutionDestroyCallback( void * user_callback_data , void * destroy_callback_data , GDrawTexture * handle );
 
-	virtual GDrawTexture *getSubstitutionTexture(int textureId) { return NULL; }
+	virtual GDrawTexture *getSubstitutionTexture(int textureId) { return nullptr; }
 	virtual void destroySubstitutionTexture(void *destroyCallBackData, GDrawTexture *handle) {}
 
 public:
@@ -302,7 +302,7 @@ public:
 
 public:
 	// NAVIGATION
-	bool NavigateToScene(int iPad, EUIScene scene, void *initData = NULL, EUILayer layer = eUILayer_Scene, EUIGroup group = eUIGroup_PAD);
+	bool NavigateToScene(int iPad, EUIScene scene, void *initData = nullptr, EUILayer layer = eUILayer_Scene, EUIGroup group = eUIGroup_PAD);
 	bool NavigateBack(int iPad, bool forceUsePad = false, EUIScene eScene = eUIScene_COUNT, EUILayer eLayer = eUILayer_COUNT);
 	void NavigateToHomeMenu();
 	UIScene *GetTopScene(int iPad, EUILayer layer = eUILayer_Scene, EUIGroup group = eUIGroup_PAD);
@@ -382,14 +382,14 @@ public:
 	virtual void HidePressStart();
 	void ClearPressStart();
 
-	virtual C4JStorage::EMessageResult RequestAlertMessage(UINT uiTitle, UINT uiText, UINT *uiOptionA,UINT uiOptionC, DWORD dwPad=XUSER_INDEX_ANY, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)=NULL,LPVOID lpParam=NULL, WCHAR *pwchFormatString=NULL);
-	virtual C4JStorage::EMessageResult RequestErrorMessage(UINT uiTitle, UINT uiText, UINT *uiOptionA,UINT uiOptionC, DWORD dwPad=XUSER_INDEX_ANY, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)=NULL,LPVOID lpParam=NULL, WCHAR *pwchFormatString=NULL);
+	virtual C4JStorage::EMessageResult RequestAlertMessage(UINT uiTitle, UINT uiText, UINT *uiOptionA,UINT uiOptionC, DWORD dwPad=XUSER_INDEX_ANY, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)=nullptr,LPVOID lpParam=nullptr, WCHAR *pwchFormatString=nullptr);
+	virtual C4JStorage::EMessageResult RequestErrorMessage(UINT uiTitle, UINT uiText, UINT *uiOptionA,UINT uiOptionC, DWORD dwPad=XUSER_INDEX_ANY, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)=nullptr,LPVOID lpParam=nullptr, WCHAR *pwchFormatString=nullptr);
 private:
 	virtual C4JStorage::EMessageResult RequestMessageBox(UINT uiTitle, UINT uiText, UINT *uiOptionA,UINT uiOptionC, DWORD dwPad,int( *Func)(LPVOID,int,const C4JStorage::EMessageResult),LPVOID lpParam, WCHAR *pwchFormatString,DWORD dwFocusButton, bool bIsError);
 
 public:
-	C4JStorage::EMessageResult RequestUGCMessageBox(UINT title = -1, UINT message = -1, int iPad = -1, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult) = NULL, LPVOID lpParam = NULL);
-	C4JStorage::EMessageResult RequestContentRestrictedMessageBox(UINT title = -1, UINT message = -1, int iPad = -1, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult) = NULL, LPVOID lpParam = NULL);
+	C4JStorage::EMessageResult RequestUGCMessageBox(UINT title = -1, UINT message = -1, int iPad = -1, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult) = nullptr, LPVOID lpParam = nullptr);
+	C4JStorage::EMessageResult RequestContentRestrictedMessageBox(UINT title = -1, UINT message = -1, int iPad = -1, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult) = nullptr, LPVOID lpParam = nullptr);
 
 	virtual void SetWinUserIndex(unsigned int iPad);
 	unsigned int GetWinUserIndex();

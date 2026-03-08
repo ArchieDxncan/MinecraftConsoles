@@ -336,7 +336,7 @@ shared_ptr<Packet> Packet::readPacket(DataInputStream *dis, bool isServer) // th
 	}
 
 	packet = getPacket(id);
-	if (packet == NULL) assert(false);//throw new IOException(wstring(L"Bad packet id ") + std::to_wstring(id));
+	if (packet == nullptr) assert(false);//throw new IOException(wstring(L"Bad packet id ") + std::to_wstring(id));
 
 	//app.DebugPrintf("%s reading packet %d\n", isServer ? "Server" : "Client", packet->getId());
 	packet->read(dis);
@@ -345,7 +345,7 @@ shared_ptr<Packet> Packet::readPacket(DataInputStream *dis, bool isServer) // th
 	//	{
 	//       // reached end of stream
 	//        OutputDebugString("Reached end of stream");
-	//        return NULL;
+	//        return nullptr;
 	//    }
 
 	// 4J - Don't bother tracking stats in a content package
@@ -386,7 +386,7 @@ void Packet::writeUtf(const wstring& value, DataOutputStream *dos) // throws IOE
 	}
 #endif
 
-	dos->writeShort((short)value.length());
+	dos->writeShort(static_cast<short>(value.length()));
 	dos->writeChars(value);
 }
 
@@ -443,7 +443,7 @@ double Packet::PacketStatistics::getAverageSize()
 	{
 		return 0;
 	}
-	return (double) totalSize / count;
+	return static_cast<double>(totalSize) / count;
 }
 
 int Packet::PacketStatistics::getTotalSize()
@@ -512,7 +512,7 @@ shared_ptr<ItemInstance> Packet::readItem(DataInputStream *dis)
 		int count = dis->readByte();
 		int damage = dis->readShort();
 
-		item = shared_ptr<ItemInstance>( new ItemInstance(id, count, damage) );
+		item = std::make_shared<ItemInstance>(id, count, damage);
 		// 4J Stu - Always read/write the tag
 		//if (Item.items[id].canBeDepleted() || Item.items[id].shouldOverrideMultiplayerNBT())
 		{
@@ -525,7 +525,7 @@ shared_ptr<ItemInstance> Packet::readItem(DataInputStream *dis)
 
 void Packet::writeItem(shared_ptr<ItemInstance> item, DataOutputStream *dos)
 {
-	if (item == NULL)
+	if (item == nullptr)
 	{
 		dos->writeShort(-1);
 	}
@@ -545,7 +545,7 @@ void Packet::writeItem(shared_ptr<ItemInstance> item, DataOutputStream *dos)
 CompoundTag *Packet::readNbt(DataInputStream *dis)
 {
 	int size = dis->readShort();
-	if (size < 0) return NULL;
+	if (size < 0) return nullptr;
 	byteArray buff(size);
 	dis->readFully(buff);
 	CompoundTag *result = (CompoundTag *) NbtIo::decompress(buff);
@@ -555,14 +555,14 @@ CompoundTag *Packet::readNbt(DataInputStream *dis)
 
 void Packet::writeNbt(CompoundTag *tag, DataOutputStream *dos)
 {
-	if (tag == NULL)
+	if (tag == nullptr)
 	{
 		dos->writeShort(-1);
 	}
 	else
 	{
 		byteArray buff = NbtIo::compress(tag);
-		dos->writeShort((short) buff.length);
+		dos->writeShort(static_cast<short>(buff.length));
 		dos->write(buff);
 		delete [] buff.data;
 	}

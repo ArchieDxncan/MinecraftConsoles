@@ -113,7 +113,7 @@ public:
 
 	FriendSessionInfo()
 	{
-		displayLabel = NULL;
+		displayLabel = nullptr;
 		displayLabelLength = 0;
 		displayLabelViewableStartIndex = 0;
 		hasPartyMember = false;
@@ -121,7 +121,7 @@ public:
 
 	~FriendSessionInfo()
 	{
-		if (displayLabel != NULL)
+		if (displayLabel != nullptr)
 			delete displayLabel;
 	}
 };

@@ -87,7 +87,7 @@ double EntityRenderDispatcher::xOff = 0.0;
 double EntityRenderDispatcher::yOff = 0.0;
 double EntityRenderDispatcher::zOff = 0.0;
 
-EntityRenderDispatcher *EntityRenderDispatcher::instance = NULL;
+EntityRenderDispatcher *EntityRenderDispatcher::instance = nullptr;
 
 void EntityRenderDispatcher::staticCtor()
 {
@@ -222,7 +222,7 @@ void EntityRenderDispatcher::prepare(Level *level, Textures *textures, Font *fon
 			int data = level->getData(Mth::floor(player->x), Mth::floor(player->y), Mth::floor(player->z));
 
 			int direction = data & 3;
-			playerRotY = (float)(direction * 90 + 180);
+			playerRotY = static_cast<float>(direction * 90 + 180);
 			playerRotX = 0;
 		}
 	} else {
@@ -280,7 +280,7 @@ void EntityRenderDispatcher::render(shared_ptr<Entity> entity, float a)
 void EntityRenderDispatcher::render(shared_ptr<Entity> entity, double x, double y, double z, float rot, float a, bool bItemFrame, bool bRenderPlayerShadow)
 {
 	EntityRenderer *renderer = getRenderer(entity);
-	if (renderer != NULL)
+	if (renderer != nullptr)
 	{	
 		renderer->SetItemFrame(bItemFrame);
 
