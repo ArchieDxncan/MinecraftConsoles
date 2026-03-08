@@ -279,12 +279,12 @@ void SQRNetworkPlayer::SendInternal(const void *data, unsigned int dataSize, Ack
 	{
 		// no data, just the flag
 		assert(dataSize == 0);
-		assert(data == nullptr);
+		assert(data == NULL);
 		int dataSize = dataRemaining;
 		if( dataSize > SNP_MAX_PAYLOAD ) dataSize = SNP_MAX_PAYLOAD;
-		sendBlock.start = nullptr;
-		sendBlock.end = nullptr;
-		sendBlock.current = nullptr;
+		sendBlock.start = NULL;
+		sendBlock.end = NULL;
+		sendBlock.current = NULL;
 		sendBlock.ack = ackFlags;
 		m_sendQueue.push(sendBlock);
 	}
@@ -387,9 +387,9 @@ int SQRNetworkPlayer::ReadDataPacket(void* data, int dataSize)
 
 	unsigned char* packetData = new unsigned char[packetSize];
 #ifdef __PS3__
-	int bytesRead = cellRudpRead( m_rudpCtx, packetData, packetSize, 0, nullptr );
+	int bytesRead = cellRudpRead( m_rudpCtx, packetData, packetSize, 0, NULL );
 #else // __ORBIS__ && __PSVITA__
-	int bytesRead = sceRudpRead( m_rudpCtx, packetData, packetSize, 0, nullptr );
+	int bytesRead = sceRudpRead( m_rudpCtx, packetData, packetSize, 0, NULL );
 #endif
 	if(bytesRead == sc_wouldBlockFlag)
 	{
@@ -426,9 +426,9 @@ void SQRNetworkPlayer::ReadAck()
 {
 	DataPacketHeader header;
 #ifdef __PS3__
-	int bytesRead = cellRudpRead( m_rudpCtx, &header, sizeof(header), 0, nullptr );
+	int bytesRead = cellRudpRead( m_rudpCtx, &header, sizeof(header), 0, NULL );
 #else // __ORBIS__ && __PSVITA__
-	int bytesRead = sceRudpRead( m_rudpCtx, &header, sizeof(header), 0, nullptr );
+	int bytesRead = sceRudpRead( m_rudpCtx, &header, sizeof(header), 0, NULL );
 #endif
 	if(bytesRead == sc_wouldBlockFlag)
 	{
@@ -459,7 +459,7 @@ void SQRNetworkPlayer::ReadAck()
 
 void SQRNetworkPlayer::WriteAck()
 {
-	SendInternal(nullptr, 0, e_flag_AckReturning);
+	SendInternal(NULL, 0, e_flag_AckReturning);
 }
 
 int SQRNetworkPlayer::GetOutstandingAckCount()

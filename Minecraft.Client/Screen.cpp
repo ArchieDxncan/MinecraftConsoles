@@ -14,13 +14,13 @@
 
 Screen::Screen()	// 4J added
 {
-	minecraft = nullptr;
+	minecraft = NULL;
 	width = 0;
     height = 0;
 	passEvents = false;
-	font = nullptr;
-	particles = nullptr;
-	clickedButton = nullptr;
+	font = NULL;
+	particles = NULL;
+	clickedButton = NULL;
 }
 
 void Screen::render(int xm, int ym, float a)
@@ -36,7 +36,7 @@ void Screen::keyPressed(wchar_t eventCharacter, int eventKey)
 {
 	if (eventKey == Keyboard::KEY_ESCAPE)
 	{
-		minecraft->setScreen(nullptr);
+		minecraft->setScreen(NULL);
 //    minecraft->grabMouse();	// 4J - removed
 	}
 }
@@ -44,12 +44,12 @@ void Screen::keyPressed(wchar_t eventCharacter, int eventKey)
 wstring Screen::getClipboard()
 {
 #ifdef _WINDOWS64
-	if (!OpenClipboard(nullptr)) return wstring();
+	if (!OpenClipboard(NULL)) return wstring();
 	HANDLE h = GetClipboardData(CF_UNICODETEXT);
 	wstring out;
 	if (h)
 	{
-		const wchar_t *p = static_cast<const wchar_t*>(GlobalLock(h));
+		const wchar_t *p = reinterpret_cast<const wchar_t*>(GlobalLock(h));
 		if (p) { out = p; GlobalUnlock(h); }
 	}
 	CloseClipboard();
@@ -62,7 +62,7 @@ wstring Screen::getClipboard()
 void Screen::setClipboard(const wstring& str)
 {
 #ifdef _WINDOWS64
-	if (!OpenClipboard(nullptr)) return;
+	if (!OpenClipboard(NULL)) return;
 	EmptyClipboard();
 	size_t len = (str.length() + 1) * sizeof(wchar_t);
 	HGLOBAL h = GlobalAlloc(GMEM_MOVEABLE, len);
@@ -89,10 +89,10 @@ void Screen::mouseClicked(int x, int y, int buttonNum)
 
 void Screen::mouseReleased(int x, int y, int buttonNum)
 {
-    if (clickedButton!=nullptr && buttonNum==0)
+    if (clickedButton!=NULL && buttonNum==0)
 	{
         clickedButton->released(x, y);
-        clickedButton = nullptr;
+        clickedButton = NULL;
     }
 }
 
@@ -284,7 +284,7 @@ void Screen::renderBackground()
 
 void Screen::renderBackground(int vo)
 {
-	if (minecraft->level != nullptr)
+	if (minecraft->level != NULL)
 	{
 		fillGradient(0, 0, width, height, 0xc0101010, 0xd0101010);
 	}

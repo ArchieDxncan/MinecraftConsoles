@@ -61,7 +61,7 @@ public:
 	// E.g. you can keep a component active while performing navigation with other scenes on this layer
 	void showComponent(int iPad, EUIScene scene, bool show);
 	bool isComponentVisible(EUIScene scene);
-	UIScene *addComponent(int iPad, EUIScene scene, void *initData = nullptr);
+	UIScene *addComponent(int iPad, EUIScene scene, void *initData = NULL);
 	void removeComponent(EUIScene scene);
 
 	// INPUT

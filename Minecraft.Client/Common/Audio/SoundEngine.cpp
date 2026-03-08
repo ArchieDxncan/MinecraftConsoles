@@ -57,7 +57,7 @@ void SoundEngine::updateSoundEffectVolume(float fVal) {}
 void SoundEngine::add(const wstring& name, File *file) {}
 void SoundEngine::addMusic(const wstring& name, File *file) {}
 void SoundEngine::addStreaming(const wstring& name, File *file) {}
-char *SoundEngine::ConvertSoundPathToName(const wstring& name, bool bConvertSpaces) { return nullptr; }
+char *SoundEngine::ConvertSoundPathToName(const wstring& name, bool bConvertSpaces) { return NULL; }
 bool SoundEngine::isStreamingWavebankReady() { return true; }
 void SoundEngine::playMusicTick() {};
 
@@ -334,7 +334,7 @@ void SoundEngine::tick(shared_ptr<Mob> *players, float a)
 		bool bListenerPostionSet = false;
 		for( size_t i = 0; i < MAX_LOCAL_PLAYERS; i++ )
 		{
-			if( players[i] != nullptr )
+			if( players[i] != NULL )
 			{
 				m_ListenerA[i].bValid=true;
 				F32 x,y,z;
@@ -401,7 +401,7 @@ SoundEngine::SoundEngine()
 	m_iMusicDelay=0;
 	m_validListenerCount=0; 
 
-	m_bHeardTrackA=nullptr;
+	m_bHeardTrackA=NULL;
 
 	// Start the streaming music playing some music from the overworld
 	SetStreamingSounds(eStream_Overworld_Calm1,eStream_Overworld_piano3,
@@ -547,8 +547,8 @@ void SoundEngine::play(int iSound, float x, float y, float z, float volume, floa
             &m_engine,
             finalPath,
             MA_SOUND_FLAG_ASYNC,
-            nullptr,
-            nullptr,
+            NULL,
+            NULL,
             &s->sound) != MA_SUCCESS)
     {
         app.DebugPrintf("Failed to initialize sound from file: %s\n", finalPath);
@@ -631,8 +631,8 @@ void SoundEngine::playUI(int iSound, float volume, float pitch)
             &m_engine,
             finalPath,
             MA_SOUND_FLAG_ASYNC,
-            nullptr,
-            nullptr,
+            NULL,
+            NULL,
             &s->sound) != MA_SUCCESS)
     {
         delete s;
@@ -700,7 +700,7 @@ void SoundEngine::playStreaming(const wstring& name, float x, float y , float z,
 
 		for(unsigned int i=0;i<MAX_LOCAL_PLAYERS;i++)
 		{
-			if(pMinecraft->localplayers[i]!=nullptr)
+			if(pMinecraft->localplayers[i]!=NULL)
 			{
 				if(pMinecraft->localplayers[i]->dimension==LevelData::DIMENSION_END)
 				{
@@ -794,7 +794,7 @@ int SoundEngine::getMusicID(int iDomain)
 	Minecraft *pMinecraft=Minecraft::GetInstance();
 
 	// Before the game has started?
-	if(pMinecraft==nullptr)
+	if(pMinecraft==NULL)
 	{
 		// any track from the overworld
 		return GetRandomishTrack(m_iStream_Overworld_Min,m_iStream_Overworld_Max);
@@ -927,8 +927,8 @@ int SoundEngine::OpenStreamThreadProc(void* lpParameter)
             &soundEngine->m_engine,
             soundEngine->m_szStreamName,
             MA_SOUND_FLAG_STREAM,
-            nullptr,
-            nullptr,
+            NULL,
+            NULL,
             &soundEngine->m_musicStream);
 
     if (result != MA_SUCCESS)
@@ -1186,7 +1186,7 @@ void SoundEngine::playMusicUpdate()
 		if( !m_openStreamThread->isRunning() )
 		{
 			delete m_openStreamThread;
-			m_openStreamThread = nullptr;
+			m_openStreamThread = NULL;
 
 			app.DebugPrintf("OpenStreamThreadProc finished. m_musicStreamActive=%d\n", m_musicStreamActive);
 
@@ -1243,7 +1243,7 @@ void SoundEngine::playMusicUpdate()
 		if( !m_openStreamThread->isRunning() )
 		{
 			delete m_openStreamThread;
-			m_openStreamThread = nullptr;
+			m_openStreamThread = NULL;
 			m_StreamState = eMusicStreamState_Stop;
 		}
 		break;
@@ -1279,14 +1279,14 @@ void SoundEngine::playMusicUpdate()
 		}
 		if(GetIsPlayingStreamingGameMusic())
 		{
-			//if(m_MusicInfo.pCue!=nullptr)
+			//if(m_MusicInfo.pCue!=NULL)
 			{
 				bool playerInEnd = false;
 				bool playerInNether=false;
 				Minecraft *pMinecraft = Minecraft::GetInstance();
 				for(unsigned int i = 0; i < MAX_LOCAL_PLAYERS; ++i)
 				{
-					if(pMinecraft->localplayers[i]!=nullptr)
+					if(pMinecraft->localplayers[i]!=NULL)
 					{
 						if(pMinecraft->localplayers[i]->dimension==LevelData::DIMENSION_END)
 						{
@@ -1417,7 +1417,7 @@ void SoundEngine::playMusicUpdate()
 
 			for(unsigned int i=0;i<MAX_LOCAL_PLAYERS;i++)
 			{
-				if(pMinecraft->localplayers[i]!=nullptr)
+				if(pMinecraft->localplayers[i]!=NULL)
 				{
 					if(pMinecraft->localplayers[i]->dimension==LevelData::DIMENSION_END)
 					{

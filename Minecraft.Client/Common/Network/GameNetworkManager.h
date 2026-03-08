@@ -108,7 +108,7 @@ public:
 	static void		CancelJoinGame(LPVOID lpParam); // Not part of the shared interface
 	bool			LeaveGame(bool bMigrateHost);
 	static int		JoinFromInvite_SignInReturned(void *pParam,bool bContinue, int iPad);
-	void			UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving = nullptr);
+	void			UpdateAndSetGameSessionData(INetworkPlayer *pNetworkPlayerLeaving = NULL);
 	void			SendInviteGUI(int iPad);
 	void			ResetLeavingGame();
 
@@ -137,17 +137,17 @@ public:
 
 	// Events
 
-	void ServerReadyCreate(bool create);	// Create the signal (or set to nullptr)
+	void ServerReadyCreate(bool create);	// Create the signal (or set to NULL)
 	void ServerReady();						// Signal that we are ready
 	void ServerReadyWait();					// Wait for the signal
 	void ServerReadyDestroy();				// Destroy signal
-	bool ServerReadyValid();				// Is non-nullptr
+	bool ServerReadyValid();				// Is non-NULL
 
 	void ServerStoppedCreate(bool create);	// Create the signal
 	void ServerStopped();					// Signal that we are ready
-    void ServerStoppedWait();               // Wait for the signal
-    void ServerStoppedDestroy();            // Destroy signal
-    bool ServerStoppedValid();              // Is non-nullptr
+	void ServerStoppedWait();				// Wait for the signal
+	void ServerStoppedDestroy();			// Destroy signal
+	bool ServerStoppedValid();				// Is non-NULL
 
 #ifdef __PSVITA__
 	static bool usingAdhocMode();

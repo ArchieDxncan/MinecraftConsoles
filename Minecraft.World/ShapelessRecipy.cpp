@@ -73,7 +73,7 @@ shared_ptr<ItemInstance> ShapelessRecipy::assemble(shared_ptr<CraftingContainer>
 
 int ShapelessRecipy::size() 
 {
-	return static_cast<int>(ingredients->size());
+	return (int)ingredients->size();
 }
 
 // 4J-PB

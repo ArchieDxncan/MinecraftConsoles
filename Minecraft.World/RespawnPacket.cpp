@@ -11,9 +11,9 @@ RespawnPacket::RespawnPacket()
 	this->difficulty = 1;
 	this->mapSeed = 0;
 	this->mapHeight = 0;
-	this->playerGameType = nullptr;
+	this->playerGameType = NULL;
 	this->m_newSeaLevel = false;
-	m_pLevelType = nullptr;
+	m_pLevelType = NULL;
 	m_newEntityId = 0;
 	m_xzSize = LEVEL_MAX_WIDTH;
 	m_hellScale = HELL_LEVEL_MAX_SCALE;
@@ -47,7 +47,7 @@ void RespawnPacket::read(DataInputStream *dis) //throws IOException
 	mapHeight = dis->readShort();
 	wstring typeName = readUtf(dis, 16);
 	m_pLevelType = LevelType::getLevelType(typeName);
-	if (m_pLevelType == nullptr)
+	if (m_pLevelType == NULL)
 	{
 		m_pLevelType = LevelType::lvl_normal;
 	}
@@ -68,7 +68,7 @@ void RespawnPacket::write(DataOutputStream *dos) //throws IOException
 	dos->writeByte(dimension);
 	dos->writeByte(playerGameType->getId());
 	dos->writeShort(mapHeight);
-	if (m_pLevelType == nullptr)
+	if (m_pLevelType == NULL)
 	{
 		writeUtf(L"", dos);
 	}
@@ -89,9 +89,9 @@ void RespawnPacket::write(DataOutputStream *dos) //throws IOException
 int RespawnPacket::getEstimatedSize()
 {
 	int length=0;
-	if (m_pLevelType != nullptr)
+	if (m_pLevelType != NULL)
 	{
-		length = static_cast<int>(m_pLevelType->getGeneratorName().length());
+		length = (int)m_pLevelType->getGeneratorName().length();
 	}
 	return 13+length;
 }

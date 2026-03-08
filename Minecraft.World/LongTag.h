@@ -28,7 +28,7 @@ public:
 	{
 		if (Tag::equals(obj))
 		{
-			LongTag *o = static_cast<LongTag *>(obj);
+			LongTag *o = (LongTag *) obj;
 			return data == o->data;
 		}
 		return false;

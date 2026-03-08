@@ -61,14 +61,14 @@ DWORD UIController::m_dwTrialTimerLimitSecs=DYNAMIC_CONFIG_DEFAULT_TRIAL_TIME;
 static UIControl_Slider *FindSliderById(UIScene *pScene, int sliderId)
 {
 	vector<UIControl *> *controls = pScene->GetControls();
-	if (!controls) return nullptr;
+	if (!controls) return NULL;
 	for (size_t i = 0; i < controls->size(); ++i)
 	{
 		UIControl *ctrl = (*controls)[i];
 		if (ctrl && ctrl->getControlType() == UIControl::eSlider && ctrl->getId() == sliderId)
-			return static_cast<UIControl_Slider *>(ctrl);
+			return (UIControl_Slider *)ctrl;
 	}
-	return nullptr;
+	return NULL;
 }
 #endif
 
@@ -148,7 +148,7 @@ int64_t UIController::iggyAllocCount = 0;
 static unordered_map<void *,size_t> allocations;
 static void * RADLINK AllocateFunction ( void * alloc_callback_user_data , size_t size_requested , size_t * size_returned )
 {
-	UIController *controller = static_cast<UIController *>(alloc_callback_user_data);
+	UIController *controller = (UIController *)alloc_callback_user_data;
 	EnterCriticalSection(&controller->m_Allocatorlock);
 #ifdef EXCLUDE_IGGY_ALLOCATIONS_FROM_HEAP_INSPECTOR
 	void *alloc = __real_malloc(size_requested);
@@ -165,7 +165,7 @@ static void * RADLINK AllocateFunction ( void * alloc_callback_user_data , size_
 
 static void RADLINK DeallocateFunction ( void * alloc_callback_user_data , void * ptr )
 {
-	UIController *controller = static_cast<UIController *>(alloc_callback_user_data);
+	UIController *controller = (UIController *)alloc_callback_user_data;
 	EnterCriticalSection(&controller->m_Allocatorlock);
 	size_t size = allocations[ptr];
 	UIController::iggyAllocCount -= size;
@@ -181,15 +181,15 @@ static void RADLINK DeallocateFunction ( void * alloc_callback_user_data , void 
 
 UIController::UIController()
 {
-	m_uiDebugConsole = nullptr;
-	m_reloadSkinThread = nullptr;
+	m_uiDebugConsole = NULL;
+	m_reloadSkinThread = NULL;
 
 	m_navigateToHomeOnReload = false;
 
 	m_bCleanupOnReload = false;
-	m_mcTTFFont = nullptr;
-	m_moj7 = nullptr;
-	m_moj11 = nullptr;
+	m_mcTTFFont = NULL;
+	m_moj7 = NULL;
+	m_moj11 = NULL;
 
 	// 4J-JEV: It's important that these remain the same, unless updateCurrentLanguage is going to be called.
 	m_eCurrentFont = m_eTargetFont = eFont_NotLoaded;
@@ -270,7 +270,7 @@ void UIController::SetSysUIShowing(bool bVal)
 
 void UIController::SetSystemUIShowing(LPVOID lpParam,bool bVal)
 {
-	UIController *pClass=static_cast<UIController *>(lpParam);
+	UIController *pClass=(UIController *)lpParam;
 	pClass->SetSysUIShowing(bVal);
 }
 
@@ -310,13 +310,13 @@ void UIController::postInit()
 
 	for(unsigned int i = 0; i < eUIGroup_COUNT; ++i)
 	{
-		m_groups[i] = new UIGroup(static_cast<EUIGroup>(i),i-1);
+		m_groups[i] = new UIGroup((EUIGroup)i,i-1);
 	}
 
 
 #ifdef ENABLE_IGGY_EXPLORER
 	iggy_explorer = IggyExpCreate("127.0.0.1", 9190, malloc(IGGYEXP_MIN_STORAGE), IGGYEXP_MIN_STORAGE);
-	if ( iggy_explorer == nullptr )
+	if ( iggy_explorer == NULL )
 	{
 		// not normally an error, just an error for this demo!
 		app.DebugPrintf( "Couldn't connect to Iggy Explorer, did you run it first?" );
@@ -329,7 +329,7 @@ void UIController::postInit()
 
 #ifdef ENABLE_IGGY_PERFMON
 	m_iggyPerfmonEnabled = false;
-	iggy_perfmon = IggyPerfmonCreate(perf_malloc, perf_free, nullptr);
+	iggy_perfmon = IggyPerfmonCreate(perf_malloc, perf_free, NULL);
 	IggyInstallPerfmon(iggy_perfmon);
 #endif
 
@@ -370,7 +370,7 @@ UITTFFont *UIController::createFont(EFont fontLanguage)
 #endif
 	// 4J-JEV, Cyrillic characters have been added to this font now, (4/July/14)
 	// XC_LANGUAGE_RUSSIAN and XC_LANGUAGE_GREEK:
-	default:					return nullptr;
+	default:					return NULL;
 	}
 }
 
@@ -397,17 +397,17 @@ void UIController::SetupFont()
 	if (m_eCurrentFont != eFont_NotLoaded)	app.DebugPrintf("[UIController] Font switch required for language transition to %i.\n", nextLanguage);
 	else									app.DebugPrintf("[UIController] Initialising font for language %i.\n", nextLanguage);
 
-	if (m_mcTTFFont != nullptr)
+	if (m_mcTTFFont != NULL)
 	{
 		delete m_mcTTFFont;
-		m_mcTTFFont = nullptr;
+		m_mcTTFFont = NULL;
 	}
 
 	if(m_eTargetFont == eFont_Bitmap)
 	{
 		// these may have been set up by a previous language being chosen
-		if (m_moj7 == nullptr)		m_moj7  = new UIBitmapFont(SFontData::Mojangles_7);
-		if (m_moj11 == nullptr)	m_moj11 = new UIBitmapFont(SFontData::Mojangles_11);
+		if (m_moj7 == NULL)		m_moj7  = new UIBitmapFont(SFontData::Mojangles_7);
+		if (m_moj11 == NULL)	m_moj11 = new UIBitmapFont(SFontData::Mojangles_11);
 
 		// 4J-JEV: Ensure we redirect to them correctly, even if the objects were previously initialised.
 		m_moj7->registerFont();
@@ -615,7 +615,7 @@ IggyLibrary UIController::loadSkin(const wstring &skinPath, const wstring &skinN
 	if(!skinPath.empty() && app.hasArchiveFile(skinPath))
 	{
 		byteArray baFile = app.getArchiveFile(skinPath);
-		lib = IggyLibraryCreateFromMemoryUTF16( (IggyUTF16 *)skinName.c_str() , (void *)baFile.data, baFile.length, nullptr );
+		lib = IggyLibraryCreateFromMemoryUTF16( (IggyUTF16 *)skinName.c_str() , (void *)baFile.data, baFile.length, NULL );
 
 		delete[] baFile.data;
 #ifdef _DEBUG
@@ -623,12 +623,12 @@ IggyLibrary UIController::loadSkin(const wstring &skinPath, const wstring &skinN
 		rrbool res;
 		int iteration = 0;
 		int64_t totalStatic = 0;
-		while(res = IggyDebugGetMemoryUseInfo (nullptr,
-                                               lib ,
-                                               "" ,
-                                               0 ,
-                                               iteration ,
-                                               &memoryInfo ))
+		while(res = IggyDebugGetMemoryUseInfo ( NULL ,
+			lib ,
+			"" ,
+			0 ,
+			iteration ,
+			&memoryInfo ))
 		{
 			totalStatic += memoryInfo.static_allocation_bytes;
 			app.DebugPrintf(app.USER_SR, "%ls - %.*s, static: %dB, dynamic: %dB\n", skinPath.c_str(), memoryInfo.subcategory_stringlen, memoryInfo.subcategory, memoryInfo.static_allocation_bytes, memoryInfo.dynamic_allocation_bytes);
@@ -692,7 +692,7 @@ void UIController::StartReloadSkinThread()
 int UIController::reloadSkinThreadProc(void* lpParam)
 {
 	EnterCriticalSection(&ms_reloadSkinCS);		// MGH - added to prevent crash loading Iggy movies while the skins were being reloaded
-	UIController *controller = static_cast<UIController *>(lpParam);
+	UIController *controller = (UIController *)lpParam;
 	// Load new skin
 	controller->loadSkins();
 
@@ -727,7 +727,7 @@ bool UIController::IsExpectingOrReloadingSkin()
 void UIController::CleanUpSkinReload()
 {
 	delete m_reloadSkinThread;
-	m_reloadSkinThread = nullptr;
+	m_reloadSkinThread = NULL;
 
 	if(!Minecraft::GetInstance()->skins->isUsingDefaultSkin())
 	{
@@ -787,28 +787,26 @@ void UIController::tickInput()
 #endif
 		{
 #ifdef _WINDOWS64
-            m_mouseClickConsumedByScene = false;
-            if (!g_KBMInput.IsMouseGrabbed() && g_KBMInput.IsKBMActive())
-            {
-                UIScene *pScene = nullptr;
-
-                // Search by layer priority across all groups (layer-first).
-                // Tooltip layer is skipped because it holds non-interactive
-                // overlays (button hints, timer) that should never capture mouse.
-                // Old group-first order found those tooltips on eUIGroup_Fullscreen
-                // before reaching in-game menus on eUIGroup_Player1.
-                static const EUILayer mouseLayers[] = {
+			m_mouseClickConsumedByScene = false;
+			if (!g_KBMInput.IsMouseGrabbed() && g_KBMInput.IsKBMActive())
+			{
+				UIScene *pScene = NULL;
+				// Search by layer priority across all groups (layer-first).
+				// Tooltip layer is skipped because it holds non-interactive
+				// overlays (button hints, timer) that should never capture mouse.
+				// Old group-first order found those tooltips on eUIGroup_Fullscreen
+				// before reaching in-game menus on eUIGroup_Player1.
+				static const EUILayer mouseLayers[] = {
 #ifndef _CONTENT_PACKAGE
-                    eUILayer_Debug,
+					eUILayer_Debug,
 #endif
-                    eUILayer_Error,
-                    eUILayer_Alert,
-                    eUILayer_Popup,
-                    eUILayer_Fullscreen,
-                    eUILayer_Scene,
-                };
-
-                for (int l = 0; l < _countof(mouseLayers) && !pScene; ++l)
+					eUILayer_Error,
+					eUILayer_Alert,
+					eUILayer_Popup,
+					eUILayer_Fullscreen,
+					eUILayer_Scene,
+				};
+				for (int l = 0; l < _countof(mouseLayers) && !pScene; ++l)
 				{
 					for (int grp = 0; grp < eUIGroup_COUNT && !pScene; ++grp)
 					{
@@ -816,25 +814,9 @@ void UIController::tickInput()
 					}
 				}
 				if (pScene && pScene->getMovie())
-                {
-                    int rawMouseX = g_KBMInput.GetMouseX();
-                    int rawMouseY = g_KBMInput.GetMouseY();
-                    F32 mouseX = static_cast<F32>(rawMouseX);
-                    F32 mouseY = static_cast<F32>(rawMouseY);
-
-                    extern HWND g_hWnd;
-                    if (g_hWnd)
-                    {
-                        RECT rc;
-                        GetClientRect(g_hWnd, &rc);
-                        int winW = rc.right - rc.left;
-                        int winH = rc.bottom - rc.top;
-                        if (winW > 0 && winH > 0)
-                        {
-                            mouseX = mouseX * (m_fScreenWidth / static_cast<F32>(winW));
-                            mouseY = mouseY * (m_fScreenHeight / static_cast<F32>(winH));
-                        }
-                    }
+				{
+					int rawMouseX = g_KBMInput.GetMouseX();
+					int rawMouseY = g_KBMInput.GetMouseY();
 
 					// Only update hover focus when the mouse has actually moved,
 					// so that mouse-wheel scrolling can change list selection
@@ -1034,7 +1016,7 @@ void UIController::tickInput()
 								if (pMainPanel && ctrl->getParentPanel() != pMainPanel)
 									continue;
 
-								UIControl_Slider *pSlider = static_cast<UIControl_Slider *>(ctrl);
+								UIControl_Slider *pSlider = (UIControl_Slider *)ctrl;
 								pSlider->UpdateControl();
 								S32 cx = pSlider->getXPos() + panelOffsetX;
 								S32 cy = pSlider->getYPos() + panelOffsetY;
@@ -1063,7 +1045,7 @@ void UIController::tickInput()
 							S32 sliderWidth = pSlider->GetRealWidth();
 							if (sliderWidth > 0)
 							{
-								float fNewSliderPos = (sceneMouseX - static_cast<float>(sliderX)) / static_cast<float>(sliderWidth);
+								float fNewSliderPos = (sceneMouseX - (float)sliderX) / (float)sliderWidth;
 								if (fNewSliderPos < 0.0f) fNewSliderPos = 0.0f;
 								if (fNewSliderPos > 1.0f) fNewSliderPos = 1.0f;
 								pSlider->SetSliderTouchPos(fNewSliderPos);
@@ -1150,7 +1132,7 @@ void UIController::handleInput()
 
 		if(ProfileManager.GetLockedProfile() >= 0 && !InputManager.IsPadLocked( ProfileManager.GetLockedProfile() ) && firstUnfocussedUnhandledPad >= 0)
 		{
-			ProfileManager.RequestSignInUI(false, false, false, false, true, nullptr, nullptr, firstUnfocussedUnhandledPad );
+			ProfileManager.RequestSignInUI(false, false, false, false, true, NULL, NULL, firstUnfocussedUnhandledPad );
 		}
 	}
 #endif
@@ -1177,8 +1159,8 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 		if((m_bTouchscreenPressed==false) && pTouchData->reportNum==1)
 		{
 			// no active touch? clear active and highlighted touch UI elements
-			m_ActiveUIElement = nullptr;
-			m_HighlightedUIElement = nullptr;
+			m_ActiveUIElement = NULL;
+			m_HighlightedUIElement = NULL;
 
 			// fullscreen first
 			UIScene *pScene=m_groups[(int)eUIGroup_Fullscreen]->getCurrentScene();
@@ -1478,7 +1460,7 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 				IggyMemoryUseInfo memoryInfo;
 				rrbool res;
 				int iteration = 0;
-				while(res = IggyDebugGetMemoryUseInfo ( nullptr ,
+				while(res = IggyDebugGetMemoryUseInfo ( NULL ,
 					m_iggyLibraries[i] ,
 					"" ,
 					0 ,
@@ -1509,7 +1491,7 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 			bool handled = false;
 
 			// Send the key to the fullscreen group first
-			m_groups[static_cast<int>(eUIGroup_Fullscreen)]->handleInput(iPad, key, repeat, pressed, released, handled);
+			m_groups[(int)eUIGroup_Fullscreen]->handleInput(iPad, key, repeat, pressed, released, handled);
 			if(!handled)
 			{
 				// If it's not been handled yet, then pass the event onto the players specific group
@@ -1520,9 +1502,9 @@ void UIController::handleKeyPress(unsigned int iPad, unsigned int key)
 
 rrbool RADLINK UIController::ExternalFunctionCallback( void * user_callback_data , Iggy * player , IggyExternalFunctionCallUTF16 * call)
 {
-	UIScene *scene = static_cast<UIScene *>(IggyPlayerGetUserdata(player));
+	UIScene *scene = (UIScene *)IggyPlayerGetUserdata(player);
 
-	if(scene != nullptr)
+	if(scene != NULL)
 	{
 		scene->externalCallback(call);
 	}
@@ -1587,25 +1569,25 @@ void UIController::getRenderDimensions(C4JRender::eViewportType viewport, S32 &w
 	switch( viewport )
 	{
 	case C4JRender::VIEWPORT_TYPE_FULLSCREEN:
-		width = static_cast<S32>(getScreenWidth());
-		height = static_cast<S32>(getScreenHeight());
+		width = (S32)(getScreenWidth());
+		height = (S32)(getScreenHeight());
 		break;
 	case C4JRender::VIEWPORT_TYPE_SPLIT_TOP:
 	case C4JRender::VIEWPORT_TYPE_SPLIT_BOTTOM:
-		width = static_cast<S32>(getScreenWidth() / 2);
-		height = static_cast<S32>(getScreenHeight() / 2);
+		width = (S32)(getScreenWidth() / 2);
+		height = (S32)(getScreenHeight() / 2);
 		break;
 	case C4JRender::VIEWPORT_TYPE_SPLIT_LEFT:
 	case C4JRender::VIEWPORT_TYPE_SPLIT_RIGHT:
-		width = static_cast<S32>(getScreenWidth() / 2);
-		height = static_cast<S32>(getScreenHeight() / 2);
+		width = (S32)(getScreenWidth() / 2);
+		height = (S32)(getScreenHeight() / 2);
 		break;
 	case C4JRender::VIEWPORT_TYPE_QUADRANT_TOP_LEFT:
 	case C4JRender::VIEWPORT_TYPE_QUADRANT_TOP_RIGHT:
 	case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_LEFT:
 	case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_RIGHT:
-		width = static_cast<S32>(getScreenWidth() / 2);
-		height = static_cast<S32>(getScreenHeight() / 2);
+		width = (S32)(getScreenWidth() / 2);
+		height = (S32)(getScreenHeight() / 2);
 		break;
 	}
 }
@@ -1621,30 +1603,30 @@ void UIController::setupRenderPosition(C4JRender::eViewportType viewport)
 		switch( viewport )
 		{
 		case C4JRender::VIEWPORT_TYPE_SPLIT_TOP:
-			xPos = static_cast<S32>(getScreenWidth() / 4);
+			xPos = (S32)(getScreenWidth() / 4);
 			break;
 		case C4JRender::VIEWPORT_TYPE_SPLIT_BOTTOM:
-			xPos = static_cast<S32>(getScreenWidth() / 4);
-			yPos = static_cast<S32>(getScreenHeight() / 2);
+			xPos = (S32)(getScreenWidth() / 4);
+			yPos = (S32)(getScreenHeight() / 2);
 			break;
 		case C4JRender::VIEWPORT_TYPE_SPLIT_LEFT:
-			yPos = static_cast<S32>(getScreenHeight() / 4);
+			yPos = (S32)(getScreenHeight() / 4);
 			break;
 		case C4JRender::VIEWPORT_TYPE_SPLIT_RIGHT:
-			xPos = static_cast<S32>(getScreenWidth() / 2);
-			yPos = static_cast<S32>(getScreenHeight() / 4);
+			xPos = (S32)(getScreenWidth() / 2);
+			yPos = (S32)(getScreenHeight() / 4);
 			break;
 		case C4JRender::VIEWPORT_TYPE_QUADRANT_TOP_LEFT:
 			break;
 		case C4JRender::VIEWPORT_TYPE_QUADRANT_TOP_RIGHT:
-			xPos = static_cast<S32>(getScreenWidth() / 2);
+			xPos = (S32)(getScreenWidth() / 2);
 			break;
 		case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_LEFT:
-			yPos = static_cast<S32>(getScreenHeight() / 2);
+			yPos = (S32)(getScreenHeight() / 2);
 			break;
 		case C4JRender::VIEWPORT_TYPE_QUADRANT_BOTTOM_RIGHT:
-			xPos = static_cast<S32>(getScreenWidth() / 2);
-			yPos = static_cast<S32>(getScreenHeight() / 2);
+			xPos = (S32)(getScreenWidth() / 2);
+			yPos = (S32)(getScreenHeight() / 2);
 			break;
 		}
 		m_tileOriginX = xPos;
@@ -1709,8 +1691,8 @@ void UIController::setupCustomDrawMatrices(UIScene *scene, CustomDrawData *custo
 	Minecraft *pMinecraft=Minecraft::GetInstance();
 
 	// Clear just the region required for this control.
-	float sceneWidth = static_cast<float>(scene->getRenderWidth());
-	float sceneHeight = static_cast<float>(scene->getRenderHeight());
+	float sceneWidth = (float)scene->getRenderWidth();
+	float sceneHeight = (float)scene->getRenderHeight();
 
 	LONG left, right, top, bottom;
 #ifdef __PS3__
@@ -1738,10 +1720,10 @@ void UIController::setupCustomDrawMatrices(UIScene *scene, CustomDrawData *custo
 	if(!m_bScreenWidthSetup)
 	{
 		Minecraft *pMinecraft=Minecraft::GetInstance();
-		if(pMinecraft != nullptr)
+		if(pMinecraft != NULL)
 		{
-			m_fScreenWidth=static_cast<float>(pMinecraft->width_phys);
-			m_fScreenHeight=static_cast<float>(pMinecraft->height_phys);
+			m_fScreenWidth=(float)pMinecraft->width_phys;
+			m_fScreenHeight=(float)pMinecraft->height_phys;
 			m_bScreenWidthSetup = true;
 		}
 	}
@@ -1785,9 +1767,9 @@ void UIController::endCustomDrawGameStateAndMatrices()
 
 void RADLINK UIController::CustomDrawCallback(void *user_callback_data, Iggy *player, IggyCustomDrawCallbackRegion *region)
 {
-	UIScene *scene = static_cast<UIScene *>(IggyPlayerGetUserdata(player));
+	UIScene *scene = (UIScene *)IggyPlayerGetUserdata(player);
 
-	if(scene != nullptr)
+	if(scene != NULL)
 	{
 		scene->customDraw(region);
 	}
@@ -1799,7 +1781,7 @@ void RADLINK UIController::CustomDrawCallback(void *user_callback_data, Iggy *pl
 //width - Input value: optional number of pixels wide specified from AS3, or -1 if not defined. Output value: the number of pixels wide to pretend to Iggy that the bitmap is. SWF and AS3 scales bitmaps based on their pixel dimensions, so you can use this to substitute a texture that is higher or lower resolution that ActionScript thinks it is.
 //height - Input value: optional number of pixels high specified from AS3, or -1 if not defined. Output value: the number of pixels high to pretend to Iggy that the bitmap is. SWF and AS3 scales bitmaps based on their pixel dimensions, so you can use this to substitute a texture that is higher or lower resolution that ActionScript thinks it is.
 //destroy_callback_data - Optional additional output value you can set; the value will be passed along to the corresponding Iggy_TextureSubstitutionDestroyCallback (e.g. you can store the pointer to your own internal structure here).
-//return - A platform-independent wrapped texture handle provided by GDraw, or nullptr (nullptr with throw an ActionScript 3 ArgumentError that the Flash developer can catch) Use by calling IggySetTextureSubstitutionCallbacks.
+//return - A platform-independent wrapped texture handle provided by GDraw, or NULL (NULL with throw an ActionScript 3 ArgumentError that the Flash developer can catch) Use by calling IggySetTextureSubstitutionCallbacks.
 //
 //Discussion
 //
@@ -1814,7 +1796,7 @@ GDrawTexture * RADLINK UIController::TextureSubstitutionCreateCallback ( void * 
 		app.DebugPrintf("Found substitution texture %ls, with %d bytes\n", texture_name,it->second.length);
 
 		BufferedImage image(it->second.data, it->second.length);
-		if( image.getData() != nullptr )
+		if( image.getData() != NULL )
 		{
 			image.preMultiplyAlpha();
 			Textures *t = Minecraft::GetInstance()->textures;
@@ -1832,18 +1814,18 @@ GDrawTexture * RADLINK UIController::TextureSubstitutionCreateCallback ( void * 
 	#endif
 			*destroy_callback_data = (void *)id;
 
-			app.DebugPrintf("Found substitution texture %ls (%d) - %dx%d\n", static_cast<wchar_t *>(texture_name), id, image.getWidth(), image.getHeight());
+			app.DebugPrintf("Found substitution texture %ls (%d) - %dx%d\n", (wchar_t *)texture_name, id, image.getWidth(), image.getHeight());
 			return ui.getSubstitutionTexture(id);
 		}
 		else
 		{
-			return nullptr;
+			return NULL;
 		}
 	}
 	else
 	{
-		app.DebugPrintf("Could not find substitution texture %ls\n", static_cast<wchar_t *>(texture_name));
-		return nullptr;
+		app.DebugPrintf("Could not find substitution texture %ls\n", (wchar_t *)texture_name);
+		return NULL;
 	}
 }
 
@@ -1853,7 +1835,7 @@ void RADLINK UIController::TextureSubstitutionDestroyCallback ( void * user_call
 {
 	// Orbis complains about casting a pointer to an int
 	LONGLONG llVal=(LONGLONG)destroy_callback_data;
-	int id=static_cast<int>(llVal);
+	int id=(int)llVal;
 	app.DebugPrintf("Destroying iggy texture %d\n", id);
 
 	ui.destroySubstitutionTexture(user_callback_data, handle);
@@ -1955,7 +1937,7 @@ bool UIController::NavigateToScene(int iPad, EUIScene scene, void *initData, EUI
 			if( ( iPad != 255 ) && ( iPad >= 0 ) )
 			{
 				menuDisplayedPad = iPad;
-				group = static_cast<EUIGroup>(iPad + 1);
+				group = (EUIGroup)(iPad+1);
 			}
 			else group = eUIGroup_Fullscreen;
 		}
@@ -1970,7 +1952,7 @@ bool UIController::NavigateToScene(int iPad, EUIScene scene, void *initData, EUI
 
 	EnterCriticalSection(&m_navigationLock);
 	SetMenuDisplayed(menuDisplayedPad,true);
-	bool success = m_groups[static_cast<int>(group)]->NavigateToScene(iPad, scene, initData, layer);
+	bool success = m_groups[(int)group]->NavigateToScene(iPad, scene, initData, layer);
 	if(success && group == eUIGroup_Fullscreen) setFullscreenMenuDisplayed(true);
 	LeaveCriticalSection(&m_navigationLock);
 
@@ -1985,18 +1967,18 @@ bool UIController::NavigateBack(int iPad, bool forceUsePad, EUIScene eScene, EUI
 	bool navComplete = false;
 	if( app.GetGameStarted() )
 	{
-		bool navComplete = m_groups[static_cast<int>(eUIGroup_Fullscreen)]->NavigateBack(iPad, eScene, eLayer);
+		bool navComplete = m_groups[(int)eUIGroup_Fullscreen]->NavigateBack(iPad, eScene, eLayer);
 
 		if(!navComplete && ( iPad != 255 ) && ( iPad >= 0 ) )
 		{
-			EUIGroup group = static_cast<EUIGroup>(iPad + 1);
-			navComplete = m_groups[static_cast<int>(group)]->NavigateBack(iPad, eScene, eLayer);
-			if(!m_groups[static_cast<int>(group)]->GetMenuDisplayed())SetMenuDisplayed(iPad,false);
+			EUIGroup group = (EUIGroup)(iPad+1);
+			navComplete = m_groups[(int)group]->NavigateBack(iPad, eScene, eLayer);
+			if(!m_groups[(int)group]->GetMenuDisplayed())SetMenuDisplayed(iPad,false);
 		}
 		// 4J-PB - autosave in fullscreen doesn't clear the menuDisplayed flag
 		else
 		{
-			if(!m_groups[static_cast<int>(eUIGroup_Fullscreen)]->GetMenuDisplayed())
+			if(!m_groups[(int)eUIGroup_Fullscreen]->GetMenuDisplayed())
 			{
 				setFullscreenMenuDisplayed(false);
 				for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
@@ -2008,8 +1990,8 @@ bool UIController::NavigateBack(int iPad, bool forceUsePad, EUIScene eScene, EUI
 	}
 	else
 	{
-		navComplete = m_groups[static_cast<int>(eUIGroup_Fullscreen)]->NavigateBack(iPad, eScene, eLayer);
-		if(!m_groups[static_cast<int>(eUIGroup_Fullscreen)]->GetMenuDisplayed()) SetMenuDisplayed(XUSER_INDEX_ANY,false);
+		navComplete = m_groups[(int)eUIGroup_Fullscreen]->NavigateBack(iPad, eScene, eLayer);
+		if(!m_groups[(int)eUIGroup_Fullscreen]->GetMenuDisplayed()) SetMenuDisplayed(XUSER_INDEX_ANY,false);
 	}
 	return navComplete;
 }
@@ -2030,11 +2012,11 @@ void UIController::NavigateToHomeMenu()
 	TexturePack *pTexPack=Minecraft::GetInstance()->skins->getSelected();
 
 
-	DLCTexturePack *pDLCTexPack=nullptr;
+	DLCTexturePack *pDLCTexPack=NULL;
 	if(pTexPack->hasAudio())
 	{
 		// get the dlc texture pack, and store it
-		pDLCTexPack=static_cast<DLCTexturePack *>(pTexPack);
+		pDLCTexPack=(DLCTexturePack *)pTexPack;
 	}
 
 	// change to the default texture pack
@@ -2051,11 +2033,11 @@ void UIController::NavigateToHomeMenu()
 			eStream_CD_1);
 		pMinecraft->soundEngine->playStreaming(L"", 0, 0, 0, 1, 1);
 
-		// 		if(pDLCTexPack->m_pStreamedWaveBank!=nullptr)
+		// 		if(pDLCTexPack->m_pStreamedWaveBank!=NULL)
 		// 		{
 		// 			pDLCTexPack->m_pStreamedWaveBank->Destroy();
 		// 		}
-		// 		if(pDLCTexPack->m_pSoundBank!=nullptr)
+		// 		if(pDLCTexPack->m_pSoundBank!=NULL)
 		// 		{
 		// 			pDLCTexPack->m_pSoundBank->Destroy();
 		// 		}
@@ -2089,7 +2071,7 @@ UIScene *UIController::GetTopScene(int iPad, EUILayer layer, EUIGroup group)
 			// If the game isn't running treat as user 0, otherwise map index directly from pad
 			if( ( iPad != 255 ) && ( iPad >= 0 ) )
 			{
-				group = static_cast<EUIGroup>(iPad + 1);
+				group = (EUIGroup)(iPad+1);
 			}
 			else group = eUIGroup_Fullscreen;
 		}
@@ -2099,7 +2081,7 @@ UIScene *UIController::GetTopScene(int iPad, EUILayer layer, EUIGroup group)
 			group = eUIGroup_Fullscreen;
 		}
 	}
-	return m_groups[static_cast<int>(group)]->GetTopScene(layer);
+	return m_groups[(int)group]->GetTopScene(layer);
 }
 
 size_t UIController::RegisterForCallbackId(UIScene *scene)
@@ -2126,7 +2108,7 @@ void UIController::UnregisterCallbackId(size_t id)
 
 UIScene *UIController::GetSceneFromCallbackId(size_t id)
 {
-	UIScene *scene = nullptr;
+	UIScene *scene = NULL;
     auto it = m_registeredCallbackScenes.find(id);
     if(it != m_registeredCallbackScenes.end() )
 	{
@@ -2147,7 +2129,7 @@ void UIController::LeaveCallbackIdCriticalSection()
 
 void UIController::CloseAllPlayersScenes()
 {
-	m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getTooltips()->SetTooltips(-1);
+	m_groups[(int)eUIGroup_Fullscreen]->getTooltips()->SetTooltips(-1);
 	for(unsigned int i = 0; i < eUIGroup_COUNT; ++i)
 	{
 		//m_bCloseAllScenes[i] = true;
@@ -2170,7 +2152,7 @@ void UIController::CloseUIScenes(int iPad, bool forceIPad)
 	if( app.GetGameStarted() || forceIPad )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2178,22 +2160,22 @@ void UIController::CloseUIScenes(int iPad, bool forceIPad)
 		group = eUIGroup_Fullscreen;
 	}
 
-	m_groups[static_cast<int>(group)]->closeAllScenes();
-	m_groups[static_cast<int>(group)]->getTooltips()->SetTooltips(-1);
+	m_groups[(int)group]->closeAllScenes();
+	m_groups[(int)group]->getTooltips()->SetTooltips(-1);
 
 	// This should cause the popup to dissappear
 	TutorialPopupInfo popupInfo;
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup()) m_groups[static_cast<int>(group)]->getTutorialPopup()->SetTutorialDescription(&popupInfo);
+	if(m_groups[(int)group]->getTutorialPopup()) m_groups[(int)group]->getTutorialPopup()->SetTutorialDescription(&popupInfo);
 
 	if(group==eUIGroup_Fullscreen) setFullscreenMenuDisplayed(false);
 
-	SetMenuDisplayed((group == eUIGroup_Fullscreen ? XUSER_INDEX_ANY : iPad), m_groups[static_cast<int>(group)]->GetMenuDisplayed());
+	SetMenuDisplayed((group == eUIGroup_Fullscreen ? XUSER_INDEX_ANY : iPad), m_groups[(int)group]->GetMenuDisplayed());
 }
 
 void UIController::setFullscreenMenuDisplayed(bool displayed)
 {
 	// Show/hide the tooltips for the fullscreen group
-	m_groups[static_cast<int>(eUIGroup_Fullscreen)]->showComponent(ProfileManager.GetPrimaryPad(),eUIComponent_Tooltips,eUILayer_Tooltips,displayed);
+	m_groups[(int)eUIGroup_Fullscreen]->showComponent(ProfileManager.GetPrimaryPad(),eUIComponent_Tooltips,eUILayer_Tooltips,displayed);
 
 	// Show/hide tooltips for the other layers
 	for(unsigned int i = (eUIGroup_Fullscreen+1); i < eUIGroup_COUNT; ++i)
@@ -2208,14 +2190,14 @@ bool UIController::IsPauseMenuDisplayed(int iPad)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	return m_groups[static_cast<int>(group)]->IsPauseMenuDisplayed();
+	return m_groups[(int)group]->IsPauseMenuDisplayed();
 }
 
 bool UIController::IsContainerMenuDisplayed(int iPad)
@@ -2224,14 +2206,14 @@ bool UIController::IsContainerMenuDisplayed(int iPad)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	return m_groups[static_cast<int>(group)]->IsContainerMenuDisplayed();
+	return m_groups[(int)group]->IsContainerMenuDisplayed();
 }
 
 bool UIController::IsIgnorePlayerJoinMenuDisplayed(int iPad)
@@ -2240,14 +2222,14 @@ bool UIController::IsIgnorePlayerJoinMenuDisplayed(int iPad)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	return m_groups[static_cast<int>(group)]->IsIgnorePlayerJoinMenuDisplayed();
+	return m_groups[(int)group]->IsIgnorePlayerJoinMenuDisplayed();
 }
 
 bool UIController::IsIgnoreAutosaveMenuDisplayed(int iPad)
@@ -2256,14 +2238,14 @@ bool UIController::IsIgnoreAutosaveMenuDisplayed(int iPad)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	return m_groups[static_cast<int>(eUIGroup_Fullscreen)]->IsIgnoreAutosaveMenuDisplayed() || (group != eUIGroup_Fullscreen && m_groups[static_cast<int>(group)]->IsIgnoreAutosaveMenuDisplayed());
+	return m_groups[(int)eUIGroup_Fullscreen]->IsIgnoreAutosaveMenuDisplayed() || (group != eUIGroup_Fullscreen && m_groups[(int)group]->IsIgnoreAutosaveMenuDisplayed());
 }
 
 void UIController::SetIgnoreAutosaveMenuDisplayed(int iPad, bool displayed)
@@ -2277,14 +2259,14 @@ bool UIController::IsSceneInStack(int iPad, EUIScene eScene)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	return m_groups[static_cast<int>(group)]->IsSceneInStack(eScene);
+	return m_groups[(int)group]->IsSceneInStack(eScene);
 }
 
 bool UIController::GetMenuDisplayed(int iPad)
@@ -2365,14 +2347,14 @@ void UIController::SetTooltipText( unsigned int iPad, unsigned int tooltip, int 
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->SetTooltipText(tooltip, iTextID);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->SetTooltipText(tooltip, iTextID);
 }
 
 void UIController::SetEnableTooltips( unsigned int iPad, BOOL bVal )
@@ -2381,14 +2363,14 @@ void UIController::SetEnableTooltips( unsigned int iPad, BOOL bVal )
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->SetEnableTooltips(bVal);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->SetEnableTooltips(bVal);
 }
 
 void UIController::ShowTooltip( unsigned int iPad, unsigned int tooltip, bool show )
@@ -2397,14 +2379,14 @@ void UIController::ShowTooltip( unsigned int iPad, unsigned int tooltip, bool sh
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->ShowTooltip(tooltip,show);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->ShowTooltip(tooltip,show);
 }
 
 void UIController::SetTooltips( unsigned int iPad, int iA, int iB, int iX, int iY, int iLT, int iRT, int iLB, int iRB, int iLS, int iRS, int iBack, bool forceUpdate)
@@ -2426,14 +2408,14 @@ void UIController::SetTooltips( unsigned int iPad, int iA, int iB, int iX, int i
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->SetTooltips(iA, iB, iX, iY, iLT, iRT, iLB, iRB, iLS, iRS, iBack, forceUpdate);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->SetTooltips(iA, iB, iX, iY, iLT, iRT, iLB, iRB, iLS, iRS, iBack, forceUpdate);
 }
 
 void UIController::EnableTooltip( unsigned int iPad, unsigned int tooltip, bool enable )
@@ -2442,14 +2424,14 @@ void UIController::EnableTooltip( unsigned int iPad, unsigned int tooltip, bool 
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->EnableTooltip(tooltip,enable);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->EnableTooltip(tooltip,enable);
 }
 
 void UIController::RefreshTooltips(unsigned int iPad)
@@ -2468,7 +2450,7 @@ void UIController::AnimateKeyPress(int iPad, int iAction, bool bRepeat, bool bPr
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2476,7 +2458,7 @@ void UIController::AnimateKeyPress(int iPad, int iAction, bool bRepeat, bool bPr
 		group = eUIGroup_Fullscreen;
 	}
 	bool handled = false;
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->handleInput(iPad, iAction, bRepeat, bPressed, bReleased, handled);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->handleInput(iPad, iAction, bRepeat, bPressed, bReleased, handled);
 }
 
 void UIController::OverrideSFX(int iPad, int iAction,bool bVal)
@@ -2486,7 +2468,7 @@ void UIController::OverrideSFX(int iPad, int iAction,bool bVal)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2494,7 +2476,7 @@ void UIController::OverrideSFX(int iPad, int iAction,bool bVal)
 		group = eUIGroup_Fullscreen;
 	}
 	bool handled = false;
-	if(m_groups[static_cast<int>(group)]->getTooltips()) m_groups[static_cast<int>(group)]->getTooltips()->overrideSFX(iPad, iAction,bVal);
+	if(m_groups[(int)group]->getTooltips()) m_groups[(int)group]->getTooltips()->overrideSFX(iPad, iAction,bVal);
 }
 
 void UIController::PlayUISFX(ESoundEffect eSound)
@@ -2522,13 +2504,13 @@ void UIController::DisplayGamertag(unsigned int iPad, bool show)
 	{
 		show = false;
 	}
-	EUIGroup group = static_cast<EUIGroup>(iPad + 1);
-	if(m_groups[static_cast<int>(group)]->getHUD()) m_groups[static_cast<int>(group)]->getHUD()->ShowDisplayName(show);
+	EUIGroup group = (EUIGroup)(iPad+1);
+	if(m_groups[(int)group]->getHUD()) m_groups[(int)group]->getHUD()->ShowDisplayName(show);
 
 	// Update TutorialPopup in Splitscreen if no container is displayed (to make sure the Popup does not overlap with the Gamertag!)
-	if(app.GetLocalPlayerCount() > 1 && m_groups[static_cast<int>(group)]->getTutorialPopup() && !m_groups[static_cast<int>(group)]->IsContainerMenuDisplayed())
+	if(app.GetLocalPlayerCount() > 1 && m_groups[(int)group]->getTutorialPopup() && !m_groups[(int)group]->IsContainerMenuDisplayed())
 	{
-		m_groups[static_cast<int>(group)]->getTutorialPopup()->UpdateTutorialPopup();
+		m_groups[(int)group]->getTutorialPopup()->UpdateTutorialPopup();
 	}
 }
 
@@ -2539,7 +2521,7 @@ void UIController::SetSelectedItem(unsigned int iPad, const wstring &name)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2547,7 +2529,7 @@ void UIController::SetSelectedItem(unsigned int iPad, const wstring &name)
 		group = eUIGroup_Fullscreen;
 	}
 	bool handled = false;
-	if(m_groups[static_cast<int>(group)]->getHUD()) m_groups[static_cast<int>(group)]->getHUD()->SetSelectedLabel(name);
+	if(m_groups[(int)group]->getHUD()) m_groups[(int)group]->getHUD()->SetSelectedLabel(name);
 }
 
 void UIController::UpdateSelectedItemPos(unsigned int iPad)
@@ -2600,10 +2582,10 @@ void UIController::HandleInventoryUpdated(int iPad)
 	EUIGroup group = eUIGroup_Fullscreen;
 	if( app.GetGameStarted() && ( iPad != 255 ) && ( iPad >= 0 ) )
 	{
-		group = static_cast<EUIGroup>(iPad + 1);
+		group = (EUIGroup)(iPad+1);
 	}
 
-	m_groups[group]->HandleMessage(eUIMessage_InventoryUpdated, nullptr);
+	m_groups[group]->HandleMessage(eUIMessage_InventoryUpdated, NULL);
 }
 
 void UIController::HandleGameTick()
@@ -2622,14 +2604,14 @@ void UIController::SetTutorial(int iPad, Tutorial *tutorial)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup()) m_groups[static_cast<int>(group)]->getTutorialPopup()->SetTutorial(tutorial);
+	if(m_groups[(int)group]->getTutorialPopup()) m_groups[(int)group]->getTutorialPopup()->SetTutorial(tutorial);
 }
 
 void UIController::SetTutorialDescription(int iPad, TutorialPopupInfo *info)
@@ -2638,7 +2620,7 @@ void UIController::SetTutorialDescription(int iPad, TutorialPopupInfo *info)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2646,11 +2628,11 @@ void UIController::SetTutorialDescription(int iPad, TutorialPopupInfo *info)
 		group = eUIGroup_Fullscreen;
 	}
 
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup())
+	if(m_groups[(int)group]->getTutorialPopup())
 	{
 		// tutorial popup needs to know if a container menu is being displayed
-		m_groups[static_cast<int>(group)]->getTutorialPopup()->SetContainerMenuVisible(m_groups[static_cast<int>(group)]->IsContainerMenuDisplayed());
-		m_groups[static_cast<int>(group)]->getTutorialPopup()->SetTutorialDescription(info);
+		m_groups[(int)group]->getTutorialPopup()->SetContainerMenuVisible(m_groups[(int)group]->IsContainerMenuDisplayed());
+		m_groups[(int)group]->getTutorialPopup()->SetTutorialDescription(info);
 	}
 }
 
@@ -2658,9 +2640,9 @@ void UIController::SetTutorialDescription(int iPad, TutorialPopupInfo *info)
 void UIController::RemoveInteractSceneReference(int iPad, UIScene *scene)
 {
 	EUIGroup group;
-	if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+	if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 	else group = eUIGroup_Fullscreen;
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup()) m_groups[static_cast<int>(group)]->getTutorialPopup()->RemoveInteractSceneReference(scene);
+	if(m_groups[(int)group]->getTutorialPopup()) m_groups[(int)group]->getTutorialPopup()->RemoveInteractSceneReference(scene);
 }
 #endif
 
@@ -2670,14 +2652,14 @@ void UIController::SetTutorialVisible(int iPad, bool visible)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
 	{
 		group = eUIGroup_Fullscreen;
 	}
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup()) m_groups[static_cast<int>(group)]->getTutorialPopup()->SetVisible(visible);
+	if(m_groups[(int)group]->getTutorialPopup()) m_groups[(int)group]->getTutorialPopup()->SetVisible(visible);
 }
 
 bool UIController::IsTutorialVisible(int iPad)
@@ -2686,7 +2668,7 @@ bool UIController::IsTutorialVisible(int iPad)
 	if( app.GetGameStarted() )
 	{
 		// If the game isn't running treat as user 0, otherwise map index directly from pad
-		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = static_cast<EUIGroup>(iPad + 1);
+		if( ( iPad != 255 ) && ( iPad >= 0 ) ) group = (EUIGroup)(iPad+1);
 		else group = eUIGroup_Fullscreen;
 	}
 	else
@@ -2694,7 +2676,7 @@ bool UIController::IsTutorialVisible(int iPad)
 		group = eUIGroup_Fullscreen;
 	}
 	bool visible = false;
-	if(m_groups[static_cast<int>(group)]->getTutorialPopup()) visible = m_groups[static_cast<int>(group)]->getTutorialPopup()->IsVisible();
+	if(m_groups[(int)group]->getTutorialPopup()) visible = m_groups[(int)group]->getTutorialPopup()->IsVisible();
 	return visible;
 }
 
@@ -2704,7 +2686,7 @@ void UIController::UpdatePlayerBasePositions()
 
 	for( BYTE idx = 0; idx < XUSER_MAX_COUNT; ++idx)
 	{
-		if(pMinecraft->localplayers[idx] != nullptr)
+		if(pMinecraft->localplayers[idx] != NULL)
 		{
 			if(pMinecraft->localplayers[idx]->m_iScreenSection==C4JRender::VIEWPORT_TYPE_FULLSCREEN)
 			{
@@ -2714,7 +2696,7 @@ void UIController::UpdatePlayerBasePositions()
 			{
 				DisplayGamertag(idx,true);
 			}
-			m_groups[idx+1]->SetViewportType(static_cast<C4JRender::eViewportType>(pMinecraft->localplayers[idx]->m_iScreenSection));
+			m_groups[idx+1]->SetViewportType((C4JRender::eViewportType)pMinecraft->localplayers[idx]->m_iScreenSection);
 		}
 		else
 		{
@@ -2747,7 +2729,7 @@ void UIController::ShowOtherPlayersBaseScene(unsigned int iPad, bool show)
 
 void UIController::ShowTrialTimer(bool show)
 {
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showTrialTimer(show);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showTrialTimer(show);
 }
 
 void UIController::SetTrialTimerLimitSecs(unsigned int uiSeconds)
@@ -2759,7 +2741,7 @@ void UIController::UpdateTrialTimer(unsigned int iPad)
 {
 	WCHAR wcTime[20];
 
-	DWORD dwTimeTicks=static_cast<DWORD>(app.getTrialTimer());
+	DWORD dwTimeTicks=(DWORD)app.getTrialTimer();
 
 	if(dwTimeTicks>m_dwTrialTimerLimitSecs)
 	{
@@ -2778,11 +2760,11 @@ void UIController::UpdateTrialTimer(unsigned int iPad)
 		int iMins=dwTimeTicks/60;
 		int iSeconds=dwTimeTicks%60;
 		swprintf( wcTime, 20, L"%d:%02d",iMins,iSeconds);
-		if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->setTrialTimer(wcTime);
+		if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->setTrialTimer(wcTime);
 	}
 	else
 	{
-		if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->setTrialTimer(L"");
+		if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->setTrialTimer(L"");
 	}
 
 	// are we out of time?
@@ -2792,7 +2774,7 @@ void UIController::UpdateTrialTimer(unsigned int iPad)
 		// bring up the pause menu to stop the trial over message box being called again?
 		if(!ui.GetMenuDisplayed( iPad ) )
 		{
-			ui.NavigateToScene(iPad, eUIScene_PauseMenu, nullptr, eUILayer_Scene);
+			ui.NavigateToScene(iPad, eUIScene_PauseMenu, NULL, eUILayer_Scene);
 
 			app.SetAction(iPad,eAppAction_TrialOver);
 		}
@@ -2801,7 +2783,7 @@ void UIController::UpdateTrialTimer(unsigned int iPad)
 
 void UIController::ReduceTrialTimerValue()
 {
-	DWORD dwTimeTicks=static_cast<int>(app.getTrialTimer());
+	DWORD dwTimeTicks=(int)app.getTrialTimer();
 
 	if(dwTimeTicks>m_dwTrialTimerLimitSecs)
 	{
@@ -2813,7 +2795,7 @@ void UIController::ReduceTrialTimerValue()
 
 void UIController::ShowAutosaveCountdownTimer(bool show)
 {
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showTrialTimer(show);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showTrialTimer(show);
 }
 
 void UIController::UpdateAutosaveCountdownTimer(unsigned int uiSeconds)
@@ -2821,7 +2803,7 @@ void UIController::UpdateAutosaveCountdownTimer(unsigned int uiSeconds)
 #if !(defined(_XBOX_ONE) || defined(__ORBIS__))
 	WCHAR wcAutosaveCountdown[100];
 	swprintf( wcAutosaveCountdown, 100, app.GetString(IDS_AUTOSAVE_COUNTDOWN),uiSeconds);
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->setTrialTimer(wcAutosaveCountdown);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->setTrialTimer(wcAutosaveCountdown);
 #endif
 }
 
@@ -2838,12 +2820,12 @@ void UIController::ShowSavingMessage(unsigned int iPad, C4JStorage::ESavingMessa
 		show = true;
 		break;
 	}
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showSaveIcon(show);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showSaveIcon(show);
 }
 
 void UIController::ShowPlayerDisplayname(bool show)
 {
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showPlayerDisplayName(show);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showPlayerDisplayName(show);
 }
 
 void UIController::SetWinUserIndex(unsigned int iPad)
@@ -2862,12 +2844,12 @@ void UIController::ShowUIDebugConsole(bool show)
 
 	if(show)
 	{
-		m_uiDebugConsole = static_cast<UIComponent_DebugUIConsole *>(m_groups[eUIGroup_Fullscreen]->addComponent(0, eUIComponent_DebugUIConsole, eUILayer_Debug));
+		m_uiDebugConsole = (UIComponent_DebugUIConsole *)m_groups[eUIGroup_Fullscreen]->addComponent(0, eUIComponent_DebugUIConsole, eUILayer_Debug);
 	}
 	else
 	{
 		m_groups[eUIGroup_Fullscreen]->removeComponent(eUIComponent_DebugUIConsole, eUILayer_Debug);
-		m_uiDebugConsole = nullptr;
+		m_uiDebugConsole = NULL;
 	}
 #endif
 }
@@ -2878,12 +2860,12 @@ void UIController::ShowUIDebugMarketingGuide(bool show)
 
 	if(show)
 	{
-		m_uiDebugMarketingGuide = static_cast<UIComponent_DebugUIMarketingGuide *>(m_groups[eUIGroup_Fullscreen]->addComponent(0, eUIComponent_DebugUIMarketingGuide, eUILayer_Debug));
+		m_uiDebugMarketingGuide = (UIComponent_DebugUIMarketingGuide *)m_groups[eUIGroup_Fullscreen]->addComponent(0, eUIComponent_DebugUIMarketingGuide, eUILayer_Debug);
 	}
 	else
 	{
 		m_groups[eUIGroup_Fullscreen]->removeComponent(eUIComponent_DebugUIMarketingGuide, eUILayer_Debug);
-		m_uiDebugMarketingGuide = nullptr;
+		m_uiDebugMarketingGuide = NULL;
 	}
 #endif
 }
@@ -2901,13 +2883,13 @@ bool UIController::PressStartPlaying(unsigned int iPad)
 void UIController::ShowPressStart(unsigned int iPad)
 {
 	m_iPressStartQuadrantsMask|=1<<iPad;
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showPressStart(iPad, true);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showPressStart(iPad, true);
 }
 
 void UIController::HidePressStart()
 {
 	ClearPressStart();
-	if(m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()) m_groups[static_cast<int>(eUIGroup_Fullscreen)]->getPressStartToPlay()->showPressStart(0, false);
+	if(m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()) m_groups[(int)eUIGroup_Fullscreen]->getPressStartToPlay()->showPressStart(0, false);
 }
 
 void UIController::ClearPressStart()
@@ -2970,7 +2952,7 @@ C4JStorage::EMessageResult UIController::RequestMessageBox(UINT uiTitle, UINT ui
 	}
 }
 
-C4JStorage::EMessageResult UIController::RequestUGCMessageBox(UINT title/* = -1 */, UINT message/* = -1 */, int iPad/* = -1*/, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)/* = nullptr*/, LPVOID lpParam/* = nullptr*/)
+C4JStorage::EMessageResult UIController::RequestUGCMessageBox(UINT title/* = -1 */, UINT message/* = -1 */, int iPad/* = -1*/, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)/* = NULL*/, LPVOID lpParam/* = NULL*/)
 {
 	// Default title / messages
 	if (title == -1)
@@ -3002,7 +2984,7 @@ C4JStorage::EMessageResult UIController::RequestUGCMessageBox(UINT title/* = -1 
 #endif
 }
 
-C4JStorage::EMessageResult UIController::RequestContentRestrictedMessageBox(UINT title/* = -1 */, UINT message/* = -1 */, int iPad/* = -1*/, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)/* = nullptr*/, LPVOID lpParam/* = nullptr*/)
+C4JStorage::EMessageResult UIController::RequestContentRestrictedMessageBox(UINT title/* = -1 */, UINT message/* = -1 */, int iPad/* = -1*/, int( *Func)(LPVOID,int,const C4JStorage::EMessageResult)/* = NULL*/, LPVOID lpParam/* = NULL*/)
 {
 	// Default title / messages
 	if (title == -1)
@@ -3040,7 +3022,7 @@ C4JStorage::EMessageResult UIController::RequestContentRestrictedMessageBox(UINT
 void UIController::setFontCachingCalculationBuffer(int length)
 {
 	/* 4J-JEV: As described in an email from Sean.
-	If your `optional_temp_buffer` is nullptr, Iggy will allocate the temp
+	If your `optional_temp_buffer` is NULL, Iggy will allocate the temp
 	buffer on the stack during Iggy draw calls. The size of the buffer it
 	will allocate is 16 bytes times `max_chars` in 32-bit, and 24 bytes
 	times `max_chars` in 64-bit. If the stack of the thread making the
@@ -3053,10 +3035,10 @@ void UIController::setFontCachingCalculationBuffer(int length)
 	static const int CHAR_SIZE = 16;
 #endif
 
-	if (m_tempBuffer != nullptr) delete [] m_tempBuffer;
+	if (m_tempBuffer != NULL) delete [] m_tempBuffer;
 	if (length<0)
 	{
-		if (m_defaultBuffer == nullptr) m_defaultBuffer = new char[CHAR_SIZE*5000];
+		if (m_defaultBuffer == NULL) m_defaultBuffer = new char[CHAR_SIZE*5000];
 		IggySetFontCachingCalculationBuffer(5000, m_defaultBuffer, CHAR_SIZE*5000);
 	}
 	else
@@ -3066,16 +3048,16 @@ void UIController::setFontCachingCalculationBuffer(int length)
 	}
 }
 
-// Returns the first scene of given type if it exists, nullptr otherwise
+// Returns the first scene of given type if it exists, NULL otherwise
 UIScene *UIController::FindScene(EUIScene sceneType)
 {
-	UIScene *pScene = nullptr;
+	UIScene *pScene = NULL;
 
 	for (int i = 0; i < eUIGroup_COUNT; i++)
 	{
 		pScene = m_groups[i]->FindScene(sceneType);
 #ifdef __PS3__
-		if (pScene != nullptr) return pScene;
+		if (pScene != NULL) return pScene;
 #else
 		if (pScene != nullptr) return pScene;
 #endif
@@ -3241,7 +3223,7 @@ bool UIController::TouchBoxHit(UIScene *pUIScene,S32 x, S32 y)
 	}
 
 	//app.DebugPrintf("MISS at x = %i y = %i\n", (int)x, (int)y);
-	m_HighlightedUIElement = nullptr;
+	m_HighlightedUIElement = NULL;
 	return false;
 }
 

@@ -196,8 +196,8 @@ typedef struct _ConnectionProgressParams
 		showTooltips = false;
 		setFailTimer = false;
 		timerTime = 0;
-		cancelFunc = nullptr;
-		cancelFuncParam = nullptr;
+		cancelFunc = NULL;
+		cancelFuncParam = NULL;
 	}
 } ConnectionProgressParams;
 
@@ -250,7 +250,7 @@ typedef struct _SaveListDetails
 	_SaveListDetails()
 	{
 		saveId = 0;
-		pbThumbnailData = nullptr;
+		pbThumbnailData = NULL;
 		dwThumbnailSize = 0;
 #ifdef _DURANGO
 		ZeroMemory(UTF16SaveName,sizeof(wchar_t)*128);
@@ -403,15 +403,15 @@ typedef struct _LoadingInputParams
 
 	_LoadingInputParams()
 	{
-		func = nullptr;
-		lpParam = nullptr;
-		completionData = nullptr;
+		func = NULL;
+		lpParam = NULL;
+		completionData = NULL;
 
 		cancelText = -1;
-		cancelFunc = nullptr;
-		completeFunc = nullptr;
-		m_cancelFuncParam = nullptr;
-		m_completeFuncParam = nullptr;
+		cancelFunc = NULL;
+		completeFunc = NULL;
+		m_cancelFuncParam = NULL;
+		m_completeFuncParam = NULL;
 		waitForThreadToDelete = false;
 	}
 } LoadingInputParams;
@@ -439,7 +439,7 @@ typedef struct _TutorialPopupInfo
 
 	_TutorialPopupInfo()
 	{
-		interactScene = nullptr;
+		interactScene = NULL;
 		desc = L"";
 		title = L"";
 		icon = -1;
@@ -447,7 +447,7 @@ typedef struct _TutorialPopupInfo
 		isFoil = false;
 		allowFade = true;
 		isReminder = false;
-		tutorial = nullptr;
+		tutorial = NULL;
 	}
 
 } TutorialPopupInfo;

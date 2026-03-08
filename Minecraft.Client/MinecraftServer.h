@@ -52,9 +52,9 @@ typedef struct _NetworkGameInitData
 	_NetworkGameInitData()
 	{
 		seed = 0;
-		saveData = nullptr;
+		saveData = NULL;
 		settings = 0;
-		levelGen = nullptr;
+		levelGen = NULL;
 		texturePackId = 0;
 		findSeed = false;
 		xzSize = LEVEL_LEGACY_WIDTH;
@@ -236,7 +236,8 @@ private:
 public:
 	void					addPostProcessRequest(ChunkSource *chunkSource, int x, int z);
 
-    static PlayerList *getPlayerList() { if( server != nullptr) return server->players; else return nullptr; }
+public:
+	static PlayerList *getPlayerList() { if( server != NULL ) return server->players; else return NULL; }
 	static void SetTimeOfDay(int64_t time) { setTimeOfDayAtEndOfTick = true; setTimeOfDay = time; }
 	static void SetTime(int64_t time) { setTimeAtEndOfTick = true; setTime = time; }
 
