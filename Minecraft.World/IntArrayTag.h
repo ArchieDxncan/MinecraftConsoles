@@ -35,8 +35,6 @@ public:
 	void load(DataInput *dis, int tagDepth)
 	{
 		int length = dis->readInt();
-        if (length < 0 || length > 65536)
-			length = 0;
 
 		if ( data.data ) delete[] data.data;
 		data = intArray(length);

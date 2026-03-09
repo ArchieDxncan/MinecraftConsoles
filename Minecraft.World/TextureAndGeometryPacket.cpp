@@ -121,20 +121,7 @@ void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 {
 	textureName = dis->readUTF();
 	dwSkinID = static_cast<DWORD>(dis->readInt());
-
-    short rawTextureBytes = dis->readShort();
-    if (rawTextureBytes <= 0)
-    {
-        dwTextureBytes = 0;
-    }
-    else
-    {
-        dwTextureBytes = (DWORD)(unsigned short)rawTextureBytes;
-        if (dwTextureBytes > 65536)
-        {
-            dwTextureBytes = 0;
-        }
-    }
+	dwTextureBytes = static_cast<DWORD>(dis->readShort());
 
 	if(dwTextureBytes>0)
 	{
@@ -147,19 +134,7 @@ void TextureAndGeometryPacket::read(DataInputStream *dis) //throws IOException
 	}
 	uiAnimOverrideBitmask = dis->readInt();
 
-	short rawBoxC = dis->readShort();
-    if (rawBoxC <= 0)
-    {
-        dwBoxC = 0;
-    }
-    else
-    {
-        dwBoxC = (DWORD)(unsigned short)rawBoxC;
-        if (dwBoxC > 256)
-        {
-            dwBoxC = 0; // sane limit for skin boxes
-        }
-    }
+	dwBoxC = static_cast<DWORD>(dis->readShort());
 
 	if(dwBoxC>0)
 	{

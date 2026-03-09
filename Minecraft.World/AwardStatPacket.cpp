@@ -47,7 +47,7 @@ void AwardStatPacket::read(DataInputStream *dis) //throws IOException
 
 	// Read parameter blob.
 	int length = dis->readInt();
-    if (length > 0 && length <= 65536)
+	if(length > 0)
 	{
 		m_paramData = byteArray(length);
 		dis->readFully(m_paramData);

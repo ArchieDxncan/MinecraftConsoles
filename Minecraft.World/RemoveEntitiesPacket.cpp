@@ -21,9 +21,7 @@ RemoveEntitiesPacket::~RemoveEntitiesPacket()
 
 void RemoveEntitiesPacket::read(DataInputStream *dis) //throws IOException 
 {
-	int count = dis->readByte();
-	if(count < 0) count = 0;
-	ids = intArray(count);
+	ids = intArray(dis->readByte());
 	for(unsigned int i = 0; i < ids.length; ++i)
 	{
 		ids[i] = dis->readInt();

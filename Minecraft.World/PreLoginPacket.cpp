@@ -62,7 +62,6 @@ void PreLoginPacket::read(DataInputStream *dis) //throws IOException
 	m_friendsOnlyBits = dis->readByte();
 	m_ugcPlayersVersion = dis->readInt();
 	m_dwPlayerCount = dis->readByte();
-	if( m_dwPlayerCount > MINECRAFT_NET_MAX_PLAYERS ) m_dwPlayerCount = MINECRAFT_NET_MAX_PLAYERS;
 	if( m_dwPlayerCount > 0 )
 	{
 		m_playerXuids = new PlayerUID[m_dwPlayerCount];

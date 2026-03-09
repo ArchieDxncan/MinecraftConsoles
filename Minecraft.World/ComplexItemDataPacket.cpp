@@ -32,12 +32,7 @@ void ComplexItemDataPacket::read(DataInputStream *dis) //throws IOException
 	itemType = dis->readShort();
 	itemId = dis->readShort();
 
-	int dataLength = dis->readShort() & 0xffff;
-    if (dataLength > 32767)
-    {
-        dataLength = 0;
-    }
-    data = charArray(dataLength);
+	data = charArray(dis->readUnsignedShort() & 0xffff);
 	dis->readFully(data);
 }
 

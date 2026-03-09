@@ -10,19 +10,8 @@
 //offset - the offset in the buffer of the first byte to read.
 //length - the maximum number of bytes to read from the buffer.
 ByteArrayInputStream::ByteArrayInputStream(byteArray buf, unsigned int offset, unsigned int length)
-    : pos(offset), mark(offset)
+	: pos( offset ), count( min( offset+length, buf.length ) ), mark( offset )
 {
-    if (offset > buf.length)
-    {
-        count = buf.length;
-    }
-    else if (length > buf.length - offset)
-    {
-        count = buf.length;
-    }
-    else
-    {
-        count = offset + length;
 	this->buf = buf;
 }
 
