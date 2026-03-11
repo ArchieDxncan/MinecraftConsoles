@@ -10,12 +10,14 @@
 const unsigned int TreeTile::TREE_NAMES[ TreeTile::TREE_NAMES_LENGTH] = {	IDS_TILE_LOG_OAK,
 													IDS_TILE_LOG_SPRUCE,
 													IDS_TILE_LOG_BIRCH,
-													IDS_TILE_LOG_JUNGLE
+													IDS_TILE_LOG_JUNGLE,
+													IDS_TILE_LOG_ACACIA,
+													IDS_TILE_LOG_DARK_OAK
 												};
 
-const wstring  TreeTile::TREE_STRING_NAMES[ TreeTile::TREE_NAMES_LENGTH] = {L"oak", L"spruce", L"birch", L"jungle"};
+const wstring  TreeTile::TREE_STRING_NAMES[TreeTile::TREE_NAMES_LENGTH] = { L"oak", L"spruce", L"birch", L"jungle", L"acacia", L"dark" };
 
-const wstring TreeTile::TREE_TEXTURES[] = {L"tree_side", L"tree_spruce", L"tree_birch", L"tree_jungle"};
+const wstring TreeTile::TREE_TEXTURES[] = { L"tree_side", L"tree_spruce", L"tree_birch", L"tree_jungle", L"tree_acacia", L"tree_dark" };
 
 TreeTile::TreeTile(int id) : RotatedPillarTile(id, Material::wood)
 {
@@ -59,7 +61,7 @@ void TreeTile::onRemove(Level *level, int x, int y, int z, int id, int data)
 unsigned int TreeTile::getDescriptionId(int iData /*= -1*/)
 {
 	int type = iData & MASK_TYPE;
-	if(type < 0 ) type = 0;
+	if (type < 0 || type >= TreeTile::TREE_NAMES_LENGTH) type = 0;
 	return TreeTile::TREE_NAMES[type];
 }
 

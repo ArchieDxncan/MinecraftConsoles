@@ -90,6 +90,8 @@ public:
 		eMaterial_book,
 		eMaterial_bookshelf,
 		eMaterial_wheat,
+		eMaterial_acaciawood,
+		eMaterial_darkwood
 
 	}
 	eMaterial;
@@ -376,8 +378,8 @@ public:
 	static Item *frame;
 
 	// TU14
-	//static Item writingBook;
-	//static Item writtenBook;
+	//static Item *writingBook;
+	//static Item *writtenBook;
 
 	static Item *emerald;
 
@@ -411,6 +413,13 @@ public:
 	static Item *horseArmorDiamond;
 	static Item *lead;
 	static Item *nameTag;
+
+	// TU25
+	static Item* door_spruce;
+	static Item* door_birch;
+	static Item* door_jungle;
+	static Item* door_acacia;
+	static Item* door_dark;
 
 
 	static const int shovel_iron_Id			= 256;
@@ -581,8 +590,8 @@ public:
 	static const int itemFrame_Id			 = 389;
 
 	// TU14
-	//static const int writingBook_Id			 = 130;
-	//static const int writtenBook_Id			 = 131;
+	//static const int writingBook_Id			 = 386;
+	//static const int writtenBook_Id			 = 387;
 
 	static const int emerald_Id				 = 388;
 
@@ -617,6 +626,13 @@ public:
 	static const int horseArmorDiamond_Id = 419;
 	static const int lead_Id = 420;
 	static const int nameTag_Id = 421;
+
+	// TU25
+	static const int door_spruce_Id = 422;
+	static const int door_birch_Id = 423;
+	static const int door_jungle_Id = 424;
+	static const int door_acacia_Id = 425;
+	static const int door_dark_Id = 426;
 
 public:
 	const int id;

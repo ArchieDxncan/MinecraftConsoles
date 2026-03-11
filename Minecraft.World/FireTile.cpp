@@ -45,6 +45,8 @@ void FireTile::init()
 	setFlammable(Tile::stairs_birchwood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::stairs_sprucewood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::stairs_junglewood_Id, FLAME_HARD, BURN_MEDIUM);
+	setFlammable(Tile::stairs_acaciawood_Id, FLAME_HARD, BURN_MEDIUM);
+	setFlammable(Tile::stairs_darkwood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::treeTrunk_Id, FLAME_HARD, BURN_HARD);
 	setFlammable(Tile::leaves_Id, FLAME_EASY, BURN_EASY);
 	setFlammable(Tile::bookshelf_Id, FLAME_EASY, BURN_MEDIUM);

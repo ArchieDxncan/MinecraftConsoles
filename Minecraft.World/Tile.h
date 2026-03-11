@@ -365,6 +365,26 @@ public:
 	static const int clayHardened_Id = 172;
 	static const int coalBlock_Id = 173;
 
+	// TU25
+	static const int stairs_acaciawood_Id = 174;
+	static const int stairs_darkwood_Id = 175;
+
+	static const int iron_trapdoor_Id = 176;
+
+	// 177 is taken by door_spruce
+	static const int spruceFence_Id = 182;
+	static const int birchFence_Id = 183;
+	static const int jungleFence_Id = 184;
+	static const int acaciaFence_Id = 185;
+	static const int darkFence_Id = 186;
+	
+	static const int spruceGate_Id = 187;
+	static const int birchGate_Id = 188;
+	static const int jungleGate_Id = 189;
+	static const int acaciaGate_Id = 190;
+	static const int darkGate_Id = 191;
+
+	static const int invertedDaylightDetector_Id = 192;
 
 	static Tile *stone;
 	static GrassTile *grass;
@@ -494,9 +514,11 @@ public:
 	static Tile *redstoneLight_lit;
 
 	static Tile *stairs_sandstone;
-	static Tile *woodStairsDark;
+	static Tile *woodStairsSpruce;
 	static Tile *woodStairsBirch;
 	static Tile *woodStairsJungle;
+	static Tile *woodStairsAcacia;
+	static Tile *woodStairsDark;
 	static Tile *commandBlock;
 	static BeaconTile *beacon;
 	static Tile *button_wood;
@@ -540,6 +562,28 @@ public:
 	static Tile *woolCarpet;
 	static Tile *clayHardened;
 	static Tile *coalBlock;
+
+	static Tile *iron_trapdoor;
+
+	static Tile* door_spruce;
+	static Tile* door_birch;
+	static Tile* door_jungle;
+	static Tile* door_acacia;
+	static Tile* door_dark;
+
+	static Tile* spruceFence;
+	static Tile* birchFence;
+	static Tile* jungleFence;
+	static Tile* acaciaFence;
+	static Tile* darkFence;
+
+	static Tile* spruceGate;
+	static Tile* birchGate;
+	static Tile* jungleGate;
+	static Tile* acaciaGate;
+	static Tile* darkGate;
+
+	static Tile* invertedDaylightDetector;
 
 	static void staticCtor();
 

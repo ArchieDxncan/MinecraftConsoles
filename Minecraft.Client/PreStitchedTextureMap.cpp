@@ -522,11 +522,11 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(10,	15,	L"dyePowder_orange")
 
 		ADD_ICON(11,	0,	L"leggingsCloth_overlay")
-		//ADD_ICON(11,	1,	L"unused")
-		//ADD_ICON(11,	2,	L"unused")
-		//ADD_ICON(11,	3,	L"unused")
-		//ADD_ICON(11,	4,	L"unused")
-		//ADD_ICON(11,	5,	L"unused")
+		ADD_ICON(11,	1,	L"doorSpruce")
+		ADD_ICON(11,	2,	L"doorBirch")
+		ADD_ICON(11,	3,	L"doorJungle")
+		ADD_ICON(11,	4,	L"doorAcacia")
+		ADD_ICON(11,	5,	L"doorDark")
 		//ADD_ICON(11,	6,	L"unused")
 		ADD_ICON(11,	7,	L"minecart_hopper")
 		ADD_ICON(11,	8,	L"hopper")
@@ -986,5 +986,25 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(19,	13,	L"glass_pane_top_silver");
 		ADD_ICON(19,	14,	L"glass_pane_top_white");
 		ADD_ICON(19,	15,	L"glass_pane_top_yellow");
+
+		ADD_ICON(20, 0, L"door_spruce_upper");
+		ADD_ICON(20, 1, L"door_birch_upper");
+		ADD_ICON(20, 2, L"door_jungle_upper");
+		ADD_ICON(20, 3, L"door_acacia_upper");
+		ADD_ICON(20, 4, L"door_dark_upper");
+		ADD_ICON(20, 5, L"log_acacia_top");
+		ADD_ICON(20, 6, L"log_acacia");
+		ADD_ICON(20, 7, L"planks_acacia");
+		ADD_ICON(20, 8, L"log_dark_top");
+		ADD_ICON(20, 9, L"log_dark");
+		ADD_ICON(20, 10, L"planks_dark");
+		ADD_ICON(20, 11, L"iron_trapdoor");
+		ADD_ICON(20, 12, L"inverted_daylight_detector");
+
+		ADD_ICON(21, 0, L"door_spruce_lower");
+		ADD_ICON(21, 1, L"door_birch_lower");
+		ADD_ICON(21, 2, L"door_jungle_lower");
+		ADD_ICON(21, 3, L"door_acacia_lower");
+		ADD_ICON(21, 4, L"door_dark_lower");
 	}
 }
