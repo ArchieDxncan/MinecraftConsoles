@@ -2310,7 +2310,7 @@ Can also be used for low-level lighting.</value>
 	</data>	
 
 	<data name="IDS_ITEM_DOOR_WOOD">
-		<value>Wooden Door</value>
+		<value>Oak Door</value>
 	</data>	
 
 	<data name="IDS_ITEM_DOOR_IRON">
@@ -3322,7 +3322,7 @@ Can also be used for low-level lighting.</value>
 	</data>	
 
 	<data name="IDS_TILE_DOOR_WOOD">
-		<value>Wooden Door</value>
+		<value>Oak Door</value>
 	</data>	
 
 	<data name="IDS_TILE_LADDER">
@@ -3394,7 +3394,7 @@ Can also be used for low-level lighting.</value>
 	</data>	
 
 	<data name="IDS_TILE_FENCE">
-		<value>Fence</value>
+		<value>Oak Fence</value>
 	</data>	
 
 	<data name="IDS_TILE_PUMPKIN">
@@ -3538,7 +3538,7 @@ Can also be used for low-level lighting.</value>
 	</data>	
 
 	<data name="IDS_TILE_FENCE_GATE">
-		<value>Fence Gate</value>
+		<value>Oak Fence Gate</value>
 	</data>	
 
 	<data name="IDS_TILE_STAIRS_BRICKS">
@@ -8811,4 +8811,124 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	<data name="IDS_TOOLTIPS_CURE">
 		<value>Cure</value>
 	</data>	
+
+	<data name="IDS_TILE_LOG_ACACIA">
+		<value>Acacia Wood</value>
+	</data>
+
+	<data name="IDS_TILE_LOG_DARK_OAK">
+		<value>Dark Oak Wood</value>
+	</data>
+
+	<data name="IDS_TILE_ACACIA_PLANKS">
+		<value>Acacia Wood Planks</value>
+	</data>
+
+	<data name="IDS_TILE_DARK_OAK_PLANKS">
+		<value>Dark Oak Wood Planks</value>
+	</data>
+
+	<data name="IDS_TILE_STAIRS_ACACIAWOOD">
+		<value>Acacia Wood Stairs</value>
+	</data>
+
+	<data name="IDS_TILE_STAIRS_DARKWOOD">
+		<value>Dark Oak Wood Stairs</value>
+	</data>
+
+	<data name="IDS_TILE_STONESLAB_ACACIA">
+		<value>Acacia Wood Slab</value>
+	</data>
+
+	<data name="IDS_TILE_STONESLAB_DARK_OAK">
+		<value>Dark Oak Wood Slab</value>
+	</data>	
+
+	<data name="IDS_TILE_STONESLAB_DARK_OAK">
+		<value>Dark Oak Wood Slab</value>
+	</data>
+
+	<data name="IDS_TILE_IRON_TRAPDOOR">
+		<value>Iron Trapdoor</value>
+	</data>
+
+	<data name="IDS_TILE_DOOR_SPRUCE">
+		<value>Spruce Door</value>
+	</data>
+
+	<data name="IDS_TILE_DOOR_BIRCH">
+		<value>Birch Door</value>
+	</data>
+
+	<data name="IDS_TILE_DOOR_JUNGLE">
+		<value>Jungle Door</value>
+	</data>
+
+	<data name="IDS_TILE_DOOR_ACACIA">
+		<value>Acacia Door</value>
+	</data>
+
+	<data name="IDS_TILE_DOOR_DARK">
+		<value>Dark Oak Door</value>
+	</data>
+
+	<data name="IDS_TILE_SPRUCE_FENCE">
+		<value>Spruce Fence</value>
+	</data>
+
+	<data name="IDS_TILE_BIRCH_FENCE">
+		<value>Birch Fence</value>
+	</data>
+
+	<data name="IDS_TILE_JUNGLE_FENCE">
+		<value>Jungle Fence</value>
+	</data>
+
+	<data name="IDS_TILE_ACACIA_FENCE">
+		<value>Acacia Fence</value>
+	</data>
+
+	<data name="IDS_TILE_DARK_FENCE">
+		<value>Dark Oak Fence</value>
+	</data>
+
+	<data name="IDS_TILE_SPRUCE_GATE">
+		<value>Spruce Fence Gate</value>
+	</data>
+
+	<data name="IDS_TILE_BIRCH_GATE">
+		<value>Birch Fence Gate</value>
+	</data>
+
+	<data name="IDS_TILE_JUNGLE_GATE">
+		<value>Jungle Fence Gate</value>
+	</data>
+
+	<data name="IDS_TILE_ACACIA_GATE">
+		<value>Acacia Fence Gate</value>
+	</data>
+
+	<data name="IDS_TILE_DARK_GATE">
+		<value>Dark Oak Fence Gate</value>
+	</data>
+
+	<data name="IDS_ITEM_DOOR_SPRUCE">
+		<value>Spruce Door</value>
+	</data>
+
+	<data name="IDS_ITEM_DOOR_BIRCH">
+		<value>Birch Door</value>
+	</data>
+
+	<data name="IDS_ITEM_DOOR_JUNGLE">
+		<value>Jungle Door</value>
+	</data>
+
+	<data name="IDS_ITEM_DOOR_ACACIA">
+		<value>Acacia Door</value>
+	</data>
+
+	<data name="IDS_ITEM_DOOR_DARK">
+		<value>Dark Oak Door</value>
+	</data>
 </root>

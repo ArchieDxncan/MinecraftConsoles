@@ -9,6 +9,11 @@ FenceTile::FenceTile(int id, const wstring &texture, Material *material) : Tile(
 	this->texture = texture;
 }
 
+static const int fences[] = {
+	Tile::fence_Id, Tile::netherFence_Id, Tile::spruceFence_Id,
+	Tile::birchFence_Id, Tile::jungleFence_Id, Tile::acaciaFence_Id, Tile::darkFence_Id
+};
+
 void FenceTile::addAABBs(Level *level, int x, int y, int z, AABB *box, AABBList *boxes, shared_ptr<Entity> source)
 {
 	bool n = connectsTo(level, x, y, z - 1);
@@ -117,7 +122,7 @@ int FenceTile::getRenderShape()
 bool FenceTile::connectsTo(LevelSource *level, int x, int y, int z)
 {
 	int tile = level->getTile(x, y, z);
-	if (tile == id || tile == Tile::fenceGate_Id)
+	if (isFence(tile) || tile == Tile::fenceGate_Id)
 	{
 		return true;
 	}
@@ -134,7 +139,8 @@ bool FenceTile::connectsTo(LevelSource *level, int x, int y, int z)
 
 bool FenceTile::isFence(int tile)
 {
-	return tile == Tile::fence_Id || tile == Tile::netherFence_Id;
+	return std::any_of(std::begin(fences), std::end(fences),
+		[&](int id) { return tile == id; });
 }
 
 void FenceTile::registerIcons(IconRegister *iconRegister)

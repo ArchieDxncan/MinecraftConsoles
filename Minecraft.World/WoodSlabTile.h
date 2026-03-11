@@ -12,7 +12,7 @@ class WoodSlabTile : HalfSlabTile
 public:
 	static const int TYPE_MASK = 7;
 	static const int TOP_SLOT_BIT = 8;
-	static const int SLAB_NAMES_LENGTH = 4;
+	static const int SLAB_NAMES_LENGTH = 6;
 	static const unsigned int SLAB_NAMES[SLAB_NAMES_LENGTH];
 
 	WoodSlabTile(int id, bool fullSize);
