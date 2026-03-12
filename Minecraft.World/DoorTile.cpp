@@ -8,10 +8,14 @@
 #include "net.minecraft.world.h"
 #include "net.minecraft.h"
 
-static std::map<wstring, Item*> doorItemMap = {
-	{ L"doorWood",   Item::door_wood   },
-	{ L"doorIron",   Item::door_iron   },
-	{ L"doorSpruce", Item::door_spruce }
+static std::map<wstring, int> doorItemMap = {
+	{ L"doorWood",   Item::door_wood_Id   },
+	{ L"doorIron",   Item::door_iron_Id   },
+	{ L"doorSpruce", Item::door_spruce_Id },
+	{ L"doorBirch",  Item::door_birch_Id  },
+	{ L"doorJungle", Item::door_jungle_Id },
+	{ L"doorAcacia", Item::door_acacia_Id },
+	{ L"doorDark",   Item::door_dark_Id   }
 };
 
 DoorTile::DoorTile(int id, Material *material, const wstring& doorType) : Tile(id, material,isSolidRender())
@@ -285,7 +289,7 @@ void DoorTile::neighborChanged(Level *level, int x, int y, int z, int type)
 int DoorTile::getResource(int data, Random *random, int playerBonusLevel)
 {
 	if ((data & 8) != 0) return 0;
-	return doorItemMap[doorType]->id;
+	return doorItemMap[doorType];
 }
 
 HitResult *DoorTile::clip(Level *level, int xt, int yt, int zt, Vec3 *a, Vec3 *b)
