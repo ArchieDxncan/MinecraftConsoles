@@ -2704,6 +2704,7 @@
     <ClInclude Include="PoweredMetalTile.h" />
     <ClInclude Include="PoweredRailTile.h" />
     <ClInclude Include="AbstractProjectileDispenseBehavior.h" />
+    <ClInclude Include="Rabbit.h" />
     <ClInclude Include="RailTile.h" />
     <ClInclude Include="Redstone.h" />
     <ClInclude Include="RepeaterTile.h" />
@@ -3629,6 +3630,7 @@
     <ClCompile Include="PoweredMetalTile.cpp" />
     <ClCompile Include="PoweredRailTile.cpp" />
     <ClCompile Include="AbstractProjectileDispenseBehavior.cpp" />
+    <ClCompile Include="Rabbit.cpp" />
     <ClCompile Include="RailTile.cpp" />
     <ClCompile Include="Redstone.cpp" />
     <ClCompile Include="RepeaterTile.cpp" />

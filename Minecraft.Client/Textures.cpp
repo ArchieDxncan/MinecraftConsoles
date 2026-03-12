@@ -156,6 +156,17 @@ const wchar_t *Textures::preLoaded[TN_COUNT] =
 	L"mob/wither/wither_armor",
 	L"mob/wither/wither_invulnerable",
 
+	//TU31
+	L"mob/rabbit/brown",
+	L"mob/rabbit/white",
+	L"mob/rabbit/black",
+	L"mob/rabbit/gold",
+	L"mob/rabbit/salt",
+	L"mob/rabbit/white_splotched",
+	L"mob/rabbit/toast",
+	L"mob/rabbit/caerbannog",
+
+
 	L"item/trapped",
 	L"item/trapped_double",
 	//L"item/christmas",

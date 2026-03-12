@@ -392,9 +392,11 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM_AUX(Item::spawnEgg_Id, 96); // Mooshroom
 		ITEM_AUX(Item::spawnEgg_Id, 98); // Ozelot
 		ITEM_AUX(Item::spawnEgg_Id, 100); // Horse
+		
 		ITEM_AUX(Item::spawnEgg_Id, 100 | ((EntityHorse::TYPE_DONKEY + 1) << 12) ); // Donkey
 		ITEM_AUX(Item::spawnEgg_Id, 100 | ((EntityHorse::TYPE_MULE + 1) << 12)); // Mule
 		ITEM_AUX(Item::spawnEgg_Id, 120); // Villager
+		ITEM_AUX(Item::spawnEgg_Id, 101); // Rabbit Brown
 		ITEM(Item::record_01_Id)
 		ITEM(Item::record_02_Id)
 		ITEM(Item::record_03_Id)

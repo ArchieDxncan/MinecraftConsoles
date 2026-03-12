@@ -116,6 +116,8 @@ Biome::Biome(int id) : id(id)
 	friendlies_chicken.push_back(new MobSpawnerData(eTYPE_CHICKEN, 10, 4, 4));		// 4J - moved chickens to their own category
 	friendlies.push_back(new MobSpawnerData(eTYPE_COW, 8, 4, 4));
 
+	friendlies.push_back(new MobSpawnerData(eTYPE_RABBIT, 7, 1, 2));
+
 	enemies.push_back(new MobSpawnerData(eTYPE_SPIDER, 10, 4, 4));
 	enemies.push_back(new MobSpawnerData(eTYPE_ZOMBIE, 10, 4, 4));
 	enemies.push_back(new MobSpawnerData(eTYPE_SKELETON, 10, 4, 4));

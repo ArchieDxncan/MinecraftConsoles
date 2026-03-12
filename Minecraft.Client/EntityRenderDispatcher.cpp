@@ -82,6 +82,7 @@
 #include "ZombieRenderer.h"
 #include "BatRenderer.h"
 #include "CaveSpiderRenderer.h"
+#include "RabbitRenderer.h"
 
 double EntityRenderDispatcher::xOff = 0.0;
 double EntityRenderDispatcher::yOff = 0.0;
@@ -131,6 +132,8 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 	renderers[eTYPE_ENDER_CRYSTAL] = new EnderCrystalRenderer();
 
 	renderers[eTYPE_WITHERBOSS] = new WitherBossRenderer();
+
+	renderers[eTYPE_RABBIT] = new RabbitRenderer();
 
 	renderers[eTYPE_ENTITY] = new DefaultRenderer();
 	renderers[eTYPE_PAINTING] = new PaintingRenderer();        

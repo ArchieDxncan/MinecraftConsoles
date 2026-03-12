@@ -136,6 +136,7 @@ enum eINSTANCEOF
 							eTYPE_SHEEP				= eTYPE_ANIMAL | eTYPE_ANIMALS_SPAWN_LIMIT_CHECK | 0x2,
 							eTYPE_PIG				= eTYPE_ANIMAL | eTYPE_ANIMALS_SPAWN_LIMIT_CHECK | 0x3,
 							eTYPE_CHICKEN			= eTYPE_ANIMAL                                   | 0x4,
+							eTYPE_RABBIT    = eTYPE_ANIMAL | eTYPE_ANIMALS_SPAWN_LIMIT_CHECK | 0x5,
 
 							eTYPE_COW				= eTYPE_ANIMAL | eTYPE_ANIMALS_SPAWN_LIMIT_CHECK | BIT_COW,
 								eTYPE_MUSHROOMCOW	= eTYPE_COW | 0x1,
@@ -409,6 +410,7 @@ public:
 		classes->push_back( SUBCLASS(eTYPE_SHEEP				)->addParent( eTYPE_ANIMAL)->addParent(eTYPE_ANIMALS_SPAWN_LIMIT_CHECK ) );
 		classes->push_back( SUBCLASS(eTYPE_PIG				)->addParent( eTYPE_ANIMAL)->addParent(eTYPE_ANIMALS_SPAWN_LIMIT_CHECK  ) );
 		classes->push_back( SUBCLASS(eTYPE_CHICKEN			)->addParent( eTYPE_ANIMAL  ) );
+
 		classes->push_back( SUBCLASS(eTYPE_COW				)->addParent( eTYPE_ANIMAL)->addParent(eTYPE_ANIMALS_SPAWN_LIMIT_CHECK ) );
 		classes->push_back( SUBCLASS(eTYPE_MUSHROOMCOW	)->addParent( eTYPE_COW ) );
 		classes->push_back( SUBCLASS(eTYPE_WATERANIMAL	)->addParent(eTYPE_PATHFINDER_MOB) );

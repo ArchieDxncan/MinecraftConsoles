@@ -438,6 +438,8 @@ enum eMinecraftColour
 	eMinecraftColour_Mob_Witch_Colour2,
 	eMinecraftColour_Mob_Horse_Colour1,
 	eMinecraftColour_Mob_Horse_Colour2,
+	eMinecraftColour_Mob_Rabbit_Colour1,
+	eMinecraftColour_Mob_Rabbit_Colour2,
 
 	eMinecraftColour_Armour_Default_Leather_Colour,
 

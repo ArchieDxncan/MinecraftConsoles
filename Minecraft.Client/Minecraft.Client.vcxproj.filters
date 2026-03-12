@@ -3793,6 +3793,12 @@
     <ClInclude Include="..\include\lce_filesystem\lce_filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RabbitModel.h">
+      <Filter>net\minecraft\client\model</Filter>
+    </ClInclude>
+    <ClInclude Include="RabbitRenderer.h">
+      <Filter>net\minecraft\client\renderer\entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -5948,6 +5954,12 @@
     </ClCompile>
     <ClCompile Include="..\include\lce_filesystem\lce_filesystem.cpp">
       <Filter>include\lce_filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="RabbitModel.cpp">
+      <Filter>net\minecraft\client\model</Filter>
+    </ClCompile>
+    <ClCompile Include="RabbitRenderer.cpp">
+      <Filter>net\minecraft\client\renderer\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

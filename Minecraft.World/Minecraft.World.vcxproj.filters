@@ -3197,6 +3197,9 @@
     <ClInclude Include="FireworksMenu.h">
       <Filter>net\minecraft\world\inventory</Filter>
     </ClInclude>
+    <ClInclude Include="Rabbit.h">
+      <Filter>net\minecraft\world\entity\animal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -5625,6 +5628,9 @@
     </ClCompile>
     <ClCompile Include="EmptyMapItem.cpp">
       <Filter>net\minecraft\world\item</Filter>
+    </ClCompile>
+    <ClCompile Include="Rabbit.cpp">
+      <Filter>net\minecraft\world\entity\animal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

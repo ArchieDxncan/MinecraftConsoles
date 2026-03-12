@@ -104,6 +104,10 @@ void EntityIO::staticCtor()
 	setId(Ocelot::create, eTYPE_OCELOT, L"Ozelot", 98, eMinecraftColour_Mob_Ocelot_Colour1, eMinecraftColour_Mob_Ocelot_Colour2, IDS_OZELOT);
 	setId(VillagerGolem::create, eTYPE_VILLAGERGOLEM, L"VillagerGolem", 99);
 	setId(EntityHorse::create, eTYPE_HORSE, L"EntityHorse", 100, eMinecraftColour_Mob_Horse_Colour1, eMinecraftColour_Mob_Horse_Colour2, IDS_HORSE);
+	setId(Rabbit::create, eTYPE_RABBIT, L"Rabbit", 101,
+      eMinecraftColour_Mob_Rabbit_Colour1,
+      eMinecraftColour_Mob_Rabbit_Colour2, IDS_HORSE);//change IDS_RABBIT later
+
 
 	setId(Villager::create, eTYPE_VILLAGER, L"Villager", 120, eMinecraftColour_Mob_Villager_Colour1, eMinecraftColour_Mob_Villager_Colour2, IDS_VILLAGER);
 
@@ -111,6 +115,7 @@ void EntityIO::staticCtor()
 
 	// 4J Added
 	setId(DragonFireball::create, eTYPE_DRAGON_FIREBALL, L"DragonFireball", 1000);
+
 
 	// 4J-PB - moved to allow the eggs to be named and coloured in the Creative Mode menu
 	// 4J Added for custom spawn eggs
@@ -125,6 +130,8 @@ void EntityIO::staticCtor()
 	setId(Ocelot::create,		eTYPE_OCELOT,	L"Ozelot",		98 | ((Ocelot::TYPE_SIAMESE + 1) << 12),		eMinecraftColour_Mob_Ocelot_Colour1,	eMinecraftColour_Mob_Ocelot_Colour2,	IDS_OZELOT );
 	setId(Spider::create,		eTYPE_SPIDER,	L"Spider",		52 | (2 << 12),									eMinecraftColour_Mob_Spider_Colour1,	eMinecraftColour_Mob_Spider_Colour2,	IDS_SKELETON );
 #endif
+
+
 }
 
 shared_ptr<Entity> EntityIO::newEntity(const wstring& id, Level *level)
