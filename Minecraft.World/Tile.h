@@ -360,31 +360,31 @@ public:
 	static const int clayHardened_colored_Id = 159;
 	static const int stained_glass_pane_Id = 160;
 
+	static const int stairs_acaciawood_Id = 163;
+	static const int stairs_darkwood_Id = 164;
+
+	static const int iron_trapdoor_Id = 167;
+
 	static const int hayBlock_Id = 170;
 	static const int woolCarpet_Id = 171;
 	static const int clayHardened_Id = 172;
 	static const int coalBlock_Id = 173;
 
-	// TU25
-	static const int stairs_acaciawood_Id = 174;
-	static const int stairs_darkwood_Id = 175;
+	static const int invertedDaylightDetector_Id = 178;
 
-	static const int iron_trapdoor_Id = 176;
 
-	// 177 is taken by door_spruce
-	static const int spruceFence_Id = 182;
-	static const int birchFence_Id = 183;
-	static const int jungleFence_Id = 184;
-	static const int acaciaFence_Id = 185;
-	static const int darkFence_Id = 186;
-	
-	static const int spruceGate_Id = 187;
-	static const int birchGate_Id = 188;
-	static const int jungleGate_Id = 189;
-	static const int acaciaGate_Id = 190;
-	static const int darkGate_Id = 191;
+	static const int spruceGate_Id = 183;
+	static const int birchGate_Id = 184;
+	static const int jungleGate_Id = 185;
+	static const int darkGate_Id = 186;
+	static const int acaciaGate_Id = 187;
 
-	static const int invertedDaylightDetector_Id = 192;
+	static const int spruceFence_Id = 188;
+	static const int birchFence_Id = 189;
+	static const int jungleFence_Id = 190;
+	static const int darkFence_Id = 191;
+	static const int acaciaFence_Id = 192;
+
 
 	static Tile *stone;
 	static GrassTile *grass;
