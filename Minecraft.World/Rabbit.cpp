@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Rabbit.h"
 #include "SynchedEntityData.h" 
 #include "AttributeInstance.h"          
@@ -7,8 +7,15 @@
 #include "net.minecraft.world.entity.ai.goal.h"
 #include "net.minecraft.world.entity.ai.navigation.h"
 #include "net.minecraft.world.level.h"
+#include "net.minecraft.world.level.biome.h"
 #include "com.mojang.nbt.h"
 #include "SoundTypes.h"
+#include "MobGroupData.h"
+
+class RabbitGroupData : public MobGroupData {
+public:
+    int groupSize = 0;
+};
 
 Rabbit::Rabbit(Level *level) : Animal(level)
 {
@@ -26,9 +33,10 @@ Rabbit::Rabbit(Level *level) : Animal(level)
 
     // AI Goals
     goalSelector.addGoal(1, new FloatGoal(this));
-    goalSelector.addGoal(2, new PanicGoal(this, 2.2f));
+    goalSelector.addGoal(2, new PanicGoal(this, 1.2f));
     goalSelector.addGoal(3, new BreedGoal(this, 0.8f));
     goalSelector.addGoal(4, new TemptGoal(this, 1.0f, Item::carrots_Id, false));
+    goalSelector.addGoal(5, new FollowParentGoal(this, 1.1f));
     goalSelector.addGoal(6, new RandomStrollGoal(this, 0.6f));
     goalSelector.addGoal(7, new LookAtPlayerGoal(this, typeid(Player), 10.0f));
 }
@@ -102,8 +110,17 @@ bool Rabbit::isFood(shared_ptr<ItemInstance> item) {
 }
 
 shared_ptr<AgableMob> Rabbit::getBreedOffspring(shared_ptr<AgableMob> target) {
-    if (level->canCreateMore(GetType(), Level::eSpawnType_Breed))
-        return std::make_shared<Rabbit>(level);
+    if (level->canCreateMore(GetType(), Level::eSpawnType_Breed)) {
+        shared_ptr<Rabbit> offspring = std::make_shared<Rabbit>(level);
+        shared_ptr<Rabbit> partner = dynamic_pointer_cast<Rabbit>(target);
+
+        if (partner != nullptr) {
+            
+            offspring->setVariant(random->nextBoolean() ? this->getVariant() : partner->getVariant());
+        }
+
+        return offspring;
+    }
     return nullptr;
 }
 
@@ -122,4 +139,47 @@ void Rabbit::readAdditionalSaveData(CompoundTag *tag) {
 void Rabbit::addAdditonalSaveData(CompoundTag *tag) {
     Animal::addAdditonalSaveData(tag);
     tag->putInt(L"RabbitType", (int)getVariant());
+}
+
+MobGroupData *Rabbit::finalizeMobSpawn(MobGroupData *groupData, int extraData) {
+    RabbitGroupData *rabbitData = dynamic_cast<RabbitGroupData*>(groupData);
+    if (rabbitData == nullptr) {
+        rabbitData = new RabbitGroupData();
+    } else {
+       
+        this->setAge(-24000);
+    }
+    rabbitData->groupSize++;
+
+    Biome *biome = level->getBiome(Mth::floor(x), Mth::floor(z));
+    int rnd = random->nextInt(100);
+
+    if (biome == Biome::desert || biome == Biome::desertHills) {
+        setVariant(Variant::GOLD);
+    } else if (biome == Biome::plains || biome == Biome::forest || biome == Biome::forestHills) {
+        if (rnd < 33) {
+            setVariant(Variant::BLACK);
+        } else if (rnd < 66) {
+            setVariant(Variant::BROWN);
+        } else {
+            setVariant(Variant::SALT);
+        }
+    } else if (biome == Biome::taiga || biome == Biome::taigaHills) {
+        if (rnd < 50) {
+            setVariant(Variant::WHITE);
+        } else {
+            setVariant(Variant::WHITE_SPLOTCHED);
+        }
+    } else {
+        // Default 
+        if (rnd < 50) {
+            setVariant(Variant::BROWN);
+        } else if (rnd < 90) {
+            setVariant(Variant::SALT);
+        } else {
+            setVariant(Variant::BLACK);
+        }
+    }
+
+    return rabbitData;
 }

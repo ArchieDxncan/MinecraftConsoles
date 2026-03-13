@@ -53,4 +53,6 @@ public:
 
     virtual void readAdditionalSaveData(CompoundTag *tag) override;
     virtual void addAdditonalSaveData(CompoundTag *tag) override;
+
+    virtual MobGroupData *finalizeMobSpawn(MobGroupData *groupData, int extraData = 0) override;
 };

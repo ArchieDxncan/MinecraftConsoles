@@ -7,6 +7,7 @@
 TaigaBiome::TaigaBiome(int id) : Biome(id)
 {
 	friendlies_wolf.push_back(new MobSpawnerData(eTYPE_WOLF, 8, 4, 4));	// 4J - moved to their own category
+	friendlies.push_back(new MobSpawnerData(eTYPE_RABBIT, 4, 2, 3));
 
     decorator->treeCount = 10;
     decorator->grassCount = 1;
