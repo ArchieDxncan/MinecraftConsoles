@@ -31,7 +31,7 @@ void IUIScene_CreativeMenu::staticCtor()
 	DEF(eCreativeInventory_BuildingBlocks)
 		ITEM(Tile::stone_Id)
 		ITEM(Tile::grass_Id)
-		ITEM(Tile::dirt_Id)
+		ITEM_AUX(Tile::dirt_Id, 0)
 		ITEM(Tile::cobblestone_Id)
 		ITEM(Tile::sand_Id)
 		ITEM(Tile::sandStone_Id)
@@ -76,6 +76,18 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM(Tile::soulsand_Id)
 		ITEM(Tile::glowstone_Id)
 		ITEM(Tile::fence_Id)
+
+		ITEM_AUX(Tile::dirt_Id, DirtTile::COARSE_DIRT)
+		ITEM_AUX(Tile::dirt_Id, DirtTile::PODZOL)
+
+		ITEM_AUX(Tile::stone_Id, StoneTile::GRANITE)
+		ITEM_AUX(Tile::stone_Id, StoneTile::POLISHED_GRANITE)
+
+		ITEM_AUX(Tile::stone_Id, StoneTile::DIORITE)
+		ITEM_AUX(Tile::stone_Id, StoneTile::POLISHED_DIORITE)
+
+		ITEM_AUX(Tile::stone_Id, StoneTile::ANDESITE)
+		ITEM_AUX(Tile::stone_Id, StoneTile::POLISHED_ANDESITE)
 
 		// TU25
 		ITEM(Tile::spruceFence_Id)

@@ -1001,10 +1001,30 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(20, 11, L"iron_trapdoor");
 		ADD_ICON(20, 12, L"inverted_daylight_detector");
 
+		ADD_ICON(20, 13, L"dirt_podzol_side");
+		ADD_ICON(20, 14, L"dirt_podzol_top");
+		ADD_ICON(20, 15, L"coarse_dirt");
+
 		ADD_ICON(21, 0, L"door_spruce_lower");
 		ADD_ICON(21, 1, L"door_birch_lower");
 		ADD_ICON(21, 2, L"door_jungle_lower");
 		ADD_ICON(21, 3, L"door_acacia_lower");
 		ADD_ICON(21, 4, L"door_dark_lower");
+
+		ADD_ICON(21, 5, L"stone_andesite");
+		ADD_ICON(21, 6, L"stone_andesite_smooth");
+		ADD_ICON(21, 7, L"stone_granite");
+		ADD_ICON(21, 8, L"stone_granite_smooth");
+		ADD_ICON(21, 9, L"stone_diorite");
+		ADD_ICON(21, 10, L"stone_diorite_smooth");
+
+		ADD_ICON(22, 1, L"flower_blue_orchid");
+		ADD_ICON(22, 2, L"flower_allium");
+		ADD_ICON(22, 3, L"flower_houstonia");
+		ADD_ICON(22, 4, L"flower_tulip_red");
+		ADD_ICON(22, 5, L"flower_tulip_orange");
+		ADD_ICON(22, 6, L"flower_tulip_white");
+		ADD_ICON(22, 7, L"flower_tulip_pink");
+		ADD_ICON(22, 8, L"flower_oxeye_daisy");
 	}
 }
