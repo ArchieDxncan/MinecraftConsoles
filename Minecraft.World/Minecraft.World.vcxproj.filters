@@ -3200,6 +3200,9 @@
     <ClInclude Include="Rabbit.h">
       <Filter>net\minecraft\world\entity\animal</Filter>
     </ClInclude>
+    <ClInclude Include="Rose.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -5631,6 +5634,9 @@
     </ClCompile>
     <ClCompile Include="Rabbit.cpp">
       <Filter>net\minecraft\world\entity\animal</Filter>
+    </ClCompile>
+    <ClCompile Include="Rose.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

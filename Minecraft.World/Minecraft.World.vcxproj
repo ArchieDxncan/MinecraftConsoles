@@ -3634,6 +3634,8 @@
     <ClCompile Include="RailTile.cpp" />
     <ClCompile Include="Redstone.cpp" />
     <ClCompile Include="RepeaterTile.cpp" />
+    <ClCompile Include="Rose.cpp" />
+    <ClInclude Include="Rose.h" />
     <ClCompile Include="RotatedPillarTile.cpp" />
     <ClCompile Include="Score.cpp" />
     <ClCompile Include="Scoreboard.cpp" />

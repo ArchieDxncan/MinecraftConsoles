@@ -129,5 +129,6 @@
 #include "HalfSlabTile.h"
 #include "WoodSlabTile.h"
 #include "WoolCarpetTile.h"
+#include "Rose.h"
 
 

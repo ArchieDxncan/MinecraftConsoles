@@ -1018,13 +1018,13 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(21, 9, L"stone_diorite");
 		ADD_ICON(21, 10, L"stone_diorite_smooth");
 
-		ADD_ICON(22, 1, L"flower_blue_orchid");
-		ADD_ICON(22, 2, L"flower_allium");
-		ADD_ICON(22, 3, L"flower_houstonia");
-		ADD_ICON(22, 4, L"flower_tulip_red");
-		ADD_ICON(22, 5, L"flower_tulip_orange");
-		ADD_ICON(22, 6, L"flower_tulip_white");
-		ADD_ICON(22, 7, L"flower_tulip_pink");
-		ADD_ICON(22, 8, L"flower_oxeye_daisy");
+		ADD_ICON(22, 0, L"flower_blue_orchid");
+		ADD_ICON(22, 1, L"flower_allium");
+		ADD_ICON(22, 2, L"flower_houstonia");
+		ADD_ICON(22, 3, L"flower_tulip_red");
+		ADD_ICON(22, 4, L"flower_tulip_orange");
+		ADD_ICON(22, 5, L"flower_tulip_white");
+		ADD_ICON(22, 6, L"flower_tulip_pink");
+		ADD_ICON(22, 7, L"flower_oxeye_daisy");
 	}
 }

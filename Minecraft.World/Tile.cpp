@@ -324,7 +324,7 @@ void Tile::staticCtor()
 	Tile::wool = (new ColoredTile(35, Material::cloth))							->setBaseItemTypeAndMaterial(Item::eBaseItemType_cloth,	Item::eMaterial_cloth)->setDestroyTime(0.8f)->setSoundType(Tile::SOUND_CLOTH)->setIconName(L"wool_colored")->setDescriptionId(IDS_TILE_CLOTH)->sendTileData()->setUseDescriptionId(IDS_DESC_WOOL);
 	Tile::pistonMovingPiece = static_cast<PistonMovingPiece *>((new PistonMovingPiece(36))->setDescriptionId(IDS_TILE_PISTON_BASE)->setUseDescriptionId(-1));
 	Tile::flower = static_cast<Bush *>((new Bush(37))->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"flower_dandelion")->setDescriptionId(IDS_TILE_FLOWER)->setUseDescriptionId(IDS_DESC_FLOWER)->disableMipmap());
-	Tile::rose = static_cast<Bush *>((new Bush(38))->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"flower_rose")->setDescriptionId(IDS_TILE_ROSE)->setUseDescriptionId(IDS_DESC_FLOWER)->disableMipmap());
+	Tile::rose = static_cast<Bush *>((new Rose(38))->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"flower_rose")->setDescriptionId(IDS_TILE_ROSE)->setUseDescriptionId(IDS_DESC_FLOWER)->disableMipmap());
 	Tile::mushroom_brown = static_cast<Bush *>((new Mushroom(39))->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setLightEmission(2 / 16.0f)->setIconName(L"mushroom_brown")->setDescriptionId(IDS_TILE_MUSHROOM)->setUseDescriptionId(IDS_DESC_MUSHROOM)->disableMipmap());
 	Tile::mushroom_red = static_cast<Bush *>((new Mushroom(40))->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"mushroom_red")->setDescriptionId(IDS_TILE_MUSHROOM)->setUseDescriptionId(IDS_DESC_MUSHROOM)->disableMipmap());
 
@@ -521,6 +521,7 @@ void Tile::staticCtor()
 	Item::items[anvil_Id]				= ( new AnvilTileItem(anvil) )->setDescriptionId(IDS_TILE_ANVIL)->setUseDescriptionId(IDS_DESC_ANVIL);
 	Item::items[dirt_Id] = (new MultiTextureTileItem(Tile::dirt_Id - 256, dirt, (int*)DirtTile::DIRT_NAMES, 3))->setIconName(L"dirt")->setDescriptionId(IDS_TILE_DIRT)->setUseDescriptionId(IDS_DESC_DIRT);
 	Item::items[stone_Id] = (new MultiTextureTileItem(Tile::stone_Id - 256, dirt, (int*)StoneTile::STONE_NAMES, 3))->setIconName(L"stone")->setDescriptionId(IDS_TILE_STONE)->setUseDescriptionId(IDS_DESC_STONE);
+	Item::items[rose_Id] = (new MultiTextureTileItem(Tile::rose_Id - 256, rose, (int*)Rose::FLOWER_NAMES, Rose::FLOWER_NAMES_LENGTH))->setIconName(L"flower_rose")->setDescriptionId(IDS_TILE_ROSE)->setUseDescriptionId(IDS_DESC_FLOWER);
 
 	for (int i = 0; i < 256; i++)
 	{
