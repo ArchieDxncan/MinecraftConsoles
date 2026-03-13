@@ -22,7 +22,7 @@ GrassTile::GrassTile(int id) : Tile(id, Material::grass)
 Icon *GrassTile::getTexture(int face, int data)
 {
 	if (face == Facing::UP) return iconTop;
-	if (face == Facing::DOWN) return Tile::dirt->getTexture(face);
+	if (face == Facing::DOWN) return Tile::dirt->getTexture(face, 0);
 	return icon;
 }
 

@@ -1,11 +1,53 @@
 #include "stdafx.h"
 #include "StoneTile.h"
+#include "net.minecraft.world.h"
+#include "net.minecraft.h"
+
+const unsigned int StoneTile::STONE_NAMES[STONE_NAMES_LENGTH] = { IDS_TILE_STONE,
+IDS_TILE_STONE,
+IDS_TILE_STONE,
+IDS_TILE_STONE,
+IDS_TILE_STONE,
+IDS_TILE_STONE,
+IDS_TILE_STONE };
+
+const wstring StoneTile::TEXTURE_NAMES[] = { L"stone", 
+		L"stone_granite", L"stone_granite_smooth",
+		L"stone_diorite", L"stone_diorite_smooth",
+		L"stone_andesite", L"stone_andesite_smooth"};
 
 StoneTile::StoneTile(int id) : Tile(id, Material::stone)
 {
+	icons = nullptr;
 }
 
-int StoneTile::getResource(int data, Random *random, int playerBonusLevel)
+unsigned int StoneTile::getDescriptionId(int iData)
 {
-	return Tile::cobblestone_Id;
+	if (iData < 0 || iData >= STONE_NAMES_LENGTH) iData = 0;
+
+	return STONE_NAMES[iData];
+}
+
+int StoneTile::getSpawnResourcesAuxValue(int data)
+{
+	return data;
+}
+
+Icon* StoneTile::getTexture(int face, int data)
+{
+	if (data < 0 || data >= STONE_NAMES_LENGTH)
+	{
+		data = 0;
+	}
+	return icons[data];
+}
+
+void StoneTile::registerIcons(IconRegister* iconRegister)
+{
+	icons = new Icon * [STONE_NAMES_LENGTH];
+
+	for (int i = 0; i < STONE_NAMES_LENGTH; i++)
+	{
+		icons[i] = iconRegister->registerIcon(TEXTURE_NAMES[i]);
+	}
 }
