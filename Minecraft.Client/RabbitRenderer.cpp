@@ -46,6 +46,13 @@ ResourceLocation *RabbitRenderer::getTextureLocation(shared_ptr<Entity> entity)
 
 void RabbitRenderer::scale(shared_ptr<LivingEntity> _mob, float a)
 {
-    
-    glScalef(0.65f, 0.65f, 0.65f);
+    // adult scaling
+    float s = 0.65f;
+
+    // baby scaling
+    if (_mob->isBaby()) {
+        s *= 0.8f;
+    }
+
+    glScalef(s, s, s);
 }
