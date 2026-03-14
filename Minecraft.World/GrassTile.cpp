@@ -106,7 +106,7 @@ void GrassTile::tick(Level *level, int x, int y, int z, Random *random)
 				int yt = y + random->nextInt(5) - 3;
 				int zt = z + random->nextInt(3) - 1;
 				int above = level->getTile(xt, yt + 1, zt);
-				if (level->getTile(xt, yt, zt) == Tile::dirt_Id && level->getRawBrightness(xt, yt + 1, zt) >= MIN_BRIGHTNESS && Tile::lightBlock[above] <= 2)
+				if (level->getTile(xt, yt, zt) == Tile::dirt_Id && level->getData(xt, yt, zt) == 0 && level->getRawBrightness(xt, yt + 1, zt) >= MIN_BRIGHTNESS && Tile::lightBlock[above] <= 2)
 				{
 					level->setTileAndUpdate(xt, yt, zt, Tile::grass_Id);
 				}
