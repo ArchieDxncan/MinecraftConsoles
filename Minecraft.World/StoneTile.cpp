@@ -28,8 +28,22 @@ unsigned int StoneTile::getDescriptionId(int iData)
 	return STONE_NAMES[iData];
 }
 
+int StoneTile::getResource(int data, Random* random, int playerBonusLevel)
+{
+
+	if (data < 0 || data >= STONE_NAMES_LENGTH) data = 0;
+
+	if (data == 0) {
+		return Tile::cobblestone_Id;
+	}
+
+	return Tile::stone_Id;
+}
+
 int StoneTile::getSpawnResourcesAuxValue(int data)
 {
+	if (data < 0 || data >= STONE_NAMES_LENGTH) data = 0;
+
 	return data;
 }
 

@@ -23,6 +23,7 @@ public:
 	StoneTile(int id);
 	virtual Icon* getTexture(int face, int data);
 	virtual unsigned int getDescriptionId(int iData = -1);
+	virtual int getResource(int data, Random* random, int playerBonusLevel);
 	virtual int getSpawnResourcesAuxValue(int data);
 	void registerIcons(IconRegister* iconRegister);
 };
