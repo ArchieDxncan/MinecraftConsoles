@@ -675,6 +675,11 @@ shared_ptr<Packet> TrackedEntity::getAddEntityPacket()
 		yHeadRotp = Mth::floor(e->getYHeadRot() * 256 / 360);
 		return std::make_shared<AddMobPacket>(dynamic_pointer_cast<LivingEntity>(e), yRotp, xRotp, xp, yp, zp, yHeadRotp);
 	}
+	else if (e->instanceof(eTYPE_ARMORSTAND))
+	{
+		yHeadRotp = Mth::floor(e->getYHeadRot() * 256 / 360);
+		return std::make_shared<AddMobPacket>(dynamic_pointer_cast<LivingEntity>(e), yRotp, xRotp, xp, yp, zp, yHeadRotp);
+	}
 	else if (e->instanceof(eTYPE_FISHINGHOOK))
 	{
 		shared_ptr<Entity> owner = dynamic_pointer_cast<FishingHook>(e)->owner;

@@ -223,6 +223,14 @@ const WCHAR *ConsoleSoundEngine::wchSoundNames[eSoundType_MAX]=
 	// 4J-PB  - Some sounds were updated, but we can't do that for the 360 or we have to do a new sound bank
 	// instead, we'll add the sounds as new ones and change the code to reference them
 	L"fire.new_ignite",
+
+	L"mob.rabbit.idle",
+	L"mob.rabbit.hurt",
+	L"mob.rabbit.bunnymurder",
+	L"mob.rabbit.hop",
+
+
+
 };
 
 

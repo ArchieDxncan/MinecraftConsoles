@@ -3203,6 +3203,7 @@
     <ClInclude Include="Rose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< Updated upstream
     <ClInclude Include="SandTile.h">
       <Filter>net\minecraft\world\level\tile</Filter>
     </ClInclude>
@@ -3211,6 +3212,13 @@
     </ClInclude>
     <ClInclude Include="TreeTile2.h">
       <Filter>net\minecraft\world\level\tile</Filter>
+=======
+    <ClInclude Include="ArmorStand.h">
+      <Filter>net\minecraft\world\entity\item</Filter>
+    </ClInclude>
+    <ClInclude Include="ArmorStandItem.h">
+      <Filter>net\minecraft\world\entity\item</Filter>
+>>>>>>> Stashed changes
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -5647,6 +5655,7 @@
     <ClCompile Include="Rose.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< Updated upstream
     <ClCompile Include="SandTile.cpp">
       <Filter>net\minecraft\world\level\tile</Filter>
     </ClCompile>
@@ -5655,6 +5664,13 @@
     </ClCompile>
     <ClCompile Include="TreeTile2.cpp">
       <Filter>net\minecraft\world\level\tile</Filter>
+=======
+    <ClCompile Include="ArmorStand.cpp">
+      <Filter>net\minecraft\world\entity\item</Filter>
+    </ClCompile>
+    <ClCompile Include="ArmorStandItem.cpp">
+      <Filter>net\minecraft\world\entity\item</Filter>
+>>>>>>> Stashed changes
     </ClCompile>
   </ItemGroup>
 </Project>

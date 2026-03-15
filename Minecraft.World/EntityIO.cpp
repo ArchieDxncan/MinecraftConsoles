@@ -16,6 +16,7 @@
 #include "com.mojang.nbt.h"
 #include "EntityIO.h"
 
+
 unordered_map<wstring, entityCreateFn> *EntityIO::idCreateMap = new unordered_map<wstring, entityCreateFn>;
 unordered_map<eINSTANCEOF, wstring, eINSTANCEOFKeyHash, eINSTANCEOFKeyEq> *EntityIO::classIdMap = new unordered_map<eINSTANCEOF, wstring, eINSTANCEOFKeyHash, eINSTANCEOFKeyEq>;
 unordered_map<int, entityCreateFn> *EntityIO::numCreateMap = new unordered_map<int, entityCreateFn>;
@@ -72,6 +73,8 @@ void EntityIO::staticCtor()
 	setId(MinecartHopper::create, eTYPE_MINECART_HOPPER, L"MinecartHopper", 46);
 	setId(MinecartSpawner::create, eTYPE_MINECART_SPAWNER, L"MinecartSpawner", 47);
 
+
+
 	setId(Mob::create, eTYPE_MOB, L"Mob", 48);
 	setId(Monster::create, eTYPE_MONSTER, L"Monster", 49);
 
@@ -106,7 +109,9 @@ void EntityIO::staticCtor()
 	setId(EntityHorse::create, eTYPE_HORSE, L"EntityHorse", 100, eMinecraftColour_Mob_Horse_Colour1, eMinecraftColour_Mob_Horse_Colour2, IDS_HORSE);
 	setId(Rabbit::create, eTYPE_RABBIT, L"Rabbit", 101,
       eMinecraftColour_Mob_Rabbit_Colour1,
-      eMinecraftColour_Mob_Rabbit_Colour2, IDS_HORSE);//change IDS_RABBIT later
+      eMinecraftColour_Mob_Rabbit_Colour2, IDS_RABBIT);//change IDS_RABBIT later
+
+	setId(ArmorStand::create, eTYPE_ARMORSTAND, L"ArmorStand", 102),
 
 
 	setId(Villager::create, eTYPE_VILLAGER, L"Villager", 120, eMinecraftColour_Mob_Villager_Colour1, eMinecraftColour_Mob_Villager_Colour2, IDS_VILLAGER);

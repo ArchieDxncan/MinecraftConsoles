@@ -548,6 +548,10 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM(Item::horseArmorDiamond_Id)
 		ITEM(Item::horseArmorGold_Id)
 		ITEM(Item::horseArmorMetal_Id)
+		ITEM(Item::armor_stand_Id)
+
+
+
 
 		for(unsigned int i = 0; i < Enchantment::enchantments.length; ++i)
 		{

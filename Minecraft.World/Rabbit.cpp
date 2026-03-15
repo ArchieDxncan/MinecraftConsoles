@@ -125,9 +125,10 @@ shared_ptr<AgableMob> Rabbit::getBreedOffspring(shared_ptr<AgableMob> target) {
 }
 
 
-int Rabbit::getAmbientSound() { return eSoundType_MOB_BAT_IDLE; }
-int Rabbit::getHurtSound()    { return eSoundType_MOB_BAT_HURT;    }
-int Rabbit::getDeathSound()   { return eSoundType_MOB_BAT_DEATH;   }
+int Rabbit::getAmbientSound() { return eSoundType_MOB_RABBIT_IDLE; }
+int Rabbit::getHurtSound()    { return eSoundType_MOB_RABBIT_HURT;    }
+int Rabbit::getDeathSound()   { return eSoundType_MOB_RABBIT_DEATH;   }
+int Rabbit::getHopSound()   { return eSoundType_MOB_RABBIT_HOP;   }
 
 void Rabbit::readAdditionalSaveData(CompoundTag *tag) {
     Animal::readAdditionalSaveData(tag);
