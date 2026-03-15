@@ -522,11 +522,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(10,	15,	L"dyePowder_orange")
 
 		ADD_ICON(11,	0,	L"leggingsCloth_overlay")
-		ADD_ICON(11,	1,	L"doorSpruce")
-		ADD_ICON(11,	2,	L"doorBirch")
-		ADD_ICON(11,	3,	L"doorJungle")
-		ADD_ICON(11,	4,	L"doorAcacia")
-		ADD_ICON(11,	5,	L"doorDark")
+		ADD_ICON(11,	4,  L"muttonRaw")
 		//ADD_ICON(11,	6,	L"unused")
 		ADD_ICON(11,	7,	L"minecart_hopper")
 		ADD_ICON(11,	8,	L"hopper")
@@ -542,7 +538,7 @@ void PreStitchedTextureMap::loadUVs()
 		//ADD_ICON(12,	1,	L"unused")
 		//ADD_ICON(12,	2,	L"unused")
 		//ADD_ICON(12,	3,	L"unused")
-		//ADD_ICON(12,	4,	L"unused")
+		ADD_ICON(12,	4,	L"muttonCooked")
 		//ADD_ICON(12,	5,	L"unused")
 		//ADD_ICON(12,	6,	L"unused")
 		ADD_ICON(12,	7,	L"minecart_tnt")
@@ -554,6 +550,13 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(12,	13,	L"map_empty")
 		ADD_ICON(12,	14,	L"frame")
 		ADD_ICON(12,	15,	L"enchantedBook")
+
+		ADD_ICON(13, 0, L"doorAcacia")
+		ADD_ICON(13, 1, L"doorBirch")
+		ADD_ICON(13, 2, L"doorDark")
+		ADD_ICON(13, 3, L"doorJungle")
+		ADD_ICON(13, 4, L"doorSpruce")
+		
 
 		ADD_ICON(14,	0,	L"skull_skeleton")
 		ADD_ICON(14,	1,	L"skull_wither")
@@ -869,7 +872,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(12,	9,	L"carrots_stage_1");
 		ADD_ICON(12,	10,	L"carrots_stage_2");
 		ADD_ICON(12,	11,	L"carrots_stage_3");
-		//ADD_ICON(12,	12,	L"unused");
+		ADD_ICON(12,	12,	L"slime");
 		ADD_ICON(12,	13,	L"water");
 		ADD_ICON_SIZE(12,14,L"water_flow",2,2);
 
