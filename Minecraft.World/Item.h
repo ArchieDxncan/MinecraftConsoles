@@ -422,9 +422,12 @@ public:
 	static Item* door_jungle;
 	static Item* door_acacia;
 	static Item* door_dark;
-
+	//TU31
 	static Item* mutton_raw;
 	static Item* mutton_cooked;
+	static Item* armor_stand;
+
+
 
 	static const int shovel_iron_Id			= 256;
 	static const int pickAxe_iron_Id		= 257;
@@ -631,8 +634,7 @@ public:
 	static const int lead_Id = 420;
 	static const int nameTag_Id = 421;
 
-	static const int mutton_raw_Id = 423;
-	static const int mutton_cooked_Id = 424;
+	
 
 	// TU25
 	static const int door_spruce_Id = 427;
@@ -640,6 +642,11 @@ public:
 	static const int door_jungle_Id = 429;
 	static const int door_acacia_Id = 430;
 	static const int door_dark_Id = 431;
+
+	//TU31
+	static const int mutton_raw_Id = 423;
+	static const int mutton_cooked_Id = 424;
+	static const int armor_stand_Id = 416;
 
 public:
 	const int id;

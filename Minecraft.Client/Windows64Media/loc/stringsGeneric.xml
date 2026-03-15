@@ -8931,4 +8931,17 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	<data name="IDS_ITEM_DOOR_DARK">
 		<value>Dark Oak Door</value>
 	</data>
+	<data name="IDS_ITEM_ARMOR_STAND">
+		<value>Armor Stand</value>
+	</data>
+	<data name="IDS_DESC_ARMOR_STAND">
+		<value>Can be equipped to display armor and other decorative items such as mob heads.</value>
+	</data>
+	<data name="IDS_RABBIT">
+		<value>Rabbit</value>
+	</data>
+	<data name="IDS_DESC_RABBIT">
+		<value>A harmless creature. May drop a rabbit hide or a rabbit's foot when killed.</value>
+	</data>
+	
 </root>

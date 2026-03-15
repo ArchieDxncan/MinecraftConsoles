@@ -48,6 +48,7 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	{
 		return;
 	}
+	app.DebugPrintf("LivingEntityRenderer::render called for type %d\n", _mob->GetType());
 
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);

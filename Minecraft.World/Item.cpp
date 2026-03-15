@@ -257,8 +257,10 @@ Item* Item::door_jungle = nullptr;
 Item* Item::door_acacia = nullptr;
 Item* Item::door_dark = nullptr;
 
+//TU31
 Item* Item::mutton_raw = nullptr;
 Item* Item::mutton_cooked = nullptr;
+Item* Item::armor_stand = nullptr;
 
 void Item::staticCtor()
 {
@@ -511,6 +513,9 @@ void Item::staticCtor()
 	Item::door_jungle = (new DoorItem(173, Material::wood, L"doorJungle"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorJungle")->setDescriptionId(IDS_ITEM_DOOR_JUNGLE)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Item::door_acacia = (new DoorItem(174, Material::wood, L"doorAcacia"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorAcacia")->setDescriptionId(IDS_ITEM_DOOR_ACACIA)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Item::door_dark = (new DoorItem(175, Material::wood, L"doorDark"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorDark")->setDescriptionId(IDS_ITEM_DOOR_DARK)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
+
+	
+	Item::armor_stand = (new ArmorStandItem(160))->setBaseItemTypeAndMaterial(eBaseItemType_undefined, eMaterial_undefined)->setIconName(L"armorStand")->setDescriptionId(IDS_ITEM_ARMOR_STAND)->setUseDescriptionId(IDS_DESC_ARMOR_STAND);
 }
 
 
@@ -1164,3 +1169,4 @@ const int Item::pumpkinPie_Id		;
 const int Item::enchantedBook_Id		;
 const int Item::netherQuartz_Id		;
 #endif
+

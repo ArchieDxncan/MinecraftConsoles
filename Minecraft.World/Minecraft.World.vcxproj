@@ -2408,6 +2408,8 @@
     <ClInclude Include="ArmorItem.h" />
     <ClInclude Include="ArmorRecipes.h" />
     <ClInclude Include="ArmorSlot.h" />
+    <ClInclude Include="ArmorStand.h" />
+    <ClInclude Include="ArmorStandItem.h" />
     <ClInclude Include="Arrays.h" />
     <ClInclude Include="ArrayWithLength.h" />
     <ClInclude Include="ArrowDamageEnchantment.h" />
@@ -3487,6 +3489,8 @@
     <ClCompile Include="ArmorItem.cpp" />
     <ClCompile Include="ArmorRecipes.cpp" />
     <ClCompile Include="ArmorSlot.cpp" />
+    <ClCompile Include="ArmorStand.cpp" />
+    <ClCompile Include="ArmorStandItem.cpp" />
     <ClCompile Include="Arrow.cpp" />
     <ClCompile Include="ArrowDamageEnchantment.cpp" />
     <ClCompile Include="ArrowFireEnchantment.cpp" />

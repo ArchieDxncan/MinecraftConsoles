@@ -24,7 +24,6 @@
 #include "PlayerRenderer.h"
 #include "GhastRenderer.h"
 #include "SquidRenderer.h"
-#include "MobRenderer.h"
 #include "GiantMobRenderer.h"
 #include "EntityRenderer.h"
 #include "PaintingRenderer.h"
@@ -83,6 +82,8 @@
 #include "BatRenderer.h"
 #include "CaveSpiderRenderer.h"
 #include "RabbitRenderer.h"
+#include "ArmorStandRenderer.h"
+#include "MobRenderer.h"
 
 double EntityRenderDispatcher::xOff = 0.0;
 double EntityRenderDispatcher::yOff = 0.0;
@@ -170,6 +171,8 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 	renderers[eTYPE_HORSE] = new HorseRenderer(new ModelHorse(), .75f);
 
 	renderers[eTYPE_LIGHTNINGBOLT] = new LightningBoltRenderer();
+
+	renderers[eTYPE_ARMORSTAND] = new ArmorStandRenderer();
 	glDisable(GL_LIGHTING);
 
 	for( auto& it : renderers )

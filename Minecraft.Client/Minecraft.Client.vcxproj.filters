@@ -3799,6 +3799,12 @@
     <ClInclude Include="RabbitRenderer.h">
       <Filter>net\minecraft\client\renderer\entity</Filter>
     </ClInclude>
+    <ClInclude Include="ArmorStandModel.h">
+      <Filter>net\minecraft\client\model</Filter>
+    </ClInclude>
+    <ClInclude Include="ArmorStandRenderer.h">
+      <Filter>net\minecraft\client\renderer\entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -5959,6 +5965,12 @@
       <Filter>net\minecraft\client\model</Filter>
     </ClCompile>
     <ClCompile Include="RabbitRenderer.cpp">
+      <Filter>net\minecraft\client\renderer\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="ArmorStandModel.cpp">
+      <Filter>net\minecraft\client\model</Filter>
+    </ClCompile>
+    <ClCompile Include="ArmorStandRenderer.cpp">
       <Filter>net\minecraft\client\renderer\entity</Filter>
     </ClCompile>
   </ItemGroup>

@@ -44,6 +44,7 @@ protected:
     virtual int   getAmbientSound() override;
     virtual int   getHurtSound()    override;
     virtual int   getDeathSound()   override;
+    virtual int   getHopSound()   ;
     virtual float getSoundVolume()  override { return 0.6f; }
     virtual bool  makeStepSound()   override { return true; }
 

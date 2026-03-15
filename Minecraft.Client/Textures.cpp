@@ -169,6 +169,10 @@ const wchar_t *Textures::preLoaded[TN_COUNT] =
 
 	L"item/trapped",
 	L"item/trapped_double",
+
+	L"mob/armorstand/wood",
+
+
 	//L"item/christmas",
 	//L"item/christmas_double",
 
