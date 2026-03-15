@@ -341,7 +341,7 @@ void Item::staticCtor()
 	Item::apple = ( new FoodItem(4, 4, FoodConstants::FOOD_SATURATION_LOW, false) )	->setIconName(L"apple")->setDescriptionId(IDS_ITEM_APPLE)->setUseDescriptionId(IDS_DESC_APPLE);
 	Item::coal = ( new CoalItem(7) )												->setBaseItemTypeAndMaterial(eBaseItemType_treasure,	eMaterial_coal)->setIconName(L"coal")->setDescriptionId(IDS_ITEM_COAL)->setUseDescriptionId(IDS_DESC_COAL);
 	Item::diamond = ( new Item(8) )													->setBaseItemTypeAndMaterial(eBaseItemType_treasure,	eMaterial_diamond)->setIconName(L"diamond")->setDescriptionId(IDS_ITEM_DIAMOND)->setUseDescriptionId(IDS_DESC_DIAMONDS);
-	Item::stick = ( new Item(24) )													->setIconName(L"stick")->handEquipped()->setDescriptionId(IDS_ITEM_STICK)->setUseDescriptionId(IDS_DESC_STICK);
+	Item::stick = ( new Item(24) )													->setBaseItemTypeAndMaterial(Item::eBaseItemType_stick, Item::eMaterial_wood)->setIconName(L"stick")->handEquipped()->setDescriptionId(IDS_ITEM_STICK)->setUseDescriptionId(IDS_DESC_STICK);
 	Item::mushroomStew = ( new BowlFoodItem(26, 6) )								->setIconName(L"mushroomStew")->setDescriptionId(IDS_ITEM_MUSHROOM_STEW)->setUseDescriptionId(IDS_DESC_MUSHROOMSTEW);
 
 	Item::string = ( new TilePlanterItem(31, Tile::tripWire) )						->setIconName(L"string")->setDescriptionId(IDS_ITEM_STRING)->setUseDescriptionId(IDS_DESC_STRING);

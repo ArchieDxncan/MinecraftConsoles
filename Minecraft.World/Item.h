@@ -143,6 +143,8 @@ public:
 		eBaseItemType_lever,
 		eBaseItemType_paper,
 		eBaseItemType_MAXTYPES,
+		eBaseItemType_stick,
+		eBaseItemType_fenceGate
 	}
 	eBaseItemType;
 
