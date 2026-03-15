@@ -1,4 +1,3 @@
-
 # ![Tutorial World](.github/minecraft_title.png)
 This project aims to backport the newer title updates back to the Minecraft: Legacy Console Edition Source Code Leak (which is based on TU19).
 
