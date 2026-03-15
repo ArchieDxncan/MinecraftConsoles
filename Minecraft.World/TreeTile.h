@@ -16,13 +16,13 @@ public:
 	static const int ACACIA_TRUNK = 4;
 	static const int DARK_TRUNK = 5;
 
-	static const int MASK_TYPE = 0x7;
-	static const int MASK_FACING = 0x18;
-	static const int FACING_Y = 0 << 3;
-	static const int FACING_X = 1 << 3;
-	static const int FACING_Z = 2 << 3;
+	static const int MASK_TYPE = 0x3;
+	static const int MASK_FACING = 0xC;
+	static const int FACING_Y = 0 << 2;
+	static const int FACING_X = 1 << 2;
+	static const int FACING_Z = 2 << 2;
 
-	static const int TREE_NAMES_LENGTH = 6;
+	static const int TREE_NAMES_LENGTH = 4;
 
 
 	static const unsigned int TREE_NAMES[TREE_NAMES_LENGTH];

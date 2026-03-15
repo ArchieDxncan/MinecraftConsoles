@@ -5,11 +5,11 @@
 class RotatedPillarTile : public Tile
 {
 public:
-	static const int MASK_TYPE = 0x7;
-	static const int MASK_FACING = 0x18;
-	static const int FACING_Y = 0 << 3;
-	static const int FACING_X = 1 << 3;
-	static const int FACING_Z = 2 << 3;
+	static const int MASK_TYPE = 0x3;
+	static const int MASK_FACING = 0xC;
+	static const int FACING_Y = 0 << 2;
+	static const int FACING_X = 1 << 2;
+	static const int FACING_Z = 2 << 2;
 
 protected:
 	Icon *iconTop;

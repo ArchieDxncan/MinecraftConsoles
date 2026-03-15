@@ -132,4 +132,5 @@
 #include "Rose.h"
 #include "SandTile.h"
 #include "RedSandStoneTile.h"
+#include "TreeTile2.h"
 
