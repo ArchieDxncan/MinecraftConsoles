@@ -2832,6 +2832,7 @@
     <ClInclude Include="TimeCommand.h" />
     <ClInclude Include="ToggleDownfallCommand.h" />
     <ClInclude Include="TradeWithPlayerGoal.h" />
+    <ClInclude Include="TreeTile2.h" />
     <ClInclude Include="TripWireSourceTile.h" />
     <ClInclude Include="TripWireTile.h" />
     <ClInclude Include="UpdateAttributesPacket.h" />
@@ -3651,6 +3652,7 @@
     <ClCompile Include="StructureFeatureIO.cpp" />
     <ClCompile Include="StructureFeatureSavedData.cpp" />
     <ClCompile Include="Team.cpp" />
+    <ClCompile Include="TreeTile2.cpp" />
     <ClCompile Include="WeightedPressurePlateTile.cpp" />
     <ClCompile Include="WoodButtonTile.cpp" />
     <ClCompile Include="WoolTileItem.cpp" />

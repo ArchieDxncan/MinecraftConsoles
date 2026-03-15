@@ -360,6 +360,8 @@ public:
 	static const int clayHardened_colored_Id = 159;
 	static const int stained_glass_pane_Id = 160;
 
+	static const int tree2Trunk_Id = 162;
+
 	static const int stairs_acaciawood_Id = 163;
 	static const int stairs_darkwood_Id = 164;
 
@@ -587,6 +589,8 @@ public:
 	static Tile* invertedDaylightDetector;
 	static Tile* red_sandstone;
 	static Tile* stairs_red_sandstone;
+	static Tile* tree2Trunk;
+
 	static void staticCtor();
 
 	int id;

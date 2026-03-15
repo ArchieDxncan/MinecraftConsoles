@@ -3203,6 +3203,15 @@
     <ClInclude Include="Rose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SandTile.h">
+      <Filter>net\minecraft\world\level\tile</Filter>
+    </ClInclude>
+    <ClInclude Include="RedSandStoneTile.h">
+      <Filter>net\minecraft\world\level\tile</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeTile2.h">
+      <Filter>net\minecraft\world\level\tile</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -5637,6 +5646,15 @@
     </ClCompile>
     <ClCompile Include="Rose.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SandTile.cpp">
+      <Filter>net\minecraft\world\level\tile</Filter>
+    </ClCompile>
+    <ClCompile Include="RedSandStoneTile.cpp">
+      <Filter>net\minecraft\world\level\tile</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeTile2.cpp">
+      <Filter>net\minecraft\world\level\tile</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
