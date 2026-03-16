@@ -1032,6 +1032,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(23, 3, L"door_jungle_upper");
 		ADD_ICON(23, 4, L"door_spruce_upper");
 
+		ADD_ICON(23, 12, L"packed_ice");
 		ADD_ICON(23, 14, L"inverted_daylight_detector");
 		ADD_ICON(23, 15, L"iron_trapdoor");
 
