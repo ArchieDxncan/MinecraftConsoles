@@ -13,6 +13,7 @@
 #include "ArmorStand.h"
 #include "..\Minecraft.Client\Textures.h"
 #include "MobCategory.h"
+#include "ParticleTypes.h"
 
 const Rotations ArmorStand::DEFAULT_HEAD_POSE      (  0,  0,  0);
 const Rotations ArmorStand::DEFAULT_BODY_POSE      (  0,  0,  0);
@@ -114,29 +115,32 @@ bool ArmorStand::interact(shared_ptr<Player> player)
     shared_ptr<ItemInstance> playerItem = player->getCarriedItem();
 
     if (playerItem != nullptr) {
-        int correctSlot = getEquipmentSlotForItem(playerItem);
-        if (isSlotDisabled(correctSlot)) return false;
+    int correctSlot = getEquipmentSlotForItem(playerItem);
+    if (isSlotDisabled(correctSlot)) return false;
 
-        shared_ptr<ItemInstance> standItem = getItemInSlot(correctSlot);
-        if (standItem != nullptr) {
-            bool added = player->inventory->add(standItem);
-            if (!added) spawnAtLocation(standItem, 0.0f);
+    shared_ptr<ItemInstance> standItem = getItemInSlot(correctSlot);
+    
+    
+    shared_ptr<ItemInstance> toPlace = ItemInstance::clone(playerItem);
+    toPlace->count = 1;
+    setEquippedSlot(correctSlot, toPlace);
+
+    
+    if (standItem != nullptr) {
+        
+        if (playerItem->count > 1) {
+            playerItem->remove(1);
+            if (!player->inventory->add(standItem)) spawnAtLocation(standItem, 0.0f);
+        } else {
+            
+            player->inventory->setItem(player->inventory->selected, standItem);
         }
-        shared_ptr<ItemInstance> toPlace = ItemInstance::clone(playerItem);
-        toPlace->count = 1;
-        setEquippedSlot(correctSlot, toPlace);
-        playerItem->remove(1);
-        return true;
     } else {
-        shared_ptr<ItemInstance> standItem = getItemInSlot(targetSlot);
-        if (standItem != nullptr) {
-            bool added = player->inventory->add(standItem);
-            if (!added) spawnAtLocation(standItem, 0.0f);
-            setEquippedSlot(targetSlot, nullptr);
-            return true;
-        }
+        
+        playerItem->remove(1);
     }
-    return false;
+    return true;
+}
 }
 
 bool ArmorStand::hurt(DamageSource *source, float damage)
@@ -153,6 +157,11 @@ bool ArmorStand::hurt(DamageSource *source, float damage)
             shared_ptr<Player> player = dynamic_pointer_cast<Player>(attacker);
             if (player->abilities.instabuild)
             {
+
+
+                level->broadcastEntityEvent(shared_from_this(), (byte)31); 
+    
+
                 remove();
                 return true;
             }
@@ -167,6 +176,7 @@ bool ArmorStand::hurt(DamageSource *source, float damage)
     }
     else
     {
+        level->broadcastEntityEvent(shared_from_this(), (byte)31); 
         remove();
         spawnAtLocation(Item::armor_stand_Id, 1); 
         for (int i = 0; i < 5; i++) {
@@ -183,13 +193,6 @@ bool ArmorStand::isPickable()
     return !removed && !isMarker();
 }
 
-void ArmorStand::handleEntityEvent(byte eventId)
-{
-    if (eventId == 32)
-        lastHit = (long long)tickCount;
-    else
-        LivingEntity::handleEntityEvent(eventId);
-}
 
 byte ArmorStand::setBit(byte oldBit, int offset, bool value)
 {
@@ -389,4 +392,39 @@ shared_ptr<ItemInstance> ArmorStand::getItemInSlot(int slot)
         return getArmor(slot - 1);
     }
     return nullptr;
+}
+
+
+void ArmorStand::handleEntityEvent(byte id)
+{
+    if (id == 31) 
+    {
+        int woodId = (Tile::wood != nullptr) ? Tile::wood->id : 5;
+        ePARTICLE_TYPE woodParticle = PARTICLE_TILECRACK(woodId, 0);
+
+        for (int i = 0; i < 10; i++) 
+    {
+        
+        double xa = random->nextGaussian() * 0.01;
+        double ya = -0.05;
+        double za = random->nextGaussian() * 0.01;
+
+       
+        double px = x + (random->nextFloat() * 0.1f - 0.05f);
+        
+        
+        double py = y + (bbHeight * 0.75f) + (random->nextFloat() * 0.2f);
+        
+        double pz = z + (random->nextFloat() * 0.1f - 0.05f);
+
+        level->addParticle(woodParticle, px, py, pz, xa, ya, za);
+    }
+        
+        
+        
+    }
+    else if (id == 32)
+        lastHit = (long long)tickCount;
+    else
+        LivingEntity::handleEntityEvent(id);
 }
