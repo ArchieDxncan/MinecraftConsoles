@@ -273,6 +273,8 @@ if __name__=="__main__": notecolors()
   <colour name="Mob_Witch_Colour2" value="51a03e"/>
   <colour name="Mob_Horse_Colour1" value="C09E7D"/>
   <colour name="Mob_Horse_Colour2" value="EEE500"/>
+   <colour name="Mob_Rabbit_Colour1" value="995F40"/>
+   <colour name="Mob_Rabbit_Colour2" value="734831"/>
 
   <colour name="Armour_Default_Leather_Colour" value="A06540"/>
 

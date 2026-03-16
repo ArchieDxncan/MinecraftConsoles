@@ -80,6 +80,9 @@ void ArmorStand::defineSynchedData()
 void ArmorStand::tick()
 {
     float lockedRot = this->yRot;
+    if (this->isInWater()|| this->isInLava()) {
+        this->yd -= 0.0392; 
+    }
     LivingEntity::tick();
     this->yRot = lockedRot;
     this->yRotO = lockedRot;       
@@ -87,6 +90,8 @@ void ArmorStand::tick()
     this->yBodyRotO = lockedRot;
     this->yHeadRot = lockedRot;
     this->yHeadRotO = lockedRot;
+
+    
 }
 
 bool ArmorStand::interact(shared_ptr<Player> player)
@@ -142,50 +147,61 @@ bool ArmorStand::interact(shared_ptr<Player> player)
     return true;
 }
 }
-
 bool ArmorStand::hurt(DamageSource *source, float damage)
 {
-    if (isInvulnerable()) return false;
-    if (level->isClientSide || removed) return false;
-    if (isMarker()) return false;
+    if (isInvulnerable() || level->isClientSide || removed || isMarker()) return false;
 
-    if (dynamic_cast<EntityDamageSource *>(source) != nullptr)
-    {
-        shared_ptr<Entity> attacker = source->getEntity();
-        if (attacker != nullptr && attacker->instanceof(eTYPE_PLAYER))
-        {
-            shared_ptr<Player> player = dynamic_pointer_cast<Player>(attacker);
-            if (player->abilities.instabuild)
-            {
-
-
-                level->broadcastEntityEvent(shared_from_this(), (byte)31); 
     
+    if (source != nullptr && source->getMsgId() == eEntityDamageType_Suffocate) return false;
 
+    bool isFireDamage = source->isFire();
+
+    
+    if (dynamic_cast<EntityDamageSource *>(source) != nullptr) {
+        shared_ptr<Entity> attacker = source->getEntity();
+        if (attacker != nullptr && attacker->instanceof(eTYPE_PLAYER)) {
+            if (dynamic_pointer_cast<Player>(attacker)->abilities.instabuild) {
+                level->broadcastEntityEvent(shared_from_this(), (byte)31); 
                 remove();
                 return true;
             }
         }
     }
 
+    
     long long now = (long long)tickCount;
-    if (now - lastHit > 5)
-    {
+    
+    
+    if (isFireDamage) {
+        
+        float currentHealth = this->getHealth() - 0.1f; 
+        this->setHealth(currentHealth);
+
+        if (currentHealth <= 0) {
+            //level->broadcastEntityEvent(shared_from_this(), (byte)31);
+            remove(); 
+            return true;
+        }
+        
+        
+        return false; 
+    }
+
+    
+    if (now - lastHit > 5) {
         level->broadcastEntityEvent(shared_from_this(), (byte)32);
         lastHit = now;
-    }
-    else
-    {
+        return true;
+    } else {
+        
         level->broadcastEntityEvent(shared_from_this(), (byte)31); 
         remove();
         spawnAtLocation(Item::armor_stand_Id, 1); 
         for (int i = 0; i < 5; i++) {
-            if (equipment[i] != nullptr) {
-                spawnAtLocation(equipment[i], 0.0f);
-            }
+            if (equipment[i] != nullptr) spawnAtLocation(equipment[i], 0.0f);
         }
+        return true;
     }
-    return true;
 }
 
 bool ArmorStand::isPickable()
@@ -428,3 +444,10 @@ void ArmorStand::handleEntityEvent(byte id)
     else
         LivingEntity::handleEntityEvent(id);
 }
+
+bool ArmorStand::updateInWaterState()
+{
+    
+    return Entity::updateInWaterState(); 
+}
+

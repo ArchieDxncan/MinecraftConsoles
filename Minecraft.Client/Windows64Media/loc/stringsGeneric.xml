@@ -8943,5 +8943,41 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	<data name="IDS_DESC_RABBIT">
 		<value>A harmless creature. May drop a rabbit hide or a rabbit's foot when killed.</value>
 	</data>
+	<data name="IDS_ITEM_RABBIT_HIDE">
+		<value>Rabbit Hide</value>
+	</data>
+	<data name="IDS_DESC_RABBIT_HIDE">
+		<value>Used in crafting leather.</value>
+	</data>
+	<data name="IDS_ITEM_RABBIT_FOOT">
+		<value>Rabbit's Foot</value>
+	</data>
+	<data name="IDS_DESC_RABBIT_FOOT">
+		<value>Used as an ingredient for brewing potions.</value>
+	</data>
+	<data name="IDS_ITEM_RABBIT_RAW">
+		<value>Raw Rabbit</value>
+	</data>
+	<data name="IDS_DESC_RABBIT_RAW">
+		<value>Restores 0.5{*ICON_SHANK_01*}, or can be cooked in a furnace.</value>
+	</data>
+	<data name="IDS_ITEM_RABBIT_COOKED">
+		<value>Cooked Rabbit</value>
+	</data>
+	<data name="IDS_DESC_RABBIT_COOKED">
+		<value>Restores 2.5{*ICON_SHANK_01*}. Used to cook up some rabbit stew.</value>
+	</data>
+	<data name="IDS_ITEM_MUTTON_RAW">
+		<value>Raw Mutton</value>
+	</data>
+	<data name="IDS_DESC_MUTTON_RAW">
+		<value>Restores 1{*ICON_SHANK_01*}, or can be cooked in a furnace.</value>
+	</data>
+	<data name="IDS_ITEM_MUTTON_COOKED">
+		<value>Cooked Mutton</value>
+	</data>
+	<data name="IDS_DESC_MUTTON_COOKED">
+		<value>Restores 3{*ICON_SHANK_01*}. Created by cooking raw mutton in a furnace.</value>
+	</data>
 	
 </root>
