@@ -4,7 +4,7 @@
 class ArmorStandItem : public Item
 {
 public:
-    ArmorStandItem(int id) : Item(id) {}
+    ArmorStandItem(int id) : Item(id) { maxStackSize = 16; }
     virtual ~ArmorStandItem() {}
 
     virtual bool useOn(shared_ptr<ItemInstance> itemInstance, shared_ptr<Player> player,

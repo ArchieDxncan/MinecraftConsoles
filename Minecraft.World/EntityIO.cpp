@@ -111,7 +111,7 @@ void EntityIO::staticCtor()
       eMinecraftColour_Mob_Rabbit_Colour1,
       eMinecraftColour_Mob_Rabbit_Colour2, IDS_RABBIT);//change IDS_RABBIT later
 
-	setId(ArmorStand::create, eTYPE_ARMORSTAND, L"ArmorStand", 102),
+	setId(ArmorStand::create, eTYPE_ARMORSTAND, L"ArmorStand", 102);
 
 
 	setId(Villager::create, eTYPE_VILLAGER, L"Villager", 120, eMinecraftColour_Mob_Villager_Colour1, eMinecraftColour_Mob_Villager_Colour2, IDS_VILLAGER);
