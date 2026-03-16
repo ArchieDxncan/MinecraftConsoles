@@ -2701,6 +2701,7 @@
     <ClInclude Include="net.minecraft.world.scores.h" />
     <ClInclude Include="Objective.h" />
     <ClInclude Include="ObjectiveCriteria.h" />
+    <ClInclude Include="PackedIceTile.h" />
     <ClInclude Include="PlayerTeam.h" />
     <ClInclude Include="ItemDispenseBehaviors.h" />
     <ClInclude Include="PoweredMetalTile.h" />
@@ -3632,6 +3633,7 @@
     <ClCompile Include="NameTagItem.cpp" />
     <ClCompile Include="Objective.cpp" />
     <ClCompile Include="ObjectiveCriteria.cpp" />
+    <ClCompile Include="PackedIceTile.cpp" />
     <ClCompile Include="PlayerTeam.cpp" />
     <ClCompile Include="ItemDispenseBehaviors.cpp" />
     <ClCompile Include="PoweredMetalTile.cpp" />

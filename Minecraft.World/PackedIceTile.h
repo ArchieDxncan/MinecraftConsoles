@@ -9,5 +9,4 @@ public:
 	PackedIceTile(int id);
 	virtual int getResource(int data, Random* random, int playerBonusLevel) { return 0; };
 	virtual int getPistonPushReaction() { return Material::PUSH_NORMAL; };
-	;
 };
