@@ -192,7 +192,8 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM_AUX(Item::skull_Id,SkullTileEntity::TYPE_ZOMBIE)
 		ITEM_AUX(Item::skull_Id,SkullTileEntity::TYPE_CHAR)
 		ITEM_AUX(Item::skull_Id,SkullTileEntity::TYPE_CREEPER)
-		ITEM(Tile::sponge_Id)
+		ITEM_AUX(Tile::sponge_Id, 0) // dry sponge
+		ITEM_AUX(Tile::sponge_Id, 1) // wet sponge
 		ITEM(Tile::melon_Id)
 		ITEM(Tile::pumpkin_Id)
 		ITEM(Tile::litPumpkin_Id)
