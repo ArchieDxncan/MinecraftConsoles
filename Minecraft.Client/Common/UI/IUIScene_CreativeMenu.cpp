@@ -439,7 +439,7 @@ void IUIScene_CreativeMenu::staticCtor()
 		BuildFirework(list, FireworksItem::TYPE_BURST, DyePowderItem::MAGENTA, 3, true, false, DyePowderItem::BLUE);
 		BuildFirework(list, FireworksItem::TYPE_STAR, DyePowderItem::YELLOW, 2, false, true, DyePowderItem::ORANGE);
 
-#ifndef _CONTENT_PACKAGE
+
 	DEF(eCreativeInventory_ArtToolsMisc)
 		if(app.DebugSettingsOn())
 		{
@@ -451,7 +451,6 @@ void IUIScene_CreativeMenu::staticCtor()
 			ITEM_AUX(Item::spawnEgg_Id,  52 | (2 << 12)); // Spider-Jockey
 			ITEM_AUX(Item::spawnEgg_Id,  63); // Enderdragon
 		}
-#endif
 
 	// Food
 	DEF(eCreativeInventory_Food)
