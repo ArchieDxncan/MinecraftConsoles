@@ -1030,7 +1030,7 @@ Recipes::Recipes()
 		L" S ", 
 		L"SXS", 
 		L'S', Item::stick,   
-		L'X',Tile::stoneSlabHalf, 
+		L'X', Tile::stoneSlabHalf, 
 		L'D');
 	
 

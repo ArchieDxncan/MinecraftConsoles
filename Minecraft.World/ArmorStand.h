@@ -97,6 +97,9 @@ public:
     virtual wstring getAName() override { return L""; }
     virtual wstring getDisplayName() override { return L""; }
     virtual wstring getNetworkName() override { return L""; }
+    virtual bool isInWall() override { return false; }
+    
+
 
     virtual shared_ptr<ItemInstance> getCarriedItem() override;
     virtual shared_ptr<ItemInstance> getCarried(int slot) override;
@@ -107,6 +110,8 @@ public:
     virtual void readAdditionalSaveData(CompoundTag *tag) override;
     virtual void addAdditonalSaveData(CompoundTag *tag)   override;
     virtual void handleEntityEvent(byte eventId) override;
+   
+    virtual bool updateInWaterState() override;
 
 protected:
     virtual void defineSynchedData() override;
