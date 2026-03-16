@@ -134,3 +134,4 @@
 #include "RedSandStoneTile.h"
 #include "TreeTile2.h"
 
+#include "PackedIceTile.h"
