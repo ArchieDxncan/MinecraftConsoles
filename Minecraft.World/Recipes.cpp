@@ -769,13 +769,7 @@ Recipes::Recipes()
 		L'#', Tile::glass,
 		L'T');
 
-	addShapedRecipy(new ItemInstance(Item::flowerPot, 1), //
-		L"sscig",
-		L"# #", //
-		L" # ", //
-
-		L'#', Item::brick,
-		L'D');
+	
 
 	// torch made of charcoal - moved to be the default due to the tutorial using it
 	addShapedRecipy(new ItemInstance(Tile::torch, 4), //
@@ -1005,6 +999,13 @@ Recipes::Recipes()
 		L'A', Tile::pumpkin, L'B', Tile::torch,
 		L'T');
 
+	addShapedRecipy(new ItemInstance(Item::flowerPot, 1), //
+		L"sscig",
+		L"# #", //
+		L" # ", //
+
+		L'#', Item::brick,
+		L'D');
 
 	addShapedRecipy(new ItemInstance(Tile::jukebox, 1), //
 		L"sssctcig",
@@ -1014,6 +1015,25 @@ Recipes::Recipes()
 
 		L'#', Tile::wood, L'X', Item::diamond,
 		'D');
+	
+	addShapedRecipy(new ItemInstance(Item::leather, 1), 
+		L"sscig",
+		L"##", 
+		L"##", 
+
+		L'#', Item::rabbit_hide, 
+		L'D'); 
+
+	addShapedRecipy(new ItemInstance(Item::armor_stand, 1),
+		L"ssscictg",  
+		L"SSS", 
+		L" S ", 
+		L"SXS", 
+		L'S', Item::stick,   
+		L'X',Tile::stoneSlabHalf, 
+		L'D');
+	
+
 
 	addShapedRecipy(new ItemInstance(Item::paper, 3), //
 		L"scig",

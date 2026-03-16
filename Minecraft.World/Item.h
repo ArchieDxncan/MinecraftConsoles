@@ -144,7 +144,8 @@ public:
 		eBaseItemType_paper,
 		eBaseItemType_MAXTYPES,
 		eBaseItemType_stick,
-		eBaseItemType_fenceGate
+		eBaseItemType_fenceGate,
+		eBaseItemType_decoration
 	}
 	eBaseItemType;
 
