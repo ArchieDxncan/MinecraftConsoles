@@ -47,6 +47,7 @@ protected:
     virtual int   getHopSound()   ;
     virtual float getSoundVolume()  override { return 0.6f; }
     virtual bool  makeStepSound()   override { return true; }
+    virtual void  dropDeathLoot(bool wasKilledByPlayer, int playerBonusLevel) override;
 
 public:
     virtual bool isFood(shared_ptr<ItemInstance> item) override;

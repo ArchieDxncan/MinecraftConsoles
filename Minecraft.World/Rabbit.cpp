@@ -70,7 +70,22 @@ bool Rabbit::useNewAi() {
     return true; 
 }
 
+void Rabbit::dropDeathLoot(bool wasKilledByPlayer, int lootingLevel) {
+    
+    int meatCount = random->nextInt(2) + random->nextInt(lootingLevel + 1);
+    int meatId = isOnFire() ? Item::rabbit_cooked_Id : Item::rabbit_raw_Id;
+    spawnAtLocation(meatId, meatCount);
 
+    
+    int hideCount = random->nextInt(2) + random->nextInt(lootingLevel + 1);
+    spawnAtLocation(Item::rabbit_hide_Id, hideCount);
+
+    
+    float footChance = 0.10f + (0.03f * lootingLevel);
+    if (wasKilledByPlayer && random->nextFloat() < footChance) {
+        spawnAtLocation(Item::rabbits_foot_Id, 1);
+    }
+}
 
 void Rabbit::tick() {
     Animal::tick();

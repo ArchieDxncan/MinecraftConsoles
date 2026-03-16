@@ -260,6 +260,10 @@ Item* Item::door_dark = nullptr;
 //TU31
 Item* Item::mutton_raw = nullptr;
 Item* Item::mutton_cooked = nullptr;
+Item* Item::rabbit_raw = nullptr;
+Item* Item::rabbit_cooked = nullptr;
+Item* Item::rabbits_foot = nullptr;
+Item* Item::rabbit_hide = nullptr;
 Item* Item::armor_stand = nullptr;
 
 void Item::staticCtor()
@@ -507,6 +511,8 @@ void Item::staticCtor()
 
 	Item::mutton_raw = (new FoodItem(167, 2, FoodConstants::FOOD_SATURATION_LOW, true))->setIconName(L"muttonRaw")->setDescriptionId(IDS_ITEM_BEEF_RAW)->setUseDescriptionId(IDS_DESC_BEEF_RAW);
 	Item::mutton_cooked = (new FoodItem(168, 8, FoodConstants::FOOD_SATURATION_NORMAL, true))->setIconName(L"muttonCooked")->setDescriptionId(IDS_ITEM_BEEF_COOKED)->setUseDescriptionId(IDS_DESC_BEEF_COOKED);
+	Item::rabbit_raw = (new FoodItem(155, 1.8, FoodConstants::FOOD_SATURATION_NORMAL, true))->setIconName(L"rabbitRaw")->setDescriptionId(IDS_ITEM_BEEF_RAW)->setUseDescriptionId(IDS_DESC_BEEF_RAW);
+	Item::rabbit_cooked = (new FoodItem(156, 5, FoodConstants::FOOD_SATURATION_NORMAL, true))->setIconName(L"rabbitCooked")->setDescriptionId(IDS_ITEM_BEEF_RAW)->setUseDescriptionId(IDS_DESC_BEEF_RAW);
 
 	Item::door_spruce = (new DoorItem(171, Material::wood, L"doorSpruce"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorSpruce")->setDescriptionId(IDS_ITEM_DOOR_SPRUCE)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Item::door_birch = (new DoorItem(172, Material::wood, L"doorBirch"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorBirch")->setDescriptionId(IDS_ITEM_DOOR_BIRCH)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
@@ -514,7 +520,9 @@ void Item::staticCtor()
 	Item::door_acacia = (new DoorItem(174, Material::wood, L"doorAcacia"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorAcacia")->setDescriptionId(IDS_ITEM_DOOR_ACACIA)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Item::door_dark = (new DoorItem(175, Material::wood, L"doorDark"))->setBaseItemTypeAndMaterial(eBaseItemType_door, eMaterial_wood)->setIconName(L"doorDark")->setDescriptionId(IDS_ITEM_DOOR_DARK)->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 
-	
+	Item::rabbit_hide = ( new Item(159) )									->setIconName(L"rabbitHide")->setDescriptionId(IDS_ITEM_LEATHER)->setUseDescriptionId(IDS_DESC_LEATHER);
+	Item::rabbits_foot = ( new Item(158) )									->setIconName(L"rabbitsFoot")->setDescriptionId(IDS_ITEM_LEATHER)->setUseDescriptionId(IDS_DESC_LEATHER);
+
 	Item::armor_stand = (new ArmorStandItem(160))->setBaseItemTypeAndMaterial(eBaseItemType_undefined, eMaterial_undefined)->setIconName(L"armorStand")->setDescriptionId(IDS_ITEM_ARMOR_STAND)->setUseDescriptionId(IDS_DESC_ARMOR_STAND);
 }
 

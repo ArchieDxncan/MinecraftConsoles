@@ -425,6 +425,10 @@ public:
 	//TU31
 	static Item* mutton_raw;
 	static Item* mutton_cooked;
+	static Item* rabbit_raw;
+	static Item* rabbit_cooked;
+	static Item* rabbit_hide;
+	static Item* rabbits_foot;
 	static Item* armor_stand;
 
 
@@ -646,6 +650,10 @@ public:
 	//TU31
 	static const int mutton_raw_Id = 423;
 	static const int mutton_cooked_Id = 424;
+	static const int rabbit_raw_Id = 411;
+	static const int rabbit_cooked_Id = 412;
+	static const int rabbits_foot_Id = 414;
+	static const int rabbit_hide_Id = 415;
 	static const int armor_stand_Id = 416;
 
 public:
