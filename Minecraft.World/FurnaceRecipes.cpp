@@ -35,13 +35,13 @@ FurnaceRecipes::FurnaceRecipes()
 	addFurnaceRecipy(Tile::emeraldOre_Id, new ItemInstance(Item::emerald), 1);
 	addFurnaceRecipy(Item::potato_Id, new ItemInstance(Item::potatoBaked), .35f);
 	addFurnaceRecipy(Tile::netherRack_Id, new ItemInstance(Item::netherbrick), .1f);
+	addFurnaceRecipy(new ItemInstance(Tile::sponge, 1, 1), new ItemInstance(Tile::sponge, 1, 0), .15f);
 
 	// special silk touch related recipes:
 	addFurnaceRecipy(Tile::coalOre_Id, new ItemInstance(Item::coal), .1f);
 	addFurnaceRecipy(Tile::redStoneOre_Id, new ItemInstance(Item::redStone), .7f);
 	addFurnaceRecipy(Tile::lapisOre_Id, new ItemInstance(Item::dye_powder, 1, DyePowderItem::BLUE), .2f);
 	addFurnaceRecipy(Tile::netherQuartz_Id, new ItemInstance(Item::netherQuartz), .2f);
-
 
 }
 
@@ -52,19 +52,27 @@ void FurnaceRecipes::addFurnaceRecipy(int itemId, ItemInstance *result, float va
 	recipeValue[result->id] = value;
 }
 
-bool FurnaceRecipes::isFurnaceItem(int itemId)
+void FurnaceRecipes::addFurnaceRecipy(ItemInstance* input, ItemInstance* result, float value)
 {
-    auto it = recipies.find(itemId);
-    return it != recipies.end();
+	int key = input->id | (input->getAuxValue() << 12);
+	recipies[key] = result;
+	recipeValue[result->id] = value;
 }
 
-ItemInstance *FurnaceRecipes::getResult(int itemId)
+bool FurnaceRecipes::isFurnaceItem(int itemId, int data)
 {
-    auto it = recipies.find(itemId);
-    if(it != recipies.end())
-	{
-		return it->second;
-	}
+	int key = itemId | (data << 12);
+	if (recipies.find(key) != recipies.end()) return true;
+	return recipies.find(itemId) != recipies.end();
+}
+
+ItemInstance* FurnaceRecipes::getResult(int itemId, int data)
+{
+	int key = itemId | (data << 12);
+	auto it = recipies.find(key);
+	if (it != recipies.end()) return it->second;
+	it = recipies.find(itemId);
+	if (it != recipies.end()) return it->second;
 	return nullptr;
 }
 

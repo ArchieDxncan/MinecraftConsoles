@@ -413,7 +413,7 @@ void ArmorStand::handleEntityEvent(byte id)
         double px = x + (random->nextFloat() * 0.1f - 0.05f);
         
         
-        double py = y + (bbHeight * 0.75f) + (random->nextFloat() * 0.2f);
+        double py = y + (bbHeight * 0.6f) + (random->nextFloat() * 0.2f);
         
         double pz = z + (random->nextFloat() * 0.1f - 0.05f);
 
