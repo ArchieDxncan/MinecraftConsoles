@@ -594,6 +594,7 @@ public:
 	static Tile* tree2Trunk;
 	static Tile* packed_ice;
 	static Tile* seaLantern;
+
 	static void staticCtor();
 
 	int id;
