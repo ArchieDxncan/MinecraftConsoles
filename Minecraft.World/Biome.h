@@ -46,6 +46,8 @@ public:
 	static Biome *smallerExtremeHills;
 	static Biome *jungle;
 	static Biome *jungleHills;
+	static Biome *savanna;
+    static Biome *roofedForest;
 
 	static const int BIOME_COUNT = 23; // 4J Stu added
 

@@ -2466,6 +2466,7 @@
     <ClInclude Include="CommandBlockEntity.h" />
     <ClInclude Include="ComparatorTile.h" />
     <ClInclude Include="ComparatorTileEntity.h" />
+    <ClInclude Include="DarkOakFeature.h" />
     <ClInclude Include="DaylightDetectorTile.h" />
     <ClInclude Include="DaylightDetectorTileEntity.h" />
     <ClInclude Include="DropperTile.h" />
@@ -2716,6 +2717,8 @@
     <ClInclude Include="RepeaterTile.h" />
     <ClInclude Include="RotatedPillarTile.h" />
     <ClInclude Include="SandTile.h" />
+    <ClInclude Include="Sapling2.h" />
+    <ClInclude Include="SavannaTreeFeature.h" />
     <ClInclude Include="Score.h" />
     <ClInclude Include="Scoreboard.h" />
     <ClInclude Include="ScoreboardSaveData.h" />
@@ -3546,6 +3549,7 @@
     <ClCompile Include="CommandBlockEntity.cpp" />
     <ClCompile Include="ComparatorTile.cpp" />
     <ClCompile Include="ComparatorTileEntity.cpp" />
+    <ClCompile Include="DarkOakFeature.cpp" />
     <ClCompile Include="DaylightDetectorTile.cpp" />
     <ClCompile Include="DaylightDetectorTileEntity.cpp" />
     <ClCompile Include="DropperTile.cpp" />
@@ -3653,6 +3657,8 @@
     <ClInclude Include="Rose.h" />
     <ClCompile Include="RotatedPillarTile.cpp" />
     <ClCompile Include="SandTile.cpp" />
+    <ClCompile Include="Sapling2.cpp" />
+    <ClCompile Include="SavannaTreeFeature.cpp" />
     <ClCompile Include="Score.cpp" />
     <ClCompile Include="Scoreboard.cpp" />
     <ClCompile Include="SeaLanternTile.cpp" />

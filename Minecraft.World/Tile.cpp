@@ -51,6 +51,7 @@ Tile *Tile::dirt = nullptr;
 Tile *Tile::cobblestone = nullptr;
 Tile *Tile::wood = nullptr;
 Tile *Tile::sapling = nullptr;
+Tile *Tile::sapling2 = nullptr;
 Tile *Tile::unbreakable = nullptr;
 LiquidTile *Tile::water = nullptr;
 Tile *Tile::calmWater = nullptr;
@@ -297,6 +298,7 @@ void Tile::staticCtor()
 	Tile::cobblestone = (new Tile(4, Material::stone))						->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock,	Item::eMaterial_stone)->setDestroyTime(2.0f)->setExplodeable(10)->setSoundType(Tile::SOUND_STONE)->setIconName(L"cobblestone")->setDescriptionId(IDS_TILE_STONE_BRICK)->setUseDescriptionId(IDS_DESC_STONE_BRICK);
 	Tile::wood = (new WoodTile(5))											->setBaseItemTypeAndMaterial(Item::eBaseItemType_structwoodstuff,	Item::eMaterial_wood)->setDestroyTime(2.0f)->setExplodeable(5)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"planks")->setDescriptionId(IDS_TILE_OAKWOOD_PLANKS)->sendTileData()->setUseDescriptionId(IDS_DESC_WOODENPLANKS);
 	Tile::sapling = (new Sapling(6))										->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"sapling")->setDescriptionId(IDS_TILE_SAPLING)->sendTileData()->setUseDescriptionId(IDS_DESC_SAPLING)->disableMipmap();
+	Tile::sapling2 = (new Sapling2(199))										->setDestroyTime(0.0f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"sapling2")->setDescriptionId(IDS_TILE_SAPLING)->sendTileData()->setUseDescriptionId(IDS_DESC_SAPLING)->disableMipmap();
 	Tile::unbreakable = (new Tile(7, Material::stone))						->setIndestructible()->setExplodeable(6000000)->setSoundType(Tile::SOUND_STONE)->setIconName(L"bedrock")->setDescriptionId(IDS_TILE_BEDROCK)->setNotCollectStatistics()->setUseDescriptionId(IDS_DESC_BEDROCK);
 	Tile::water = static_cast<LiquidTile *>((new LiquidTileDynamic(8, Material::water))->setDestroyTime(100.0f)->setLightBlock(3)->setIconName(L"water_flow")->setDescriptionId(IDS_TILE_WATER)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_WATER));
 	Tile::calmWater = (new LiquidTileStatic(9, Material::water))			->setDestroyTime(100.0f)->setLightBlock(3)->setIconName(L"water_still")->setDescriptionId(IDS_TILE_WATER)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_WATER);
@@ -483,8 +485,8 @@ void Tile::staticCtor()
 	Tile::packed_ice = (new PackedIceTile(174))->setDestroyTime(0.5f)->setSoundType(SOUND_GLASS)->setIconName(L"packed_ice")->setDescriptionId(IDS_TILE_ICE)->setUseDescriptionId(IDS_DESC_ICE);
 
 	Tile::invertedDaylightDetector = static_cast<DaylightDetectorTile*>((new DaylightDetectorTile(178, true))->setDestroyTime(0.2f)->setSoundType(SOUND_WOOD)->setIconName(L"daylight_detector")->setDescriptionId(IDS_TILE_DAYLIGHT_DETECTOR)->setUseDescriptionId(IDS_DESC_DAYLIGHT_DETECTOR));
-	Tile::red_sandstone = (new RedSandStoneTile(179))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_sand)->setSoundType(Tile::SOUND_STONE)->setDestroyTime(0.8f)->sendTileData()->setIconName(L"red_sandstone")->setDescriptionId(IDS_TILE_SANDSTONE)->setUseDescriptionId(IDS_DESC_SANDSTONE)->sendTileData();
-	Tile::stairs_red_sandstone = (new StairTile(180, Tile::red_sandstone, 0))->setBaseItemTypeAndMaterial(Item::eBaseItemType_stairs, Item::eMaterial_sand)->setIconName(L"stairsRedSandstone")->setDescriptionId(IDS_TILE_STAIRS_SANDSTONE)->sendTileData()->setUseDescriptionId(IDS_DESC_STAIRS);
+	Tile::red_sandstone = (new RedSandStoneTile(179))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_sand)->setSoundType(Tile::SOUND_STONE)->setDestroyTime(0.8f)->sendTileData()->setIconName(L"red_sandstone")->setDescriptionId(IDS_TILE_RED_SANDSTONE)->setUseDescriptionId(IDS_DESC_SANDSTONE)->sendTileData();
+	Tile::stairs_red_sandstone = (new StairTile(180, Tile::red_sandstone, 0))->setBaseItemTypeAndMaterial(Item::eBaseItemType_stairs, Item::eMaterial_sand)->setIconName(L"stairsRedSandstone")->setDescriptionId(IDS_TILE_STAIRS_RED_SANDSTONE)->sendTileData()->setUseDescriptionId(IDS_DESC_STAIRS);
 
 	Tile::spruceGate = (new FenceGateTile(183))->setBaseItemTypeAndMaterial(Item::eBaseItemType_fenceGate, Item::eMaterial_sprucewood)->setDestroyTime(2.0f)->setExplodeable(5)->setSoundType(SOUND_WOOD)->setIconName(L"planks_spruce")->setDescriptionId(IDS_TILE_SPRUCE_GATE)->sendTileData()->setUseDescriptionId(IDS_DESC_FENCE_GATE);
 	Tile::birchGate = (new FenceGateTile(184))->setBaseItemTypeAndMaterial(Item::eBaseItemType_fenceGate, Item::eMaterial_birchwood)->setDestroyTime(2.0f)->setExplodeable(5)->setSoundType(SOUND_WOOD)->setIconName(L"planks_birch")->setDescriptionId(IDS_TILE_BIRCH_GATE)->sendTileData()->setUseDescriptionId(IDS_DESC_FENCE_GATE);
@@ -524,6 +526,7 @@ void Tile::staticCtor()
 	Item::items[woodSlabHalf_Id]		= ( new StoneSlabTileItem(Tile::woodSlabHalf_Id - 256,	Tile::woodSlabHalf,		Tile::woodSlab, false))->setIconName(L"woodSlab")->setDescriptionId(IDS_DESC_WOODSLAB)->setUseDescriptionId(IDS_DESC_WOODSLAB);
 	Item::items[woodSlab_Id]			= ( new StoneSlabTileItem(Tile::woodSlab_Id - 256,		Tile::woodSlabHalf,		Tile::woodSlab, true))->setIconName(L"woodSlab")->setDescriptionId(IDS_DESC_WOODSLAB)->setUseDescriptionId(IDS_DESC_WOODSLAB);
 	Item::items[sapling_Id]				= ( new MultiTextureTileItem(Tile::sapling_Id - 256, Tile::sapling, Sapling::SAPLING_NAMES, 4) )->setIconName(L"sapling")->setDescriptionId(IDS_TILE_SAPLING)->setUseDescriptionId(IDS_DESC_SAPLING);
+	Item::items[sapling2_Id]				= ( new MultiTextureTileItem(Tile::sapling2_Id - 256, Tile::sapling2, Sapling2::SAPLING_NAMES, 2) )->setIconName(L"sapling2")->setDescriptionId(IDS_TILE_SAPLING)->setUseDescriptionId(IDS_DESC_SAPLING);
 	Item::items[leaves_Id]				= ( new LeafTileItem(Tile::leaves_Id - 256) )->setIconName(L"leaves")->setDescriptionId(IDS_TILE_LEAVES)->setUseDescriptionId(IDS_DESC_LEAVES);
 	Item::items[leaves2_Id]				= ( new LeafTileItem(Tile::leaves2_Id - 256) )->setIconName(L"leaves_acacia")->setDescriptionId(IDS_TILE_LEAVES)->setUseDescriptionId(IDS_DESC_LEAVES);
 	Item::items[vine_Id]				= ( new ColoredTileItem(Tile::vine_Id - 256, false))->setDescriptionId(IDS_TILE_VINE)->setUseDescriptionId(IDS_DESC_VINE);
@@ -1636,6 +1639,7 @@ const int Tile::dirt_Id;
 //				4
 const int Tile::wood_Id;
 const int Tile::sapling_Id;
+const int Tile::sapling2_Id;
 const int Tile::unbreakable_Id;
 const int Tile::water_Id;
 const int Tile::calmWater_Id;

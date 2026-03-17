@@ -42,6 +42,9 @@ Biome *Biome::smallerExtremeHills = nullptr;
 Biome *Biome::jungle = nullptr;
 Biome *Biome::jungleHills = nullptr;
 
+Biome *Biome::savanna = nullptr;
+Biome *Biome::roofedForest = nullptr;
+
 
 void Biome::staticCtor()
 {
@@ -78,6 +81,10 @@ void Biome::staticCtor()
 
 	Biome::jungle = (new JungleBiome(21))->setColor(0x537b09)->setName(L"Jungle")->setLeafColor(0x537b09)->setTemperatureAndDownfall(1.2f, 0.9f)->setDepthAndScale(0.2f, 0.4f)->setLeafFoliageWaterSkyColor(eMinecraftColour_Grass_Jungle, eMinecraftColour_Foliage_Jungle, eMinecraftColour_Water_Jungle,eMinecraftColour_Sky_Jungle);
 	Biome::jungleHills = (new JungleBiome(22))->setColor(0x2c4205)->setName(L"JungleHills")->setLeafColor(0x537b09)->setTemperatureAndDownfall(1.2f, 0.9f)->setDepthAndScale(1.8f, 0.5f)->setLeafFoliageWaterSkyColor(eMinecraftColour_Grass_JungleHills, eMinecraftColour_Foliage_JungleHills, eMinecraftColour_Water_JungleHills,eMinecraftColour_Sky_JungleHills);
+
+	Biome::savanna = (new Biome(35))->setName(L"Savanna")->setLeafFoliageWaterSkyColor(eMinecraftColour_Grass_Savanna, eMinecraftColour_Foliage_Savanna, eMinecraftColour_Sky_Desert, eMinecraftColour_Sky_Desert);
+	Biome::roofedForest = (new Biome(29))->setName(L"Roofed Forest")->setLeafFoliageWaterSkyColor(eMinecraftColour_Grass_RoofedForest, eMinecraftColour_Foliage_RoofedForest, eMinecraftColour_Water_Forest, eMinecraftColour_Sky_Forest);
+
 }
 
 Biome::Biome(int id) : id(id)

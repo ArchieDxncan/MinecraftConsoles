@@ -10,8 +10,8 @@
 #include "IconRegister.h"
 
 const unsigned int LeafTile2::LEAF2_NAMES[LEAF2_NAMES_SIZE] = {
-	IDS_TILE_LEAVES_BIRCH, 
-	IDS_TILE_LEAVES_SPRUCE
+	IDS_TILE_LEAVES_ACACIA, 
+	IDS_TILE_LEAVES_DARK_OAK
 };
 
 const wstring LeafTile2::TEXTURES[2][2] = { 

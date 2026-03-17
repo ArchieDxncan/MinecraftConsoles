@@ -821,6 +821,9 @@
     <ClCompile Include="PackedIceTile.cpp" />
     <ClCompile Include="LeafTile2.cpp" />
     <ClCompile Include="LeafTileItem2.cpp" />
+    <ClCompile Include="Sapling2.cpp" />
+    <ClCompile Include="SavannaTreeFeature.cpp" />
+    <ClCompile Include="DarkOakFeature.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
@@ -1811,6 +1814,9 @@
     <ClInclude Include="PackedIceTile.h" />
     <ClInclude Include="LeafTile2.h" />
     <ClInclude Include="LeafTileItem2.h" />
+    <ClInclude Include="Sapling2.h" />
+    <ClInclude Include="SavannaTreeFeature.h" />
+    <ClInclude Include="DarkOakFeature.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Minecraft.Client\Xbox\res\audio\Minecraft.xgs" />

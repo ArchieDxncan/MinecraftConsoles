@@ -8979,5 +8979,29 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	<data name="IDS_DESC_MUTTON_COOKED">
 		<value>Restores 3{*ICON_SHANK_01*}. Created by cooking raw mutton in a furnace.</value>
 	</data>
+	<data name="IDS_TILE_SAPLING_ACACIA">
+		<value>Acacia Sapling</value>
+	</data>	
+	<data name="IDS_TILE_SAPLING_DARK_OAK">
+		<value>Dark Oak Sapling</value>
+	</data>	
+	<data name="IDS_TILE_LEAVES_ACACIA">
+		<value>Acacia Leaves</value>
+	</data>	
+	<data name="IDS_TILE_LEAVES_DARK_OAK">
+		<value>Dark Oak Leaves</value>
+	</data>	
+	<data name="IDS_TILE_RED_SANDSTONE">
+		<value>Red Sandstone</value>
+	</data>	
+	<data name="IDS_TILE_STAIRS_RED_SANDSTONE">
+		<value>Red Sandstone Stairs</value>
+	</data>	
+	<data name="IDS_ITEM_PRISMARINE_CRYSTAL">
+		<value>Prismarine Crystal</value>
+	</data>	
+	<data name="IDS_TILE_SEA_LANTERN">
+		<value>Sea Lantern</value>
+	</data>	
 	
 </root>

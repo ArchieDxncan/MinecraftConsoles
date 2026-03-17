@@ -24,10 +24,10 @@ public:
 	virtual unsigned int getDescriptionId(int iData = -1);
 	virtual void registerIcons(IconRegister *iconRegister);
 	
-	// Override per la colorazione del bioma
+	
 	virtual int getColor(int data);
 	virtual int getColor(LevelSource *level, int x, int y, int z, int data);
 
-	// Override per permettere alle cesoie di droppare il blocco giusto (leaves2)
+	
 	virtual void playerDestroy(Level *level, shared_ptr<Player> player, int x, int y, int z, int data);
 };

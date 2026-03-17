@@ -1006,6 +1006,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(20, 15, L"red_sandstone_top");
 
 		ADD_ICON(21, 5, L"flower_tulip_pink");
+		
 
 		ADD_ICON(21, 8, L"log_dark");
 		ADD_ICON(21, 9, L"log_dark_top");
@@ -1022,6 +1023,8 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(22, 3, L"flower_oxeye_daisy");
 		ADD_ICON(22, 4, L"flower_tulip_red");
 		ADD_ICON(22, 5, L"flower_tulip_white");
+		ADD_ICON(22, 6, L"sapling_acacia");
+		ADD_ICON(22, 7, L"sapling_dark_oak");
 
 		ADD_ICON(22, 8, L"coarse_dirt");
 		ADD_ICON(22, 9, L"dirt_podzol_side");
