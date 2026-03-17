@@ -16,8 +16,7 @@
 #include "net.minecraft.world.h"
 #include "net.minecraft.h"
 #include "Tile.h"
-#include "SeaLanternTile.h"
-#include "SeaLanternTile.cpp"
+
 
 wstring Tile::TILE_DESCRIPTION_PREFIX = L"Tile.";
 
@@ -64,6 +63,7 @@ Tile *Tile::ironOre = nullptr;
 Tile *Tile::coalOre = nullptr;
 Tile *Tile::treeTrunk = nullptr;
 LeafTile *Tile::leaves = nullptr;
+LeafTile2 *Tile::leaves2 = nullptr;
 Tile *Tile::sponge = nullptr;
 Tile *Tile::glass = nullptr;
 Tile *Tile::lapisOre = nullptr;
@@ -311,6 +311,7 @@ void Tile::staticCtor()
 	Tile::treeTrunk = (new TreeTile(17))->setDestroyTime(2.0f)	->setSoundType(Tile::SOUND_WOOD)->setIconName(L"log")->setDescriptionId(IDS_TILE_LOG)->sendTileData()->setUseDescriptionId(IDS_DESC_LOG);
 	// 4J - for leaves, have specified that only the data bits that encode the type of leaf are important to be sent
 	Tile::leaves = static_cast<LeafTile *>((new LeafTile(18))->setDestroyTime(0.2f)->setLightBlock(1)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"leaves")->setDescriptionId(IDS_TILE_LEAVES)->sendTileData(LeafTile::LEAF_TYPE_MASK)->setUseDescriptionId(IDS_DESC_LEAVES));
+	Tile::leaves2 = static_cast<LeafTile2 *>((new LeafTile2(161))->setDestroyTime(0.2f)->setLightBlock(1)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"leaves_acacia")->setDescriptionId(IDS_TILE_LEAVES)->sendTileData(LeafTile::LEAF_TYPE_MASK)->setUseDescriptionId(IDS_DESC_LEAVES));
 	Tile::sponge = (new Sponge(19))								->setDestroyTime(0.6f)->setSoundType(Tile::SOUND_GRASS)->setIconName(L"sponge")->setDescriptionId(IDS_TILE_SPONGE)->setUseDescriptionId(IDS_DESC_SPONGE)->sendTileData();
 	Tile::glass = (new GlassTile(20, Material::glass, false))	->setDestroyTime(0.3f)->setSoundType(Tile::SOUND_GLASS)->setIconName(L"glass")->setDescriptionId(IDS_TILE_GLASS)->setUseDescriptionId(IDS_DESC_GLASS);
 
@@ -524,6 +525,7 @@ void Tile::staticCtor()
 	Item::items[woodSlab_Id]			= ( new StoneSlabTileItem(Tile::woodSlab_Id - 256,		Tile::woodSlabHalf,		Tile::woodSlab, true))->setIconName(L"woodSlab")->setDescriptionId(IDS_DESC_WOODSLAB)->setUseDescriptionId(IDS_DESC_WOODSLAB);
 	Item::items[sapling_Id]				= ( new MultiTextureTileItem(Tile::sapling_Id - 256, Tile::sapling, Sapling::SAPLING_NAMES, 4) )->setIconName(L"sapling")->setDescriptionId(IDS_TILE_SAPLING)->setUseDescriptionId(IDS_DESC_SAPLING);
 	Item::items[leaves_Id]				= ( new LeafTileItem(Tile::leaves_Id - 256) )->setIconName(L"leaves")->setDescriptionId(IDS_TILE_LEAVES)->setUseDescriptionId(IDS_DESC_LEAVES);
+	Item::items[leaves2_Id]				= ( new LeafTileItem(Tile::leaves2_Id - 256) )->setIconName(L"leaves_acacia")->setDescriptionId(IDS_TILE_LEAVES)->setUseDescriptionId(IDS_DESC_LEAVES);
 	Item::items[vine_Id]				= ( new ColoredTileItem(Tile::vine_Id - 256, false))->setDescriptionId(IDS_TILE_VINE)->setUseDescriptionId(IDS_DESC_VINE);
 	int idsData[3] = {IDS_TILE_SHRUB, IDS_TILE_TALL_GRASS, IDS_TILE_FERN};
 	intArray ids = intArray(idsData, 3);
@@ -541,6 +543,7 @@ void Tile::staticCtor()
 	Item::items[red_sandstone_Id] = (new MultiTextureTileItem(Tile::red_sandstone_Id - 256, red_sandstone, (int*)RedSandStoneTile::SANDSTONE_NAMES, RedSandStoneTile::SANDSTONE_BLOCK_NAMES))->setIconName(L"red_sandstone")->setDescriptionId(IDS_TILE_SANDSTONE)->setUseDescriptionId(IDS_DESC_SANDSTONE);
 	Item::items[tree2Trunk_Id] = (new MultiTextureTileItem(Tile::tree2Trunk_Id - 256, tree2Trunk, (int*)TreeTile2::TREE_NAMES, TreeTile2::TREE_NAMES_LENGTH))->setIconName(L"log")->setDescriptionId(IDS_TILE_LOG)->setUseDescriptionId(IDS_DESC_LOG);
 	Item::items[sponge_Id] = (new MultiTextureTileItem(Tile::sponge_Id - 256, sponge, (int*)Sponge::SPONGE_NAMES, Sponge::SPONGE_NAMES_LENGTH))->setIconName(L"sponge")->setDescriptionId(IDS_TILE_SPONGE)->setUseDescriptionId(IDS_DESC_SPONGE);
+
 
 	for (int i = 0; i < 256; i++)
 	{
@@ -858,8 +861,10 @@ Icon *Tile::getTexture(LevelSource *level, int x, int y, int z, int face)
 		if(opaque)
 		{
 			Tile::leaves->setFancy(false);
+			Tile::leaves2->setFancy(false);
 			icon = getTexture(face, tileData);
 			Tile::leaves->setFancy(true);
+			Tile::leaves2->setFancy(true);
 		}
 		else
 		{
@@ -1643,6 +1648,7 @@ const int Tile::ironOre_Id;
 const int Tile::coalOre_Id;
 const int Tile::treeTrunk_Id;
 const int Tile::leaves_Id;
+const int Tile::leaves2_Id;
 const int Tile::sponge_Id;
 const int Tile::glass_Id;
 const int Tile::lapisOre_Id;

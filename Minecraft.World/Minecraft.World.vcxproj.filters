@@ -818,6 +818,9 @@
     <ClCompile Include="ZoneIo.cpp" />
     <ClCompile Include="ZoomLayer.cpp" />
     <ClCompile Include="SeaLanternTile.cpp" />
+    <ClCompile Include="PackedIceTile.cpp" />
+    <ClCompile Include="LeafTile2.cpp" />
+    <ClCompile Include="LeafTileItem2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
@@ -1805,6 +1808,9 @@
     <ClInclude Include="ZoomLayer.h" />
     <ClInclude Include="Rose.h" />
     <ClInclude Include="SeaLanternTile.h" />
+    <ClInclude Include="PackedIceTile.h" />
+    <ClInclude Include="LeafTile2.h" />
+    <ClInclude Include="LeafTileItem2.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Minecraft.Client\Xbox\res\audio\Minecraft.xgs" />

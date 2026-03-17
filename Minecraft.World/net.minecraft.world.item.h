@@ -21,6 +21,7 @@
 #include "Item.h"
 #include "ItemInstance.h"
 #include "LeafTileItem.h"
+#include "LeafTileItem2.h"
 #include "MapItem.h"
 #include "MinecartItem.h"
 //#include "PaintingItem.h"

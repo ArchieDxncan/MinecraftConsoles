@@ -1000,6 +1000,8 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(20, 8, L"log_acacia");
 		ADD_ICON(20, 9, L"log_acacia_top");
 		ADD_ICON(20, 10, L"planks_acacia");
+		ADD_ICON(20, 11, L"leaves_acacia");
+		ADD_ICON(20, 12, L"leaves_acacia_opaque");
 		ADD_ICON(20, 14, L"red_sand");
 		ADD_ICON(20, 15, L"red_sandstone_top");
 
@@ -1008,6 +1010,8 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(21, 8, L"log_dark");
 		ADD_ICON(21, 9, L"log_dark_top");
 		ADD_ICON(21, 10, L"planks_dark");
+		ADD_ICON(21, 11, L"leaves_dark_oak");
+		ADD_ICON(21, 12, L"leaves_dark_oak_opaque");
 
 		ADD_ICON(21, 14, L"red_sandstone_bottom");
 		ADD_ICON(21, 15, L"red_sandstone_normal");

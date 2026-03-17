@@ -2490,6 +2490,8 @@
     <ClInclude Include="HorseInventoryMenu.h" />
     <ClInclude Include="HtmlString.h" />
     <ClInclude Include="LargeFireball.h" />
+    <ClInclude Include="LeafTile2.h" />
+    <ClInclude Include="LeafTileItem2.h" />
     <ClInclude Include="LeashItem.h" />
     <ClInclude Include="MapCloningRecipe.h" />
     <ClInclude Include="MapExtendingRecipe.h" />
@@ -3566,6 +3568,8 @@
     <ClCompile Include="HorseInventoryMenu.cpp" />
     <ClCompile Include="HtmlString.cpp" />
     <ClCompile Include="LargeFireball.cpp" />
+    <ClCompile Include="LeafTile2.cpp" />
+    <ClCompile Include="LeafTileItem2.cpp" />
     <ClCompile Include="LeashItem.cpp" />
     <ClCompile Include="MinecartChest.cpp" />
     <ClCompile Include="MinecartContainer.cpp" />

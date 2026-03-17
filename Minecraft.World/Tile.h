@@ -3,10 +3,13 @@
 #include "Vec3.h"
 #include "Definitions.h"
 #include "SoundTypes.h"
+
+
 using namespace std;
 
 class GrassTile;
 class LeafTile;
+class LeafTile2;
 class TallGrass;
 class DeadBushTile;
 class FireTile;
@@ -203,6 +206,8 @@ public:
 	static const int coalOre_Id = 16;
 	static const int treeTrunk_Id = 17;
 	static const int leaves_Id = 18;
+	static const int leaves2_Id = 161;
+
 	static const int sponge_Id = 19;
 	static const int glass_Id = 20;
 
@@ -409,6 +414,7 @@ public:
 	static Tile *coalOre;
 	static Tile *treeTrunk;
 	static LeafTile *leaves;
+	static LeafTile2 *leaves2;
 	static Tile *sponge;
 	static Tile *glass;
 	static Tile *lapisOre;
