@@ -432,6 +432,8 @@ public:
 	static Item* rabbits_foot;
 	static Item* armor_stand;
 
+	static Item* prismarine_crystal;
+
 
 
 	static const int shovel_iron_Id			= 256;
@@ -656,6 +658,8 @@ public:
 	static const int rabbits_foot_Id = 414;
 	static const int rabbit_hide_Id = 415;
 	static const int armor_stand_Id = 416;
+
+	static const int prismarine_cystal_Id = 417;
 
 public:
 	const int id;

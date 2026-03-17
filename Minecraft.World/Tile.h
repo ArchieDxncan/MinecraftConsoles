@@ -388,6 +388,7 @@ public:
 	static const int darkFence_Id = 191;
 	static const int acaciaFence_Id = 192;
 
+	static const int seaLantern_Id = 198;
 
 	static Tile *stone;
 	static GrassTile *grass;
@@ -590,6 +591,7 @@ public:
 	static Tile* red_sandstone;
 	static Tile* stairs_red_sandstone;
 	static Tile* tree2Trunk;
+	static Tile* seaLantern;
 
 	static void staticCtor();
 

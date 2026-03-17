@@ -266,6 +266,8 @@ Item* Item::rabbits_foot = nullptr;
 Item* Item::rabbit_hide = nullptr;
 Item* Item::armor_stand = nullptr;
 
+Item* Item::prismarine_crystal = nullptr;
+
 void Item::staticCtor()
 {
 	Item::sword_wood		= ( new WeaponItem(12, _Tier::WOOD) )		->setBaseItemTypeAndMaterial(eBaseItemType_sword,	eMaterial_wood)		->setIconName(L"swordWood")->setDescriptionId(IDS_ITEM_SWORD_WOOD)->setUseDescriptionId(IDS_DESC_SWORD);
@@ -524,6 +526,7 @@ void Item::staticCtor()
 	Item::rabbits_foot = ( new Item(158) )									->setIconName(L"rabbitsFoot")->setDescriptionId(IDS_ITEM_RABBIT_FOOT)->setUseDescriptionId(IDS_DESC_RABBIT_FOOT);
 
 	Item::armor_stand = (new ArmorStandItem(160))							->setBaseItemTypeAndMaterial(eBaseItemType_HangingItem,eMaterial_cloth)->setIconName(L"armorStand")->setDescriptionId(IDS_ITEM_ARMOR_STAND)->setUseDescriptionId(IDS_DESC_ARMOR_STAND);
+	Item::prismarine_crystal = (new Item(161))->setIconName(L"prismarineCrystal")->setDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL)->setUseDescriptionId(IDS_DESC_BRICK);
 }
 
 

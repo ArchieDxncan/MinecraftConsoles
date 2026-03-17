@@ -566,6 +566,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(14,	4,	L"skull_creeper")
 		ADD_ICON(14,	5,	L"rabbitsFoot")
 		ADD_ICON(14,	6,	L"rabbitHide")
+		ADD_ICON(13,    14, L"prismarineCrystal");
 		ADD_ICON_WITH_NAME(14,	7,	L"compassP0", L"compass") // 4J Added
 		ADD_ICON_WITH_NAME(14,	8,	L"compassP1", L"compass") // 4J Added
 		ADD_ICON_WITH_NAME(14,	9,	L"compassP2", L"compass") // 4J Added
@@ -1031,6 +1032,7 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(23, 2, L"door_dark_upper");
 		ADD_ICON(23, 3, L"door_jungle_upper");
 		ADD_ICON(23, 4, L"door_spruce_upper");
+		ADD_ICON(23, 13, L"sea_lantern");
 
 		ADD_ICON(23, 14, L"inverted_daylight_detector");
 		ADD_ICON(23, 15, L"iron_trapdoor");
@@ -1040,5 +1042,6 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(24, 2, L"door_dark_lower");
 		ADD_ICON(24, 3, L"door_jungle_lower");
 		ADD_ICON(24, 4, L"door_spruce_lower");
+
 	}
 }

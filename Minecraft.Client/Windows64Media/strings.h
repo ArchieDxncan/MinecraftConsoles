@@ -2334,3 +2334,5 @@
 #define IDS_RICHPRESENCESTATE_BREWING                          2328
 #define IDS_RICHPRESENCESTATE_ANVIL                            2329
 #define IDS_RICHPRESENCESTATE_TRADING                          2330
+#define IDS_TILE_SEA_LANTERN                                   2331
+#define IDS_ITEM_PRISMARINE_CRYSTAL                                  2332

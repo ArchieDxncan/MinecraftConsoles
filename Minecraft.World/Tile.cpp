@@ -16,6 +16,8 @@
 #include "net.minecraft.world.h"
 #include "net.minecraft.h"
 #include "Tile.h"
+#include "SeaLanternTile.h"
+#include "SeaLanternTile.cpp"
 
 wstring Tile::TILE_DESCRIPTION_PREFIX = L"Tile.";
 
@@ -246,6 +248,7 @@ Tile* Tile::darkGate = nullptr;
 Tile* Tile::invertedDaylightDetector = nullptr;
 Tile* Tile::red_sandstone = nullptr;
 Tile* Tile::stairs_red_sandstone = nullptr;
+Tile* Tile::seaLantern = nullptr;
 
 Tile* Tile::tree2Trunk = nullptr;
 
@@ -496,6 +499,9 @@ void Tile::staticCtor()
 	Tile::door_jungle = (new DoorTile(195, Material::wood, L"doorJungle"))->setDestroyTime(3.0f)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"door_jungle")->setDescriptionId(IDS_TILE_DOOR_JUNGLE)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Tile::door_acacia = (new DoorTile(196, Material::wood, L"doorAcacia"))->setDestroyTime(3.0f)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"door_acacia")->setDescriptionId(IDS_TILE_DOOR_ACACIA)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	Tile::door_dark = (new DoorTile(197, Material::wood, L"doorDark"))->setDestroyTime(3.0f)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"door_dark")->setDescriptionId(IDS_TILE_DOOR_DARK)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
+	
+	Tile::seaLantern = (new SeaLanternTile(198, Material::glass))->setBaseItemTypeAndMaterial(Item::eBaseItemType_torch, Item::eMaterial_glowstone)->setDestroyTime(0.3f)->setSoundType(Tile::SOUND_GLASS)->setLightEmission(1.0f)->setIconName(L"glowstone")->setDescriptionId(IDS_TILE_SEA_LANTERN)->setUseDescriptionId(IDS_DESC_GLOWSTONE);
+
 
 	// Special cases for certain items since they can have different icons
 	Item::items[wool_Id]				= ( new WoolTileItem(Tile::wool_Id- 256) )->setIconName(L"cloth")->setDescriptionId(IDS_TILE_CLOTH)->setUseDescriptionId(IDS_DESC_WOOL);
