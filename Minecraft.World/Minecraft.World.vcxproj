@@ -2716,6 +2716,7 @@
     <ClInclude Include="Score.h" />
     <ClInclude Include="Scoreboard.h" />
     <ClInclude Include="ScoreboardSaveData.h" />
+    <ClInclude Include="SeaLanternTile.h" />
     <ClInclude Include="SimpleFoiledItem.h" />
     <ClInclude Include="SnowItem.h" />
     <ClInclude Include="SpawnEggItem.h" />
@@ -3648,6 +3649,7 @@
     <ClCompile Include="SandTile.cpp" />
     <ClCompile Include="Score.cpp" />
     <ClCompile Include="Scoreboard.cpp" />
+    <ClCompile Include="SeaLanternTile.cpp" />
     <ClCompile Include="SimpleFoiledItem.cpp" />
     <ClCompile Include="SnowItem.cpp" />
     <ClCompile Include="StainedGlassBlock.cpp" />
