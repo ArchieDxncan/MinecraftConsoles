@@ -30,13 +30,14 @@ private:
 
     bool didTick;
 	int lastKeepAliveId;
-	__int64 lastKeepAliveTime;
+	int64_t lastKeepAliveTime;
 	static Random random;
-	__int64 lastKeepAliveTick;
+	int64_t lastKeepAliveTick;
 	int chatSpamTickCount;
 	int dropSpamTickCount;
 
 	bool m_bHasClientTickedOnce;
+	unsigned char m_logSmallId;
 
 public:
 	PlayerConnection(MinecraftServer *server, Connection *connection, shared_ptr<ServerPlayer> player);
@@ -45,6 +46,10 @@ public:
     void disconnect(DisconnectPacket::eDisconnectReason reason);
 
 private:
+	/**
+	 * Returns the stable network smallId used by dedicated-server logging and refreshes it from the live socket when possible
+	 */
+	unsigned char getLogSmallId();
 	double xLastOk, yLastOk, zLastOk;
     bool synched;
 
@@ -81,7 +86,7 @@ private:
 
 public:
 	// 4J Stu - Handlers only valid in debug mode
-#ifndef _CONTENT_PACKAGE	
+#ifndef _CONTENT_PACKAGE
     virtual void handleContainerSetSlot(shared_ptr<ContainerSetSlotPacket> packet);
 #endif
 	virtual void handleContainerClick(shared_ptr<ContainerClickPacket> packet);
@@ -89,14 +94,14 @@ public:
 	virtual void handleSetCreativeModeSlot(shared_ptr<SetCreativeModeSlotPacket> packet);
     virtual void handleContainerAck(shared_ptr<ContainerAckPacket> packet);
     virtual void handleSignUpdate(shared_ptr<SignUpdatePacket> packet);
-	virtual void handleKeepAlive(shared_ptr<KeepAlivePacket> packet);	
+	virtual void handleKeepAlive(shared_ptr<KeepAlivePacket> packet);
 	virtual void handlePlayerInfo(shared_ptr<PlayerInfoPacket> packet); // 4J Added
     virtual bool isServerPacketListener();
 	virtual void handlePlayerAbilities(shared_ptr<PlayerAbilitiesPacket> playerAbilitiesPacket);
 	virtual void handleCustomPayload(shared_ptr<CustomPayloadPacket> customPayloadPacket);
 	virtual bool isDisconnected();
 
-	// 4J Added	
+	// 4J Added
 	virtual void handleCraftItem(shared_ptr<CraftItemPacket> packet);
 	virtual void handleTradeItem(shared_ptr<TradeItemPacket> packet);
 	virtual void handleDebugOptions(shared_ptr<DebugOptionsPacket> packet);
