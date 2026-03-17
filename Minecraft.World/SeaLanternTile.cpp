@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "SeaLanternTile.h"
+#include "net.minecraft.world.item.h"
+#include "IconRegister.h"
 
 SeaLanternTile::SeaLanternTile(int id, Material* material) : Tile(id, material)
 {
