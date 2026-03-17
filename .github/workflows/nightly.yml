@@ -14,6 +14,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -27,7 +31,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Set platform lowercase
-      run: echo "PLATFORM=$('${{ matrix.platform }}'.ToLower())" >> $env:GITHUB_ENV
+      run: echo "MATRIX_PLATFORM=$('${{ matrix.platform }}'.ToLower())" >> $env:GITHUB_ENV
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -40,12 +44,12 @@ jobs:
       env:
         VCPKG_ROOT: "" # Disable vcpkg for CI builds
       with:
-        configurePreset: ${{ env.PLATFORM }}
-        buildPreset: ${{ env.PLATFORM }}-release
+        configurePreset: ${{ env.MATRIX_PLATFORM }}
+        buildPreset: ${{ env.MATRIX_PLATFORM }}-release
         buildPresetAdditionalArgs: "['--target', 'Minecraft.Client']"
 
     - name: Zip Build
-      run: 7z a -r LCE${{ matrix.platform }}.zip ./build/${{ env.PLATFORM }}/Minecraft.Client/Release/* -x!*.ipdb -x!*.iobj
+      run: 7z a -r LCE${{ matrix.platform }}.zip ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Release/* -x!*.ipdb -x!*.iobj
 
     - name: Stage artifacts
       run: |
@@ -55,7 +59,7 @@ jobs:
     - name: Stage exe and pdb
       if: matrix.platform == 'Windows64'
       run: |
-        Copy-Item ./build/${{ env.PLATFORM }}/Minecraft.Client/Release/Minecraft.Client.exe staging/
+        Copy-Item ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Release/Minecraft.Client.exe staging/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v6
