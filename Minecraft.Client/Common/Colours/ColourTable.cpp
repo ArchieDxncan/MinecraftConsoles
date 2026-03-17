@@ -35,6 +35,8 @@ const wchar_t *ColourTable::ColourTableElements[eMinecraftColour_COUNT] =
 	L"Foliage_ExtremeHillsEdge",
 	L"Foliage_Jungle",
 	L"Foliage_JungleHills",
+	L"Foliage_Savanna",
+	L"Foliage_RoofedForest",
 	
 	L"Grass_Common",
 	L"Grass_Ocean",
@@ -60,6 +62,8 @@ const wchar_t *ColourTable::ColourTableElements[eMinecraftColour_COUNT] =
 	L"Grass_ExtremeHillsEdge",
 	L"Grass_Jungle",
 	L"Grass_JungleHills",
+	L"Grass_Savanna",
+	L"Grass_RoofedForest",
 
 	L"Water_Ocean",
 	L"Water_Plains",

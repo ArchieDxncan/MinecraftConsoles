@@ -28,6 +28,9 @@
   <colour name="Foliage_ExtremeHillsEdge" value="6da36b"/>
   <colour name="Foliage_Jungle" value="29bc05"/>
   <colour name="Foliage_JungleHills" value="29bc05"/>
+  <colour name="Foliage_Savanna" value="9eb34e"/>
+  <colour name="Foliage_RoofedForest" value="28340a"/>
+  
 
   <!-- Grass colours -->
   <!-- May be used for grass and tall grass -->
@@ -55,6 +58,8 @@
   <colour name="Grass_ExtremeHillsEdge" value="8ab689"/>
   <colour name="Grass_Jungle" value="53ca37"/>
   <colour name="Grass_JungleHills" value="53ca37"/>
+  <colour name="Grass_Savanna" value="bfb755"/>
+  <colour name="Grass_RoofedForest" value="507a32"/>
 
   <!-- Water colours -->
   <colour name="Water_Ocean" value="ffffff"/>

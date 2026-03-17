@@ -221,6 +221,8 @@ enum eMinecraftColour
 	eMinecraftColour_Foliage_ExtremeHillsEdge,
 	eMinecraftColour_Foliage_Jungle,
 	eMinecraftColour_Foliage_JungleHills,
+	eMinecraftColour_Foliage_Savanna,
+	eMinecraftColour_Foliage_RoofedForest,
 	
 	eMinecraftColour_Grass_Common,
 	eMinecraftColour_Grass_Ocean,
@@ -246,6 +248,8 @@ enum eMinecraftColour
 	eMinecraftColour_Grass_ExtremeHillsEdge,
 	eMinecraftColour_Grass_Jungle,
 	eMinecraftColour_Grass_JungleHills,
+	eMinecraftColour_Grass_Savanna,
+	eMinecraftColour_Grass_RoofedForest,
 
 	eMinecraftColour_Water_Ocean,
 	eMinecraftColour_Water_Plains,
