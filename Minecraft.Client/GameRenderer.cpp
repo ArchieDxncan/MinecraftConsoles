@@ -359,14 +359,17 @@ void GameRenderer::pick(float a)
 	}
 }
 
+// Toru - wrapping these methods for backwards compatibility,
+// no longer setting m_fov as its use doesn't respect applyEffects param in GameRenderer::getFov
 void GameRenderer::SetFovVal(float fov)
 {
-	m_fov=fov;
+	//m_fov=fov;
+	mc->options->set(Options::Option::FOV, (fov - 70) / 40);
 }
 
 float GameRenderer::GetFovVal()
 {
-	return m_fov;
+	return 70 + mc->options->fov * 40;//m_fov;
 }
 
 void GameRenderer::tickFov()
@@ -392,7 +395,7 @@ float GameRenderer::getFov(float a, bool applyEffects)
 	float fov = m_fov;//70;
 	if (applyEffects)
 	{
-		//fov += mc->options->fov * 40;
+		fov += mc->options->fov * 40;
 		fov *= oFov[playerIdx] + (this->fov[playerIdx] - oFov[playerIdx]) * a;
 	}
 	if (player->getHealth() <= 0)
