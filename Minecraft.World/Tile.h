@@ -371,6 +371,7 @@ public:
 	static const int woolCarpet_Id = 171;
 	static const int clayHardened_Id = 172;
 	static const int coalBlock_Id = 173;
+	static const int packed_ice_Id = 174;
 
 	static const int invertedDaylightDetector_Id = 178;
 	static const int red_sandstone_Id = 179;
@@ -591,8 +592,8 @@ public:
 	static Tile* red_sandstone;
 	static Tile* stairs_red_sandstone;
 	static Tile* tree2Trunk;
+	static Tile* packed_ice;
 	static Tile* seaLantern;
-
 	static void staticCtor();
 
 	int id;
