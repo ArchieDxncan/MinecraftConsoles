@@ -481,14 +481,6 @@ SCreditTextItemDef UIScene_Credits::gs_aCreditDefs[MAX_CREDIT_STRINGS] =
 #else
 	{ L"Copyright (C) 2009-2014 by RAD Game Tools, Inc.",	NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
 #endif
-	{ L"",													NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
-	{ L"",													CREDIT_ICON,					eCreditIcon_Miles,eSmallText },	// extra blank line
-	{ L"Uses Miles Sound System.",							NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
-#ifdef __PS3__
-	{ L"Copyright (C) 1991-2013 by RAD Game Tools, Inc.",	NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
-#else
-	{ L"Copyright (C) 1991-2014 by RAD Game Tools, Inc.",	NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
-#endif
 #ifdef __PS3__
 	{ L"",													NO_TRANSLATED_STRING,			NO_TRANSLATED_STRING,eSmallText },	// extra blank line
 	{ L"",													CREDIT_ICON,					eCreditIcon_Dolby,eSmallText },	// extra blank line
