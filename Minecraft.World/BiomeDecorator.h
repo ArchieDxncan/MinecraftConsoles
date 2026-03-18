@@ -14,6 +14,7 @@ class BiomeDecorator
 	friend class TaigaBiome;
 	friend class MushroomIslandBiome;
 	friend class BeachBiome;
+	friend class SavannaBiome;
 	friend class JungleBiome;
 protected:
 	Level *level;

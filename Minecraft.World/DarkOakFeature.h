@@ -14,4 +14,8 @@ private:
     void placeTrunk2x2(Level *level, int x, int y, int z);
     
     void placeLeaf(Level *level, int x, int y, int z);
+    private:
+    bool checkSpace(Level *worldIn, int x, int y, int z, int height);
+    void placeLog(Level *worldIn, int x, int y, int z);
+    
 };

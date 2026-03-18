@@ -14,6 +14,7 @@ class BirchFeature;
 class SwampTreeFeature;
 class ChunkRebuildData;
 
+
 class Biome
 {
 	friend class ChunkRebuildData;
