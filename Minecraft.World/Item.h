@@ -659,7 +659,7 @@ public:
 	static const int rabbit_hide_Id = 415;
 	static const int armor_stand_Id = 416;
 
-	static const int prismarine_cystal_Id = 417;
+	static const int prismarine_cystal_Id = 432;
 
 public:
 	const int id;

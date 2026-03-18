@@ -2710,6 +2710,7 @@
     <ClInclude Include="PoweredMetalTile.h" />
     <ClInclude Include="PoweredRailTile.h" />
     <ClInclude Include="AbstractProjectileDispenseBehavior.h" />
+    <ClInclude Include="PrismarineTile.h" />
     <ClInclude Include="Rabbit.h" />
     <ClInclude Include="RailTile.h" />
     <ClInclude Include="RedSandStoneTile.h" />
@@ -3650,6 +3651,7 @@
     <ClCompile Include="PoweredMetalTile.cpp" />
     <ClCompile Include="PoweredRailTile.cpp" />
     <ClCompile Include="AbstractProjectileDispenseBehavior.cpp" />
+    <ClCompile Include="PrismarineTile.cpp" />
     <ClCompile Include="Rabbit.cpp" />
     <ClCompile Include="RailTile.cpp" />
     <ClCompile Include="RedSandStoneTile.cpp" />

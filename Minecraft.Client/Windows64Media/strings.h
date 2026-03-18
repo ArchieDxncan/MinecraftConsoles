@@ -2342,3 +2342,6 @@
 #define IDS_RICHPRESENCESTATE_BREWING                          2336
 #define IDS_RICHPRESENCESTATE_ANVIL                            2337
 #define IDS_RICHPRESENCESTATE_TRADING                          2338
+#define IDS_TILE_PRISMARINE                                    2339
+#define IDS_TILE_PRISMARINE_DARK                               2340
+#define IDS_TILE_PRISMARINE_BRICKS                             2341
