@@ -272,7 +272,7 @@ Recipes::Recipes()
 		L'#', Item::stick, "W", new ItemInstance(Tile::wood, 1, TreeTile::DARK_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_wood, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_wood, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -281,7 +281,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, 0),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_birch, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_birch, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -290,7 +290,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, TreeTile::BIRCH_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_spruce, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_spruce, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -299,7 +299,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, TreeTile::SPRUCE_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_jungle, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_jungle, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -308,7 +308,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, TreeTile::JUNGLE_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_acacia, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_acacia, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -317,7 +317,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, TreeTile::ACACIA_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_dark, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_dark, 3), //
 		L"sssczg",
 		L"##", //
 		L"##", //
@@ -326,7 +326,7 @@ Recipes::Recipes()
 		L'#', new ItemInstance(Tile::wood, 1, TreeTile::DARK_TRUNK),
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Item::door_iron, 1), //
+	addShapedRecipy(new ItemInstance(Item::door_iron, 3), //
 		L"ssscig",
 		L"##", //
 		L"##", //
