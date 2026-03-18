@@ -23,6 +23,7 @@ public:
 	virtual Icon *getTexture(int face, int data);
 	virtual unsigned int getDescriptionId(int iData = -1);
 	virtual void registerIcons(IconRegister *iconRegister);
+	virtual void spawnResources(Level *level, int x, int y, int z, int data, float odds, int playerBonusLevel) override;
 	
 	
 	virtual int getColor(int data);
