@@ -81,6 +81,8 @@ void UIScene_DeathMenu::handleInput(int iPad, int key, bool repeat, bool pressed
 
 void UIScene_DeathMenu::handlePress(F64 controlId, F64 childId)
 {
+	ui.PlayUISFX(eSFX_Press);
+	
 	switch(static_cast<int>(controlId))
 	{
 	case eControl_Respawn:
