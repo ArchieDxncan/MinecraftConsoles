@@ -48,6 +48,12 @@ void SandTile::checkSlide(Level* level, int x, int y, int z)
 	int x2 = x;
 	int y2 = y;
 	int z2 = z;
+
+	if (level->isNew || !level->hasChunksAt(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1))
+	{
+		return;
+	}
+
 	if (y2 > 0 && isFree(level, x2, y2 - 1, z2))
 	{
 		int r = 32;
