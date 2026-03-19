@@ -663,8 +663,8 @@ public:
 	static const int armor_stand_Id = 416;
 	
 
-	static const int prismarine_cystal_Id = 432;
-	static const int prismarine_shard_Id = 433;
+	static const int prismarine_cystal_Id = 410;
+	static const int prismarine_shard_Id = 409;
 
 
 public:
