@@ -7,6 +7,7 @@
 #include "ItemInstance.h"
 #include "net.minecraft.world.level.tile.h"
 #include "net.minecraft.world.item.crafting.h"
+#include "DyePowderItem.h"
 
 Recipes *Recipes::instance = nullptr;
 ArmorRecipes *Recipes::pArmorRecipes=nullptr;
@@ -453,6 +454,33 @@ Recipes::Recipes()
 		L"##", //
 
 		L'#', Item::snowBall,
+		L'S');
+
+	addShapedRecipy(new ItemInstance(Tile::prismarine, 1), //
+		L"sscig",
+		L"##", //
+		L"##", //
+
+		L'#', Item::prismarine_shard,
+		L'S');
+
+	addShapedRecipy(new ItemInstance(Tile::prismarinebrick, 1), //
+		L"ssscig",
+		L"###", //
+		L"###", //
+		L"###",
+
+		L'#', Item::prismarine_shard,
+		L'S');
+
+
+	addShapedRecipy(new ItemInstance(Tile::prismarinedark, 1), //
+		L"ssscicig",
+		L"###", //
+		L"#X#", //
+		L"###", //
+
+		L'#', Item::prismarine_shard, L'X', new ItemInstance(Item::dye_powder, 1, DyePowderItem::BLACK),
 		L'S');
 
 	addShapedRecipy(new ItemInstance(Tile::topSnow, 6), //

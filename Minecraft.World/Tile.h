@@ -397,6 +397,8 @@ public:
 
 	static const int seaLantern_Id = 198;
 	static const int prismarine_Id = 200;
+	static const int prismarinedark_Id = 201;
+	static const int prismarinebrick_Id = 202;
 
 	static Tile *stone;
 	static GrassTile *grass;
@@ -605,6 +607,7 @@ public:
 	static Tile* seaLantern;
 	static Tile* prismarine;
 	static Tile* prismarinedark;
+	static Tile* prismarinebrick;
 
 	static void staticCtor();
 

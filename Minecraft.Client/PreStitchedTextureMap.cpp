@@ -567,6 +567,8 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(14,	5,	L"rabbitsFoot")
 		ADD_ICON(14,	6,	L"rabbitHide")
 		ADD_ICON(13,    14, L"prismarineCrystal");
+		ADD_ICON(13,	 13, L"prismarineShard");
+
 		ADD_ICON_WITH_NAME(14,	7,	L"compassP0", L"compass") // 4J Added
 		ADD_ICON_WITH_NAME(14,	8,	L"compassP1", L"compass") // 4J Added
 		ADD_ICON_WITH_NAME(14,	9,	L"compassP2", L"compass") // 4J Added
