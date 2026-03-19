@@ -267,6 +267,7 @@ Item* Item::rabbit_hide = nullptr;
 Item* Item::armor_stand = nullptr;
 
 Item* Item::prismarine_crystal = nullptr;
+Item* Item::prismarine_shard = nullptr;
 
 void Item::staticCtor()
 {
@@ -527,6 +528,7 @@ void Item::staticCtor()
 
 	Item::armor_stand = (new ArmorStandItem(160))							->setBaseItemTypeAndMaterial(eBaseItemType_HangingItem,eMaterial_cloth)->setIconName(L"armorStand")->setDescriptionId(IDS_ITEM_ARMOR_STAND)->setUseDescriptionId(IDS_DESC_ARMOR_STAND);
 	Item::prismarine_crystal = (new Item(176))->setIconName(L"prismarineCrystal")->setDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL)->setUseDescriptionId(IDS_DESC_BRICK);
+	Item::prismarine_shard = (new Item(177))->setIconName(L"prismarineShard")->setDescriptionId(IDS_ITEM_PRISMARINE_SHARD)->setUseDescriptionId(IDS_DESC_BRICK);
 }
 
 

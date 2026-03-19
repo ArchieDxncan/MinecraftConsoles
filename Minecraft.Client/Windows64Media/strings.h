@@ -2345,3 +2345,4 @@
 #define IDS_TILE_PRISMARINE                                    2339
 #define IDS_TILE_PRISMARINE_DARK                               2340
 #define IDS_TILE_PRISMARINE_BRICKS                             2341
+#define IDS_ITEM_PRISMARINE_SHARD							   2342

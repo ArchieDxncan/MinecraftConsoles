@@ -433,7 +433,7 @@ public:
 	static Item* armor_stand;
 
 	static Item* prismarine_crystal;
-
+	static Item* prismarine_shard;
 
 
 	static const int shovel_iron_Id			= 256;
@@ -660,6 +660,7 @@ public:
 	static const int armor_stand_Id = 416;
 
 	static const int prismarine_cystal_Id = 432;
+	static const int prismarine_shard_Id = 433;
 
 public:
 	const int id;
