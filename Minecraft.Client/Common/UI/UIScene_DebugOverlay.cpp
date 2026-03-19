@@ -183,6 +183,8 @@ void UIScene_DebugOverlay::handleInput(int iPad, int key, bool repeat, bool pres
 
 void UIScene_DebugOverlay::handlePress(F64 controlId, F64 childId)
 {
+	ui.PlayUISFX(eSFX_Press);
+
 	switch(static_cast<int>(controlId))
 	{
 	case eControl_Items:
