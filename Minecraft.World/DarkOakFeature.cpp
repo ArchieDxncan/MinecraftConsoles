@@ -122,22 +122,36 @@ bool DarkOakFeature::place(Level *worldIn, Random *rand, int x, int y, int z) {
 
 
 bool DarkOakFeature::checkSpace(Level *worldIn, int x, int y, int z, int height) {
+    
+    
     for (int l = 0; l <= height + 1; ++l) {
         int i1 = 1;
-        if (l == 0) i1 = 0;
-        if (l >= height - 1) i1 = 2;
+        if (l == 0) {
+            i1 = 0;  
+        }
+        if (l >= height - 1) {
+            i1 = 2;  
+        }
 
         for (int j1 = -i1; j1 <= i1; ++j1) {
             for (int k1 = -i1; k1 <= i1; ++k1) {
+                
+                if (l == 0 && j1 == 0 && k1 == 0) continue;
+                
                 int tile = worldIn->getTile(x + j1, y + l, z + k1);
                 
-                // ignores grass, dirt e trunks. 
+                
                 if (tile != 0 && 
                     tile != Tile::leaves_Id && tile != Tile::leaves2_Id && 
                     tile != Tile::tallgrass_Id && tile != Tile::sapling_Id &&
                     tile != Tile::grass_Id && tile != Tile::dirt_Id && 
                     tile != Tile::treeTrunk_Id && tile != Tile::tree2Trunk_Id) {
-                    return false;
+                    return false;  
+                }
+                
+                
+                if (tile == Tile::water_Id) {
+                    return false;  
                 }
             }
         }

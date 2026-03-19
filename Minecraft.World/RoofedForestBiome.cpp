@@ -28,10 +28,10 @@ RoofedForestBiome::RoofedForestBiome(int id) : Biome(id)
 
 Feature* RoofedForestBiome::getTreeFeature(Random* random)
 {
-    ;
     
     
-    if (random->nextInt(5) == 0)  
+    
+    if (random->nextInt(15) == 0)  
     {
         
         return new HugeMushroomFeature();

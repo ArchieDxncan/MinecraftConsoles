@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SmoothStoneBrickTile.h"
 #include "net.minecraft.world.h"
+#include "Item.h"
 
 const wstring SmoothStoneBrickTile::TEXTURE_NAMES[] = {L"", L"mossy", L"cracked", L"carved"};
 
@@ -12,6 +13,7 @@ const unsigned int SmoothStoneBrickTile::SMOOTH_STONE_BRICK_NAMES[SMOOTH_STONE_B
 
 SmoothStoneBrickTile::SmoothStoneBrickTile(int id) : Tile(id, Material::stone)
 {
+	setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_stone);
 	icons = nullptr;
 }
 

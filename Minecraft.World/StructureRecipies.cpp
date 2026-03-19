@@ -46,6 +46,7 @@ void StructureRecipies::addRecipes(Recipes *r)
 
 		L'#', new ItemInstance(Tile::quartzBlock, 1, QuartzBlockTile::TYPE_DEFAULT),
 		L'S');
+	
 
 	// 4J Stu - Changed the order, as the blocks that go with sandstone cause a 3-icon scroll
 	// that touches the text "Structures" in the title in 720 fullscreen.
@@ -97,6 +98,27 @@ void StructureRecipies::addRecipes(Recipes *r)
 		L"##", //
 
 		L'#', Tile::stone,
+		L'S');
+	r->addShapedRecipy(new ItemInstance(Tile::stoneBrick, 1, SmoothStoneBrickTile::TYPE_DETAIL), //
+		L"ssczg",
+		L"#", //
+		L"#", //
+
+		L'#', new ItemInstance(Tile::stoneSlabHalf, 1, StoneSlabTile::SMOOTHBRICK_SLAB),
+		L'S');
+	r->addShapedRecipy(new ItemInstance(Tile::stoneBrick, 1, SmoothStoneBrickTile::TYPE_MOSSY), //
+		L"sczc zg",                       
+		L"#1",             
+		L'#', new ItemInstance(Tile::stoneBrick,1),  
+		L'1', new ItemInstance(Tile::vine, 1),        
+		L'S');
+
+	r->addShapedRecipy(new ItemInstance(Tile::mossyCobblestone, 1), //
+		L"sczc zg",
+		L"#1", //
+
+		L'#', new ItemInstance(Tile::cobblestone,1),
+		L'1', new ItemInstance(Tile::vine, 1),
 		L'S');
 
 	// 4J Stu - Move this into "Recipes" to change the order things are displayed on the crafting menu
