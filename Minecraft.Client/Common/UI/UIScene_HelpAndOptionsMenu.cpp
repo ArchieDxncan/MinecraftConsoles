@@ -207,6 +207,8 @@ void UIScene_HelpAndOptionsMenu::handleInput(int iPad, int key, bool repeat, boo
 
 void UIScene_HelpAndOptionsMenu::handlePress(F64 controlId, F64 childId)
 {
+	ui.PlayUISFX(eSFX_Press);
+
 	switch(static_cast<int>(controlId))
 	{
 	case BUTTON_HAO_CHANGESKIN:
