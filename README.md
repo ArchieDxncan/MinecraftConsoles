@@ -6,11 +6,11 @@ This project aims to backport the newer title updates back to the Minecraft: Leg
 
 
 # Our roadmap:
-![Logo](https://cdn.discordapp.com/attachments/787073243370618910/1484032239548235929/progressroadmap.png?ex=69bcc039&is=69bb6eb9&hm=1c65cee006be04cf97cadad6ea4e59e23430d76df6761b34806990be4d2277a8&)
+![Roadmap](.github/roadmap.png)
 
 - Port Title Update 25 (98.21% complete)
 
-- Port Title Update 31 (59.70% complete)
+- Port Title Update 31 (67.16% complete)
 
 See our our [Contributor's Guide](./CONTRIBUTING.md) for more information on the goals of this project.
 
