@@ -469,6 +469,7 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM_AUX(Item::apple_gold_Id,1) // Enchanted
 		ITEM(Item::melon_Id)
 		ITEM(Item::mushroomStew_Id)
+		ITEM(Item::rabbitStew_Id)
 		ITEM(Item::bread_Id)
 		ITEM(Item::cake_Id)
 		ITEM(Item::cookie_Id)

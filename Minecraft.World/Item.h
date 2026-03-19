@@ -145,7 +145,8 @@ public:
 		eBaseItemType_MAXTYPES,
 		eBaseItemType_stick,
 		eBaseItemType_fenceGate,
-		eBaseItemType_decoration
+		eBaseItemType_decoration,
+		eBaseItemType_bowl
 	}
 	eBaseItemType;
 
@@ -225,6 +226,7 @@ public:
 	static Item *stick;
 	static Item *bowl;
 	static Item *mushroomStew;
+	static Item *rabbitStew;
 
 	static Item *sword_gold;
 	static Item *shovel_gold;
@@ -658,9 +660,11 @@ public:
 	static const int rabbits_foot_Id = 414;
 	static const int rabbit_hide_Id = 415;
 	static const int armor_stand_Id = 416;
+	static const int rabbitStew_Id = 413;
 
 	static const int prismarine_cystal_Id = 432;
 	static const int prismarine_shard_Id = 433;
+
 
 public:
 	const int id;

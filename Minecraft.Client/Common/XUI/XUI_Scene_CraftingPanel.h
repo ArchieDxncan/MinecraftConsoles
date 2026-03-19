@@ -134,6 +134,11 @@ public:
 				MAP_CONTROL(IDC_Ingredient2,m_hCraftIngredientDescA[1])
 				MAP_CONTROL(IDC_Ingredient3,m_hCraftIngredientDescA[2])
 				MAP_CONTROL(IDC_Ingredient4,m_hCraftIngredientDescA[3])
+				MAP_CONTROL(L"Ingredient5",m_hCraftIngredientDescA[4])
+				MAP_CONTROL(L"Ingredient6",m_hCraftIngredientDescA[5])
+				MAP_CONTROL(L"Ingredient7",m_hCraftIngredientDescA[6])
+				MAP_CONTROL(L"Ingredient8",m_hCraftIngredientDescA[7])
+				MAP_CONTROL(L"Ingredient9",m_hCraftIngredientDescA[8])
 
 				MAP_CONTROL(IDC_CraftingOutputRed,m_hCraftOutput)
 			END_MAP_CHILD_CONTROLS()
