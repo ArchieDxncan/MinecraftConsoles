@@ -2346,3 +2346,9 @@
 #define IDS_TILE_PRISMARINE_DARK                               2340
 #define IDS_TILE_PRISMARINE_BRICKS                             2341
 #define IDS_ITEM_PRISMARINE_SHARD							   2342
+#define IDS_ITEM_PRISMARINE_DESC							   2343
+#define IDS_ITEM_PRISMARINE_DARK_DESC						   2344
+#define IDS_ITEM_PRISMARINE_BRICK_DESC						   2345
+#define IDS_ITEM_PRISMARINE_CRYSTAL_DESC					   2346
+#define IDS_ITEM_PRISMARINE_SHARD_DESC						   2346
+#define IDS_ITEM_RABBIT_STEW                                   2347
