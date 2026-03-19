@@ -193,7 +193,7 @@ public:
 	static const int cobblestone_Id = 4;
 	static const int wood_Id = 5;
 	static const int sapling_Id = 6;
-	static const int sapling2_Id = 199;
+	static const int sapling2_Id = 199;//should go inside sapling.
 	static const int unbreakable_Id = 7;
 	static const int water_Id = 8;
 	static const int calmWater_Id = 9;
@@ -397,8 +397,6 @@ public:
 
 	static const int seaLantern_Id = 169;
 	static const int prismarine_Id = 168;
-	static const int prismarinedark_Id = 201;
-	static const int prismarinebrick_Id = 202;
 
 	static Tile *stone;
 	static GrassTile *grass;
@@ -606,8 +604,7 @@ public:
 	static Tile* packed_ice;
 	static Tile* seaLantern;
 	static Tile* prismarine;
-	static Tile* prismarinedark;
-	static Tile* prismarinebrick;
+	
 
 	static void staticCtor();
 

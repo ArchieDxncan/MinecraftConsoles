@@ -16,7 +16,7 @@
 #include "net.minecraft.world.h"
 #include "net.minecraft.h"
 #include "Tile.h"
-#include "PrismarineTile.h"
+
 
 
 wstring Tile::TILE_DESCRIPTION_PREFIX = L"Tile.";
@@ -252,8 +252,7 @@ Tile* Tile::red_sandstone = nullptr;
 Tile* Tile::stairs_red_sandstone = nullptr;
 Tile* Tile::seaLantern = nullptr;
 Tile* Tile::prismarine = nullptr;
-Tile* Tile::prismarinedark = nullptr;
-Tile* Tile::prismarinebrick = nullptr;
+
 
 Tile* Tile::tree2Trunk = nullptr;
 Tile* Tile::packed_ice = nullptr;
@@ -511,10 +510,7 @@ void Tile::staticCtor()
 	Tile::door_dark = (new DoorTile(197, Material::wood, L"doorDark"))->setDestroyTime(3.0f)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"door_dark")->setDescriptionId(IDS_TILE_DOOR_DARK)->setNotCollectStatistics()->sendTileData()->setUseDescriptionId(IDS_DESC_DOOR_WOOD);
 	
 	Tile::seaLantern = (new SeaLanternTile(169, Material::glass))->setBaseItemTypeAndMaterial(Item::eBaseItemType_torch, Item::eMaterial_glowstone)->setDestroyTime(0.3f)->setSoundType(Tile::SOUND_GLASS)->setLightEmission(1.0f)->setIconName(L"glowstone")->setDescriptionId(IDS_TILE_SEA_LANTERN)->setUseDescriptionId(IDS_DESC_GLOWSTONE);
-	Tile::prismarine = (new PrismarineTile(168, Material::stone))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_stone)->setDestroyTime(1.5f)->setExplodeable(10)->setSoundType(Tile::SOUND_STONE)->setIconName(L"stone")->setDescriptionId(IDS_TILE_PRISMARINE)->setUseDescriptionId(IDS_ITEM_PRISMARINE_DESC);
-	Tile::prismarinedark = (new Tile(201, Material::stone))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_stone)->setDestroyTime(2.0f)->setExplodeable(10)->setSoundType(Tile::SOUND_STONE)->setIconName(L"prismarine_dark")->setDescriptionId(IDS_TILE_PRISMARINE_DARK)->setUseDescriptionId(IDS_ITEM_PRISMARINE_DARK_DESC);
-	Tile::prismarinebrick = (new Tile(202, Material::stone))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_stone)->setDestroyTime(2.0f)->setExplodeable(10)->setSoundType(Tile::SOUND_STONE)->setIconName(L"prismarine_bricks")->setDescriptionId(IDS_TILE_PRISMARINE_BRICKS)->setUseDescriptionId(IDS_ITEM_PRISMARINE_BRICK_DESC);
-
+	Tile::prismarine = (new PrismarineTile(168))->setBaseItemTypeAndMaterial(Item::eBaseItemType_structblock, Item::eMaterial_stone)->setDestroyTime(1.5f)->setExplodeable(10)->setSoundType(SOUND_STONE)->setIconName(L"prismarine")->setDescriptionId(IDS_TILE_PRISMARINE)->setUseDescriptionId(IDS_ITEM_PRISMARINE_DESC);
 
 
 	// Special cases for certain items since they can have different icons
@@ -585,6 +581,8 @@ void Tile::staticCtor()
 		}
 	}
 	Tile::transculent[0] = true;
+
+	Item::items[prismarine_Id] = (new MultiTextureTileItem(Tile::prismarine_Id - 256, prismarine, (int *)PrismarineTile::PRISMARINE_NAMES, 3))->setIconName(L"prismarine")->setDescriptionId(IDS_TILE_PRISMARINE);
 
 	Stats::buildItemStats();
 

@@ -136,5 +136,6 @@
 #include "TreeTile2.h"
 #include "SeaLanternTile.h"
 #include "LeafTile2.h"
+#include "PrismarineTile.h"
 
 #include "PackedIceTile.h"
