@@ -504,6 +504,8 @@ void UIScene_PauseMenu::handleInput(int iPad, int key, bool repeat, bool pressed
 
 void UIScene_PauseMenu::handlePress(F64 controlId, F64 childId)
 {
+	ui.PlayUISFX(eSFX_Press);
+	
 	if(m_bIgnoreInput) return;
 
 	switch(static_cast<int>(controlId))
