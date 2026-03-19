@@ -395,8 +395,8 @@ public:
 	static const int darkFence_Id = 191;
 	static const int acaciaFence_Id = 192;
 
-	static const int seaLantern_Id = 198;
-	static const int prismarine_Id = 200;
+	static const int seaLantern_Id = 169;
+	static const int prismarine_Id = 168;
 	static const int prismarinedark_Id = 201;
 	static const int prismarinebrick_Id = 202;
 

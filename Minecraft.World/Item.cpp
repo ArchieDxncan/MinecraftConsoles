@@ -529,8 +529,8 @@ void Item::staticCtor()
 	Item::rabbits_foot = ( new Item(158) )									->setIconName(L"rabbitsFoot")->setDescriptionId(IDS_ITEM_RABBIT_FOOT)->setUseDescriptionId(IDS_DESC_RABBIT_FOOT);
 
 	Item::armor_stand = (new ArmorStandItem(160))							->setBaseItemTypeAndMaterial(eBaseItemType_HangingItem,eMaterial_cloth)->setIconName(L"armorStand")->setDescriptionId(IDS_ITEM_ARMOR_STAND)->setUseDescriptionId(IDS_DESC_ARMOR_STAND);
-	Item::prismarine_crystal = (new Item(176))->setIconName(L"prismarineCrystal")->setDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL)->setUseDescriptionId(IDS_DESC_BRICK);
-	Item::prismarine_shard = (new Item(177))->setIconName(L"prismarineShard")->setDescriptionId(IDS_ITEM_PRISMARINE_SHARD)->setUseDescriptionId(IDS_DESC_BRICK);
+	Item::prismarine_crystal = (new Item(154))->setIconName(L"prismarineCrystal")->setDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL)->setUseDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL_DESC);
+	Item::prismarine_shard = (new Item(153))->setIconName(L"prismarineShard")->setDescriptionId(IDS_ITEM_PRISMARINE_SHARD)->setUseDescriptionId(IDS_ITEM_PRISMARINE_SHARD_DESC);
 }
 
 
