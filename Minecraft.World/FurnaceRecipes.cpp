@@ -2,6 +2,7 @@
 #include "net.minecraft.world.item.h"
 #include "Tile.h"
 #include "FurnaceRecipes.h"
+#include "SmoothStoneBrickTile.h"
 
 FurnaceRecipes *FurnaceRecipes::instance = nullptr;
 
@@ -30,6 +31,7 @@ FurnaceRecipes::FurnaceRecipes()
 	addFurnaceRecipy(new ItemInstance(Item::fish_raw, 1, 1), new ItemInstance(Item::fish_cooked, 1, 1), .35f); // salmon
 
 	addFurnaceRecipy(Tile::cobblestone_Id, new ItemInstance(Tile::stone), .1f);
+	addFurnaceRecipy(Tile::stoneBrick_Id, new ItemInstance(Tile::stoneBrick, 1 , SmoothStoneBrickTile::TYPE_CRACKED), .1f);
 	addFurnaceRecipy(Item::clay_Id, new ItemInstance(Item::brick), .3f);
 	addFurnaceRecipy(Tile::clay_Id, new ItemInstance(Tile::clayHardened), .35f);
 	addFurnaceRecipy(Tile::cactus_Id, new ItemInstance(Item::dye_powder, 1, DyePowderItem::GREEN), .2f);
