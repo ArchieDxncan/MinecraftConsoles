@@ -474,6 +474,12 @@ void IUIScene_CreativeMenu::staticCtor()
 		ITEM(Item::cookie_Id)
 		ITEM(Item::fish_cooked_Id)
 		ITEM(Item::fish_raw_Id)
+
+		ITEM_AUX(Item::fish_cooked_Id, 1)
+		ITEM_AUX(Item::fish_raw_Id, 1)
+		ITEM_AUX(Item::fish_raw_Id, 2)
+		ITEM_AUX(Item::fish_raw_Id, 3)
+
 		ITEM(Item::porkChop_cooked_Id)
 		ITEM(Item::porkChop_raw_Id)
 		ITEM(Item::beef_cooked_Id)
