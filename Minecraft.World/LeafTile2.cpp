@@ -115,7 +115,7 @@ void LeafTile2::spawnResources(Level *level, int x, int y, int z, int data, floa
         {
             
             
-            popResource(level, x, y, z, std::make_shared<ItemInstance>(Tile::sapling2_Id, 1, data & 3));
+            popResource(level, x, y, z, std::make_shared<ItemInstance>(Tile::sapling_Id, 1, data & 3));
         }
 
         

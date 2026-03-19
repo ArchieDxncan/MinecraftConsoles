@@ -193,7 +193,7 @@ public:
 	static const int cobblestone_Id = 4;
 	static const int wood_Id = 5;
 	static const int sapling_Id = 6;
-	static const int sapling2_Id = 199;//should go inside sapling.
+	//static const int sapling2_Id = 199;//should go inside sapling.
 	static const int unbreakable_Id = 7;
 	static const int water_Id = 8;
 	static const int calmWater_Id = 9;
@@ -404,7 +404,7 @@ public:
 	static Tile *cobblestone;
 	static Tile *wood;
 	static Tile *sapling;
-	static Tile *sapling2;
+	//static Tile *sapling2;
 	static Tile *unbreakable;
 	static LiquidTile *water;
 	static Tile *calmWater;
