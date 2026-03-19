@@ -10,7 +10,7 @@ This project aims to backport the newer title updates back to the Minecraft: Leg
 
 - Port Title Update 25 (98.21% complete)
 
-- Port Title Update 31 (67.16% complete)
+- Port Title Update 31 (68.66%% complete)
 
 See our our [Contributor's Guide](./CONTRIBUTING.md) for more information on the goals of this project.
 
