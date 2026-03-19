@@ -86,3 +86,5 @@
 #include "ClockItem.h"
 #include "CompassItem.h"
 #include "HtmlString.h"
+
+#include "FishFoodItem.h"
