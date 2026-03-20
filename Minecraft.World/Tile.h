@@ -404,8 +404,26 @@ public:
 	static const int jungle_door_Id = 195;
 	static const int acacia_door_Id = 196;
 	static const int dark_oak_door_Id = 197;
-
-	
+	//end_rod 			198
+	//chorus_plant 		199
+	//chorus_flower 	200
+	//purpur_block      201
+	//purpur_pillar		202
+	//purpur_stairs     203
+	//purpur_double_slab 204
+	//purpur_slab		205
+	//end_bricks		206
+	//beetroots         207
+	//grass_path		208
+	//end_gateway		209
+	//frosted_ice		212
+	//magma				213
+	//nether_wart_block 214
+	//red_nether_brick  215
+	//bone_block		216
+	//structure_void    217
+	// 
+	//
 	
 
 	static Tile *stone;
