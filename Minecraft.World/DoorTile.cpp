@@ -339,7 +339,7 @@ int DoorTile::getCompositeData(LevelSource *level, int x, int y, int z)
 
 int DoorTile::cloneTileId(Level *level, int x, int y, int z)
 {
-	return material == Material::metal ? Item::door_iron_Id : Item::door_wood_Id;
+	return doorItemMap[doorType];
 }
 
 void DoorTile::playerWillDestroy(Level *level, int x, int y, int z, int data, shared_ptr<Player> player)

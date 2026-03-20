@@ -464,7 +464,7 @@ Recipes::Recipes()
 		L'#', Item::prismarine_shard,
 		L'S');
 
-	addShapedRecipy(new ItemInstance(Tile::prismarinebrick, 1), //
+	addShapedRecipy(new ItemInstance(Tile::prismarine, 1,PrismarineTile::TYPE_BRICKS), //
 		L"ssscig",
 		L"###", //
 		L"###", //
@@ -474,7 +474,7 @@ Recipes::Recipes()
 		L'S');
 
 
-	addShapedRecipy(new ItemInstance(Tile::prismarinedark, 1), //
+	addShapedRecipy(new ItemInstance(Tile::prismarine, 1,PrismarineTile::TYPE_DARK), //
 		L"ssscicig",
 		L"###", //
 		L"#X#", //
@@ -1500,7 +1500,7 @@ shared_ptr<ItemInstance> Recipes::getItemForRecipe(Recipy *r)
 void Recipes::buildRecipeIngredientsArray(void)
 {
 	//RecipyList *recipes = ((Recipes *)Recipes::getInstance())->getRecipies();
-
+	 
 	int iRecipeC=static_cast<int>(recipies->size());
 
 	m_pRecipeIngredientsRequired= new Recipy::INGREDIENTS_REQUIRED [iRecipeC];

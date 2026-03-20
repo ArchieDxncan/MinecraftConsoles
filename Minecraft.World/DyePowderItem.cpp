@@ -183,18 +183,7 @@ bool DyePowderItem::growCrop(shared_ptr<ItemInstance> itemInstance, Level *level
 		}
 		return true;
 	}
-	if (tile == Tile::sapling2_Id) 
-	{
-		if(!bTestUseOnOnly)
-		{	
-			if (!level->isClientSide) 
-			{
-				if (level->random->nextFloat() < 0.45) static_cast<Sapling2 *>(Tile::tiles[Tile::sapling2_Id])->growTree(level, x, y, z, level->random);
-				itemInstance->count--;
-			}
-		}
-		return true;
-	}
+	
 
 
 	else if (tile == Tile::mushroom_brown_Id || tile == Tile::mushroom_red_Id)

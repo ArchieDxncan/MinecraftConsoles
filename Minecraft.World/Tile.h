@@ -193,7 +193,7 @@ public:
 	static const int cobblestone_Id = 4;
 	static const int wood_Id = 5;
 	static const int sapling_Id = 6;
-	static const int sapling2_Id = 199;
+	//static const int sapling2_Id = 199;//should go inside sapling.
 	static const int unbreakable_Id = 7;
 	static const int water_Id = 8;
 	static const int calmWater_Id = 9;
@@ -370,35 +370,42 @@ public:
 
 	static const int stairs_acaciawood_Id = 163;
 	static const int stairs_darkwood_Id = 164;
-
+	//165 slimeblock
+	//166 barrier
 	static const int iron_trapdoor_Id = 167;
-
+	static const int prismarine_Id = 168;
+	static const int seaLantern_Id = 169;
 	static const int hayBlock_Id = 170;
 	static const int woolCarpet_Id = 171;
 	static const int clayHardened_Id = 172;
 	static const int coalBlock_Id = 173;
 	static const int packed_ice_Id = 174;
-
+	//175 double_plant
+	//176 standing_banner
+	//177 wall_banner
 	static const int invertedDaylightDetector_Id = 178;
 	static const int red_sandstone_Id = 179;
 	static const int stairs_red_sandstone_Id = 180;
-
+	//181 double_stone_slab2 : sandstoneslab
+	//182 stone_slab2 : sandstoneslab
 	static const int spruceGate_Id = 183;
 	static const int birchGate_Id = 184;
 	static const int jungleGate_Id = 185;
 	static const int darkGate_Id = 186;
 	static const int acaciaGate_Id = 187;
-
 	static const int spruceFence_Id = 188;
 	static const int birchFence_Id = 189;
 	static const int jungleFence_Id = 190;
 	static const int darkFence_Id = 191;
 	static const int acaciaFence_Id = 192;
+	static const int spruce_door_Id = 193;
+	static const int birch_door_Id = 194;
+	static const int jungle_door_Id = 195;
+	static const int acacia_door_Id = 196;
+	static const int dark_oak_door_Id = 197;
 
-	static const int seaLantern_Id = 169;
-	static const int prismarine_Id = 168;
-	static const int prismarinedark_Id = 201;
-	static const int prismarinebrick_Id = 202;
+	
+	
 
 	static Tile *stone;
 	static GrassTile *grass;
@@ -406,7 +413,7 @@ public:
 	static Tile *cobblestone;
 	static Tile *wood;
 	static Tile *sapling;
-	static Tile *sapling2;
+	//static Tile *sapling2;
 	static Tile *unbreakable;
 	static LiquidTile *water;
 	static Tile *calmWater;
@@ -606,8 +613,7 @@ public:
 	static Tile* packed_ice;
 	static Tile* seaLantern;
 	static Tile* prismarine;
-	static Tile* prismarinedark;
-	static Tile* prismarinebrick;
+	
 
 	static void staticCtor();
 

@@ -92,7 +92,7 @@
 #include "RotatedPillarTile.h"
 #include "SandStoneTile.h"
 #include "Sapling.h"
-#include "Sapling2.h"
+
 #include "SignTile.h"
 #include "SkullTile.h"
 #include "SmoothStoneBrickTile.h"
@@ -136,5 +136,6 @@
 #include "TreeTile2.h"
 #include "SeaLanternTile.h"
 #include "LeafTile2.h"
+#include "PrismarineTile.h"
 
 #include "PackedIceTile.h"

@@ -2720,7 +2720,6 @@
     <ClInclude Include="RoofedForestBiome.h" />
     <ClInclude Include="RotatedPillarTile.h" />
     <ClInclude Include="SandTile.h" />
-    <ClInclude Include="Sapling2.h" />
     <ClInclude Include="SavannaBiome.h" />
     <ClInclude Include="SavannaTreeFeature.h" />
     <ClInclude Include="Score.h" />
@@ -3664,7 +3663,6 @@
     <ClInclude Include="Rose.h" />
     <ClCompile Include="RotatedPillarTile.cpp" />
     <ClCompile Include="SandTile.cpp" />
-    <ClCompile Include="Sapling2.cpp" />
     <ClCompile Include="SavannaBiome.cpp" />
     <ClCompile Include="SavannaTreeFeature.cpp" />
     <ClCompile Include="Score.cpp" />
