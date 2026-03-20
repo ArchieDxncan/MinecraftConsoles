@@ -72,9 +72,7 @@ void BeaconRenderer::render(shared_ptr<TileEntity> _beacon, double x, double y, 
         
         if (tileID == Tile::stained_glass_Id || tileID == Tile::stained_glass_pane_Id) {
             int meta = level->getData(bx, i, bz);
-            int colorIdx = (tileID == Tile::stained_glass_Id) ? 
-                StainedGlassBlock::getItemAuxValueForBlockData(meta) : 
-                StainedGlassPaneBlock::getItemAuxValueForBlockData(meta);
+            int colorIdx = StainedGlassBlock::getItemAuxValueForBlockData(meta);
             
             
             if (firstGlass) {
