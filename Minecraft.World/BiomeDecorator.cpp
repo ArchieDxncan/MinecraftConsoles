@@ -55,12 +55,17 @@ void BiomeDecorator::_init()
 	lapisOreFeature = new OreFeature(Tile::lapisOre_Id, 6);
 	yellowFlowerFeature = new FlowerFeature(Tile::flower_Id);
 	roseFlowerFeature = new FlowerFeature(Tile::rose_Id);
+	
 	brownMushroomFeature = new FlowerFeature(Tile::mushroom_brown_Id);
 	redMushroomFeature = new FlowerFeature(Tile::mushroom_red_Id);
 	hugeMushroomFeature = new HugeMushroomFeature();
 	reedsFeature = new ReedsFeature();
 	cactusFeature = new CactusFeature();
 	waterlilyFeature = new WaterlilyFeature();
+	blueOrchidFeature    = new FlowerFeature(Tile::rose_Id, Rose::BLUE_ORCHID);  
+	alliumFeature        = new FlowerFeature(Tile::rose_Id, Rose::ALLIUM);
+	azureBluetFeature    = new FlowerFeature(Tile::rose_Id, Rose::AZURE_BLUET);
+	oxeyeDaisyFeature    = new FlowerFeature(Tile::rose_Id, Rose::OXEYE_DAISY);
 
 	waterlilyCount = 0;
 	treeCount = 0;
@@ -74,6 +79,10 @@ void BiomeDecorator::_init()
 	sandCount = 3;
 	clayCount = 1;
 	hugeMushrooms = 0;
+	blueOrchidCount  = 0;
+	alliumCount      = 0;
+	azureBluetCount  = 0;
+	oxeyeDaisyCount  = 0;
 	liquids = true;
 }
 
@@ -144,6 +153,41 @@ void BiomeDecorator::decorate()
 			z = zo + random->nextInt(16) + 8;
 			roseFlowerFeature->place(level, random, x, y, z);
 		}
+	}
+
+
+
+	// Nuovi fiori — generati solo se il bioma ha impostato il contatore
+	for (int i = 0; i < blueOrchidCount; i++)
+	{
+		int x = xo + random->nextInt(16) + 8;
+		int y = random->nextInt(Level::genDepth);
+		int z = zo + random->nextInt(16) + 8;
+		blueOrchidFeature->place(level, random, x, y, z);
+	}
+
+	for (int i = 0; i < alliumCount; i++)
+	{
+		int x = xo + random->nextInt(16) + 8;
+		int y = random->nextInt(Level::genDepth);
+		int z = zo + random->nextInt(16) + 8;
+		alliumFeature->place(level, random, x, y, z);
+	}
+
+	for (int i = 0; i < azureBluetCount; i++)
+	{
+		int x = xo + random->nextInt(16) + 8;
+		int y = random->nextInt(Level::genDepth);
+		int z = zo + random->nextInt(16) + 8;
+		azureBluetFeature->place(level, random, x, y, z);
+	}
+
+	for (int i = 0; i < oxeyeDaisyCount; i++)
+	{
+		int x = xo + random->nextInt(16) + 8;
+		int y = random->nextInt(Level::genDepth);
+		int z = zo + random->nextInt(16) + 8;
+		oxeyeDaisyFeature->place(level, random, x, y, z);
 	}
 
 	for (int i = 0; i < grassCount; i++)

@@ -3,8 +3,14 @@
 
 class ForestBiome : public Biome
 {
-public:
-    ForestBiome(int id);
+private:
+    int biomeType;
 
-	virtual Feature *getTreeFeature(Random *random);
+public:
+    ForestBiome(int id, int type = 0); 
+
+    virtual Feature *getTreeFeature(Random *random) override;
+    
+    
+    virtual Biome *setColor(int color, bool b = false) override; 
 };

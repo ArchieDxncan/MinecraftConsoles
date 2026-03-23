@@ -26,6 +26,7 @@ void BiomeSource::_init()
 	playerSpawnBiomes.push_back(Biome::jungleHills);
 	playerSpawnBiomes.push_back(Biome::savanna);
 	playerSpawnBiomes.push_back(Biome::roofedForest);
+	playerSpawnBiomes.push_back(Biome::flowerForest);
 }
 
 void BiomeSource::_init(int64_t seed, LevelType *generator)

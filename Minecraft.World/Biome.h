@@ -13,144 +13,146 @@ class BasicTree;
 class BirchFeature;
 class SwampTreeFeature;
 class ChunkRebuildData;
-
+class PerlinNoise;
 
 class Biome
 {
-	friend class ChunkRebuildData;
+    friend class ChunkRebuildData;
 public:
-	// 4J JEV, replaces the static blocks.
-	static void staticCtor();
+    static void staticCtor();
 
-	static Biome *biomes[256];
+    static Biome *biomes[256];
 
-	static Biome *ocean;
-	static Biome *plains;
-	static Biome *desert;
-	static Biome *extremeHills;
-	static Biome *forest;
-	static Biome *taiga;
-	static Biome *swampland;
-	static Biome *river;
-	static Biome *hell;
-	static Biome *sky;
-	static Biome *frozenOcean;
-	static Biome *frozenRiver;
-	static Biome *iceFlats;
-	static Biome *iceMountains;
-	static Biome *mushroomIsland;
-	static Biome *mushroomIslandShore ;
-	static Biome *beaches;
-	static Biome *desertHills;
-	static Biome *forestHills;
-	static Biome *taigaHills;
-	static Biome *smallerExtremeHills;
-	static Biome *jungle;
-	static Biome *jungleHills;
-	static Biome *savanna;
+    static Biome *ocean;
+    static Biome *plains;
+    static Biome *desert;
+    static Biome *extremeHills;
+    static Biome *forest;
+    static Biome *taiga;
+    static Biome *swampland;
+    static Biome *river;
+    static Biome *hell;
+    static Biome *sky;
+    static Biome *frozenOcean;
+    static Biome *frozenRiver;
+    static Biome *iceFlats;
+    static Biome *iceMountains;
+    static Biome *mushroomIsland;
+    static Biome *mushroomIslandShore ;
+    static Biome *beaches;
+    static Biome *desertHills;
+    static Biome *forestHills;
+    static Biome *taigaHills;
+    static Biome *smallerExtremeHills;
+    static Biome *jungle;
+    static Biome *jungleHills;
+    static Biome *savanna;
     static Biome *roofedForest;
+    static Biome *flowerForest;
 
-	static const int BIOME_COUNT = 23; // 4J Stu added
-
-public:
-	wstring m_name;
-	int color;
-	byte topMaterial;
-	byte material;
-	int leafColor;
-	float depth;
-	float scale;
-	float temperature;
-	float downfall;
-	//int waterColor; // 4J Stu removed
-
-	BiomeDecorator *decorator;
-
-	const int id;
-
-	class MobSpawnerData : public WeighedRandomItem
-	{
-	public:
-		eINSTANCEOF mobClass;
-		int minCount;
-		int maxCount;
-
-		MobSpawnerData(eINSTANCEOF mobClass, int probabilityWeight, int minCount, int maxCount) : WeighedRandomItem(probabilityWeight)
-		{
-			this->mobClass = mobClass;
-			this->minCount = minCount;
-			this->maxCount = maxCount;
-		}
-	};
-
-protected:
-	vector<MobSpawnerData *> enemies;
-	vector<MobSpawnerData *> friendlies;
-	vector<MobSpawnerData *> waterFriendlies;
-	vector<MobSpawnerData *> friendlies_chicken;
-	vector<MobSpawnerData *> friendlies_wolf;
-	vector<MobSpawnerData *> friendlies_mushroomcow;
-	vector<MobSpawnerData *> ambientFriendlies;
-
-	Biome(int id);
-	~Biome();
-
-	BiomeDecorator *createDecorator();
-
-private:
-	Biome *setTemperatureAndDownfall(float temp, float downfall);
-	Biome *setDepthAndScale(float depth, float scale);
-
-	bool snowCovered;
-	bool _hasRain;
-
-	// 4J Added
-	eMinecraftColour m_grassColor;
-	eMinecraftColour m_foliageColor;
-	eMinecraftColour m_waterColor;
-	eMinecraftColour m_skyColor;
-
-	Biome *setNoRain();
-
-protected:
-	/* removing these so that we can consistently return newly created trees via getTreeFeature, and let the calling function be resposible for deleting the returned tree
-	TreeFeature *normalTree;
-	BasicTree *fancyTree;
-	BirchFeature *birchTree;
-	SwampTreeFeature *swampTree;
-	*/
+    static const int BIOME_COUNT = 23; // 4J Stu added
 
 public:
-	virtual Feature *getTreeFeature(Random *random);
-	virtual Feature *getGrassFeature(Random *random);
+    wstring m_name;
+    int color;
+    byte topMaterial;
+    byte material;
+    int leafColor;
+    float depth;
+    float scale;
+    float temperature;
+    float downfall;
+
+    BiomeDecorator *decorator;
+    PerlinNoise *m_temperatureNoise;
+
+    const int id;
+
+    class MobSpawnerData : public WeighedRandomItem
+    {
+    public:
+        eINSTANCEOF mobClass;
+        int minCount;
+        int maxCount;
+
+        MobSpawnerData(eINSTANCEOF mobClass, int probabilityWeight, int minCount, int maxCount) : WeighedRandomItem(probabilityWeight)
+        {
+            this->mobClass = mobClass;
+            this->minCount = minCount;
+            this->maxCount = maxCount;
+        }
+    };
 
 protected:
-	Biome *setSnowCovered();
-	Biome *setName(const wstring &name);
-	Biome *setLeafColor(int leafColor);
-	Biome *setColor(int color);
+    vector<MobSpawnerData *> enemies;
+    vector<MobSpawnerData *> friendlies;
+    vector<MobSpawnerData *> waterFriendlies;
+    vector<MobSpawnerData *> friendlies_chicken;
+    vector<MobSpawnerData *> friendlies_wolf;
+    vector<MobSpawnerData *> friendlies_mushroomcow;
+    vector<MobSpawnerData *> ambientFriendlies;
 
-	// 4J Added
-	Biome *setLeafFoliageWaterSkyColor(eMinecraftColour grassColor, eMinecraftColour foliageColor, eMinecraftColour waterColour, eMinecraftColour skyColour);
+    Biome(int id);
+    virtual ~Biome();
+
+    BiomeDecorator *createDecorator();
 
 public:
-	virtual int getSkyColor(float temp);
+    Biome *setTemperatureAndDownfall(float temp, float downfall);
+    Biome *setDepthAndScale(float depth, float scale);
 
-	vector<MobSpawnerData *> *getMobs(MobCategory *category);
+    bool snowCovered;
+    bool _hasRain;
 
-	virtual bool hasSnow();
-	virtual bool hasRain();
-	virtual bool isHumid();
+    // 4J Added
+    eMinecraftColour m_grassColor;
+    eMinecraftColour m_foliageColor;
+    eMinecraftColour m_waterColor;
+    eMinecraftColour m_skyColor;
 
-	virtual float getCreatureProbability();
-	virtual int getDownfallInt();
-	virtual int getTemperatureInt();
-	virtual float getDownfall();			// 4J - brought forward from 1.2.3
-	virtual float getTemperature();			// 4J - brought forward from 1.2.3
+    Biome *setNoRain();
 
-	virtual void decorate(Level *level, Random *random, int xo, int zo);
+public:
+    virtual Feature *getTreeFeature(Random *random);
+    virtual Feature *getGrassFeature(Random *random);
 
-	virtual int getGrassColor();
-	virtual int getFolageColor();
-	virtual int getWaterColor(); // 4J Added
+protected:
+    Biome *setSnowCovered();
+    Biome *setName(const wstring &name);
+    Biome *setLeafColor(int leafColor);
+  
+    public:
+    
+    virtual Biome *setColor(int color, bool b = false);
+
+    // 4J Added
+    Biome *setLeafFoliageWaterSkyColor(eMinecraftColour grassColor, eMinecraftColour foliageColor, eMinecraftColour waterColour, eMinecraftColour skyColour);
+
+public:
+    virtual int getSkyColor(float temp);
+
+    vector<MobSpawnerData *> *getMobs(MobCategory *category);
+
+    virtual bool hasSnow();
+    virtual bool hasRain();
+    virtual bool isHumid();
+
+    virtual float getCreatureProbability();
+    virtual int getDownfallInt();
+    virtual int getTemperatureInt();
+    
+    virtual float getDownfall();            
+    virtual float getTemperature();         
+    
+   
+    virtual float getTemperature(int x, int y, int z); 
+
+    virtual void decorate(Level *level, Random *random, int xo, int zo);
+    
+    
+    virtual void buildSurfaceAtDefault(Level *level, Random *random, byte* chunkBlocks, int x, int z, double noiseVal);
+    
+    virtual int getGrassColor();
+    virtual int getFolageColor();
+    virtual int getWaterColor(); 
 };

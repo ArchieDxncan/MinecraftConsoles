@@ -829,6 +829,7 @@
     <ClCompile Include="FishFoodItem.cpp" />
     <ClCompile Include="Tallgrass2.cpp" />
     <ClCompile Include="Endermite.cpp" />
+    <ClCompile Include="Vec3i.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
@@ -1827,6 +1828,7 @@
     <ClInclude Include="FishFoodItem.h" />
     <ClInclude Include="Tallgrass2.h" />
     <ClInclude Include="Endermite.h" />
+    <ClInclude Include="Vec3i.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Minecraft.Client\Xbox\res\audio\Minecraft.xgs" />

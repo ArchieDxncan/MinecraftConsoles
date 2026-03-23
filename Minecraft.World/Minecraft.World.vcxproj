@@ -2850,6 +2850,7 @@
     <ClInclude Include="TripWireSourceTile.h" />
     <ClInclude Include="TripWireTile.h" />
     <ClInclude Include="UpdateAttributesPacket.h" />
+    <ClInclude Include="Vec3i.h" />
     <ClInclude Include="Village.h" />
     <ClInclude Include="VillagerGolem.h" />
     <ClInclude Include="Villages.h" />
@@ -3681,6 +3682,7 @@
     <ClCompile Include="Tallgrass2.cpp" />
     <ClCompile Include="Team.cpp" />
     <ClCompile Include="TreeTile2.cpp" />
+    <ClCompile Include="Vec3i.cpp" />
     <ClCompile Include="WeightedPressurePlateTile.cpp" />
     <ClCompile Include="WoodButtonTile.cpp" />
     <ClCompile Include="WoolTileItem.cpp" />

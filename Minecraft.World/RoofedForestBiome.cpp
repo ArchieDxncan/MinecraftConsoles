@@ -3,6 +3,8 @@
 #include "BiomeDecorator.h"
 #include "DarkOakFeature.h"
 #include "HugeMushroomFeature.h"
+#include "TreeFeature.h"
+#include "BirchFeature.h"
 #include "net.minecraft.world.level.tile.h"
 #include "..\Level.h"
 
@@ -29,16 +31,24 @@ RoofedForestBiome::RoofedForestBiome(int id) : Biome(id)
 Feature* RoofedForestBiome::getTreeFeature(Random* random)
 {
     
-    
-    
-    if (random->nextInt(15) == 0)  
+    if (random->nextInt(20) == 0)  
     {
-        
         return new HugeMushroomFeature();
     }
     
+   
+    if (random->nextInt(3) > 0)
+    {
+        return new DarkOakFeature(true);
+    }
     
-    return new DarkOakFeature(true);
+    
+    {
+        return new TreeFeature(false); 
+    }
+    
+    
+    return new BirchFeature(false);
 }
 
 

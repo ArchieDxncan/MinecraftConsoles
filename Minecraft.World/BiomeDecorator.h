@@ -17,6 +17,7 @@ class BiomeDecorator
 	friend class SavannaBiome;
 	friend class JungleBiome;
 	friend class RoofedForestBiome;
+	friend class FlowerForestBiome;
 protected:
 	Level *level;
 	Random *random;
@@ -49,6 +50,10 @@ protected:
 	Feature *reedsFeature;
 	Feature *cactusFeature;
 	Feature *waterlilyFeature;
+	Feature *blueOrchidFeature;
+	Feature *alliumFeature;
+	Feature *azureBluetFeature;
+	Feature *oxeyeDaisyFeature;
 
 	int waterlilyCount;
 	int treeCount;
@@ -63,6 +68,10 @@ protected:
 	int clayCount;
 	int hugeMushrooms;
 	bool liquids;
+	int blueOrchidCount;
+	int alliumCount;
+	int azureBluetCount;
+	int oxeyeDaisyCount;
 
 	void _init();
 

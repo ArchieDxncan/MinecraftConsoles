@@ -30,6 +30,8 @@
 #include "BonusChestFeature.h"
 #include "SpikeFeature.h"
 #include "EndPodiumFeature.h"
+#include "SavannaTreeFeature.h"
+#include "DarkOakFeature.h"
 
 #include "DesertWellFeature.h"
 #include "MegaTreeFeature.h"
