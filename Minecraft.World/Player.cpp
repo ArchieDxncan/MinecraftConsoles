@@ -2702,6 +2702,26 @@ int Player::getTexture()
 		return TN_MOB_CHAR6; // 4J - was L"/mob/char6.png";
 	case eDefaultSkins_Skin7:
 		return TN_MOB_CHAR7; // 4J - was L"/mob/char7.png";
+	case eDefaultSkins_Skin8:
+		return TN_MOB_CHAR8; // 4J - was L"/mob/char8.png";
+	case eDefaultSkins_Skin9:
+		return TN_MOB_CHAR9; // 4J - was L"/mob/char9.png";
+	case eDefaultSkins_Skin10:
+		return TN_MOB_CHAR10; // 4J - was L"/mob/char10.png";
+	case eDefaultSkins_Skin11:
+		return TN_MOB_CHAR11; // 4J - was L"/mob/char11.png";
+	case eDefaultSkins_Skin12:
+		return TN_MOB_CHAR12; // 4J - was L"/mob/char12.png";
+	case eDefaultSkins_Skin13:
+		return TN_MOB_CHAR13; // 4J - was L"/mob/char13.png";
+	case eDefaultSkins_Skin14:
+		return TN_MOB_CHAR14; // 4J - was L"/mob/char14.png";
+	case eDefaultSkins_Skin15:
+		return TN_MOB_CHAR15; // 4J - was L"/mob/char15.png";
+	case eDefaultSkins_Skin16:
+		return TN_MOB_CHAR16; // 4J - was L"/mob/char16.png";
+	case eDefaultSkins_Skin17:
+		return TN_MOB_CHAR17; // 4J - was L"/mob/char17.png";
 
 	default:
 		return TN_MOB_CHAR; // 4J - was L"/mob/char.png";
