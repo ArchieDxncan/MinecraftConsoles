@@ -9,6 +9,7 @@
 #include "..\..\..\Minecraft.World\net.minecraft.world.level.tile.entity.h"
 #include "..\..\MultiplayerLocalPlayer.h"
 #include "..\..\Minecraft.h"
+#include "..\..\Options.h"
 
 #ifdef __ORBIS__
 #include <pad.h>
@@ -1677,7 +1678,13 @@ vector<HtmlString> *IUIScene_AbstractContainerMenu::GetItemDescription(Slot *slo
 {
 	if(slot == nullptr) return nullptr;
 
-	vector<HtmlString> *lines = slot->getItem()->getHoverText(nullptr, false);
+	bool advanced = false;
+	if (const Minecraft* pMinecraft = Minecraft::GetInstance())
+	{
+		if (pMinecraft->options)
+			advanced = pMinecraft->options->advancedTooltips;
+	}
+	vector<HtmlString> *lines = slot->getItem()->getHoverText(nullptr, advanced);
 
 	// Add rarity to first line
 	if (lines->size() > 0)
