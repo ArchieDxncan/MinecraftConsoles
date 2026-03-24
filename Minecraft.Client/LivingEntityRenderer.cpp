@@ -66,7 +66,7 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	glDisable(GL_CULL_FACE);
 
 	if (player != nullptr && newModelSlim != nullptr && (player->getCustomSkin() >= 10 && player->getCustomSkin() <= 18)) resModel = newModelSlim;
-	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 2 && player->getCustomSkin() <= 9)) resModel = newModel;
+	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 0 && player->getCustomSkin() <= 9)) resModel = newModel;
 	else resModel = model;
 
 	resModel->attackTime = getAttackAnim(mob, a);
@@ -263,7 +263,7 @@ void LivingEntityRenderer::renderModel(shared_ptr<LivingEntity> mob, float wp, f
 	Model *resModel;
 
 	if (player != nullptr && newModelSlim != nullptr && (player->getCustomSkin() >= 10 && player->getCustomSkin() <= 18)) resModel = newModelSlim;
-	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 2 && player->getCustomSkin() <= 9)) resModel = newModel;
+	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 0 && player->getCustomSkin() <= 9)) resModel = newModel;
 	else resModel = model;
 
 	bindTexture(mob);
@@ -341,7 +341,7 @@ void LivingEntityRenderer::renderArrows(shared_ptr<LivingEntity> mob, float a)
 	Model *resModel;
 
 	if (player != nullptr && newModelSlim != nullptr && (player->getCustomSkin() >= 10 && player->getCustomSkin() <= 18)) resModel = newModelSlim;
-	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 2 && player->getCustomSkin() <= 9)) resModel = newModel;
+	else if (player != nullptr && newModel != nullptr && (player->getCustomSkin() >= 0 && player->getCustomSkin() <= 9)) resModel = newModel;
 	else resModel = model;
 
 	int arrowCount = mob->getArrowCount();

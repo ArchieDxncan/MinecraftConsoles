@@ -169,7 +169,7 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 	if(mob->hasInvisiblePrivilege()) return;
 
 	if (mob != nullptr && newHumanoidModelSlim != nullptr && (mob->getCustomSkin() >= 10 && mob->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
-	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 2 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
+	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 0 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
 	else resModel = humanoidModel;
 
     shared_ptr<ItemInstance> item = mob->inventory->getSelected();
@@ -276,7 +276,7 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 	HumanoidModel *resModel;
 
 	if (mob != nullptr && newHumanoidModelSlim != nullptr && (mob->getCustomSkin() >= 10 && mob->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
-	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 2 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
+	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 0 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
 	else resModel = humanoidModel;
 
     shared_ptr<ItemInstance> headGear = mob->inventory->getArmor(3);
@@ -525,7 +525,7 @@ void PlayerRenderer::renderHand()
 	HumanoidModel *resModel;
 
 	if (player != nullptr && newHumanoidModelSlim != nullptr && (player->getCustomSkin() >= 10 && player->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
-	else if (player != nullptr && newHumanoidModel != nullptr && (player->getCustomSkin() >= 2 && player->getCustomSkin() <= 9)) resModel = newHumanoidModel;
+	else if (player != nullptr && newHumanoidModel != nullptr && (player->getCustomSkin() >= 0 && player->getCustomSkin() <= 9)) resModel = newHumanoidModel;
 	else resModel = humanoidModel;
 
 	float brightness = 1;

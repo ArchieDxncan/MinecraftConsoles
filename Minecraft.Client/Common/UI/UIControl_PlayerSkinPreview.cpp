@@ -262,7 +262,7 @@ void UIControl_PlayerSkinPreview::render(EntityRenderer *renderer, double x, dou
 
 	if (t->loadMemTexture(m_customTextureUrl, m_backupTexture) >= 46 && t->loadMemTexture(m_customTextureUrl, m_backupTexture) <= 54)
 		model = static_cast<HumanoidModel *>(renderer->getNewModelSlim());
-	else if (t->loadMemTexture(m_customTextureUrl, m_backupTexture) >= 38 && t->loadMemTexture(m_customTextureUrl, m_backupTexture) <= 45)
+	else if (t->loadMemTexture(m_customTextureUrl, m_backupTexture) >= 37 && t->loadMemTexture(m_customTextureUrl, m_backupTexture) <= 45)
 		model = static_cast<HumanoidModel *>(renderer->getNewModel());
 	else
 		model = static_cast<HumanoidModel *>(renderer->getModel());
