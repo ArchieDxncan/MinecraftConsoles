@@ -66,7 +66,7 @@ public:
     static Biome *Biome::roofedForestM;
     static Biome *Biome::deepOcean;
 
-    static const int BIOME_COUNT = 32;
+    static const int BIOME_COUNT = 256 ;
 
 public:
     wstring m_name;
