@@ -16,7 +16,6 @@ class BiomeDecorator
 	friend class BeachBiome;
 	friend class SavannaBiome;
 	friend class JungleBiome;
-	friend class RoofedForestBiome;
 	friend class FlowerForestBiome;
 protected:
 	Level *level;
@@ -30,7 +29,7 @@ public:
 
 	void decorate(Level *level, Random *random, int xo, int zo);
 
-protected:
+public:
 	Feature *clayFeature;
 	Feature *sandFeature;
 	Feature *gravelFeature;
@@ -54,6 +53,11 @@ protected:
 	Feature *alliumFeature;
 	Feature *azureBluetFeature;
 	Feature *oxeyeDaisyFeature;
+	Feature *tulipRedFeature;
+	Feature *tulipOrangeFeature;
+	Feature *tulipWhiteFeature;
+	Feature *tulipPinkFeature;
+	Feature *doublePlantFeature;
 
 	int waterlilyCount;
 	int treeCount;

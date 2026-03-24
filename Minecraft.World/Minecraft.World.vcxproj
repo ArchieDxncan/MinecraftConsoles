@@ -2449,6 +2449,7 @@
     <ClInclude Include="Blaze.h" />
     <ClInclude Include="BlockDestructionProgress.h" />
     <ClInclude Include="BlockGenMethods.h" />
+    <ClInclude Include="BlockPos.h" />
     <ClInclude Include="BlockRegionUpdatePacket.h" />
     <ClInclude Include="BlockReplacements.h" />
     <ClInclude Include="BlockSource.h" />
@@ -2461,12 +2462,15 @@
     <ClInclude Include="BookshelfTile.h" />
     <ClInclude Include="BossMob.h" />
     <ClInclude Include="Calendar.h" />
+    <ClInclude Include="ChunkPrimer.h" />
     <ClInclude Include="ColoredTile.h" />
     <ClInclude Include="CommandBlock.h" />
     <ClInclude Include="CommandBlockEntity.h" />
     <ClInclude Include="ComparatorTile.h" />
     <ClInclude Include="ComparatorTileEntity.h" />
-    <ClInclude Include="DarkOakFeature.h" />
+    <ClInclude Include="DoublePlantFeature.h" />
+    <ClInclude Include="MutatedBiome.h" />
+    <ClInclude Include="RoofTreeFeature.h" />
     <ClInclude Include="DaylightDetectorTile.h" />
     <ClInclude Include="DaylightDetectorTileEntity.h" />
     <ClInclude Include="DropperTile.h" />
@@ -2718,7 +2722,6 @@
     <ClInclude Include="RedSandStoneTile.h" />
     <ClInclude Include="Redstone.h" />
     <ClInclude Include="RepeaterTile.h" />
-    <ClInclude Include="RoofedForestBiome.h" />
     <ClInclude Include="RotatedPillarTile.h" />
     <ClInclude Include="SandTile.h" />
     <ClInclude Include="SavannaBiome.h" />
@@ -3540,6 +3543,7 @@
     <ClCompile Include="Blaze.cpp" />
     <ClCompile Include="BlockDestructionProgress.cpp" />
     <ClCompile Include="BlockGenMethods.cpp" />
+    <ClCompile Include="BlockPos.cpp" />
     <ClCompile Include="BlockRegionUpdatePacket.cpp" />
     <ClCompile Include="BlockReplacements.cpp" />
     <ClCompile Include="BlockSourceImpl.cpp" />
@@ -3550,12 +3554,15 @@
     <ClCompile Include="BookItem.cpp" />
     <ClCompile Include="BookshelfTile.cpp" />
     <ClCompile Include="Calendar.cpp" />
+    <ClCompile Include="ChunkPrimer.cpp" />
     <ClCompile Include="ColoredTile.cpp" />
     <ClCompile Include="CommandBlock.cpp" />
     <ClCompile Include="CommandBlockEntity.cpp" />
     <ClCompile Include="ComparatorTile.cpp" />
     <ClCompile Include="ComparatorTileEntity.cpp" />
-    <ClCompile Include="DarkOakFeature.cpp" />
+    <ClCompile Include="DoublePlantFeature.cpp" />
+    <ClCompile Include="MutatedBiome.cpp" />
+    <ClCompile Include="RoofTreeFeature.cpp" />
     <ClCompile Include="DaylightDetectorTile.cpp" />
     <ClCompile Include="DaylightDetectorTileEntity.cpp" />
     <ClCompile Include="DropperTile.cpp" />
@@ -3662,7 +3669,6 @@
     <ClCompile Include="RedSandStoneTile.cpp" />
     <ClCompile Include="Redstone.cpp" />
     <ClCompile Include="RepeaterTile.cpp" />
-    <ClCompile Include="RoofedForestBiome.cpp" />
     <ClCompile Include="Rose.cpp" />
     <ClInclude Include="Rose.h" />
     <ClCompile Include="RotatedPillarTile.cpp" />

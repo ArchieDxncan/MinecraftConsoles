@@ -6,7 +6,7 @@
 
 #include "Sapling.h"
 #include "SavannaTreeFeature.h"
-#include "DarkOakFeature.h"
+#include "RoofTreeFeature.h"
 
 int Sapling::SAPLING_NAMES[SAPLING_NAMES_SIZE] = {    
     IDS_TILE_SAPLING_OAK,
@@ -133,7 +133,7 @@ void Sapling::growTree(Level *level, int x, int y, int z, Random *random)
                     isSapling(level, x + ox, y, z + oz + 1, TYPE_DARK_OAK) && 
                     isSapling(level, x + ox + 1, y, z + oz + 1, TYPE_DARK_OAK))
                 {
-                    f = new DarkOakFeature(true);
+                    f = new RoofTreeFeature(true);
                     multiblock = true;
                     break;
                 }

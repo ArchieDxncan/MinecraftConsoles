@@ -2,29 +2,40 @@
 #include "Vec3i.h"
 #include <cmath>
 
-Vec3i::Vec3i(int x, int y, int z) : x(x), y(y), z(z)
+void Vec3i::cross(Vec3i& result, const Vec3i& a, const Vec3i& b)
 {
+    result.set(
+        a.getY() * b.getZ() - a.getZ() * b.getY(),
+        a.getZ() * b.getX() - a.getX() * b.getZ(),
+        a.getX() * b.getY() - a.getY() * b.getX()
+    );
 }
 
-int Vec3i::getX() const
+double Vec3i::dist(int x2, int y2, int z2) const
 {
-    return this->x; 
+    double dx = x - x2;
+    double dy = y - y2;
+    double dz = z - z2;
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
 }
 
-int Vec3i::getY() const
+double Vec3i::distSqr(double x2, double y2, double z2) const
 {
-    return this->y; 
+    double dx = x - x2;
+    double dy = y - y2;
+    double dz = z - z2;
+    return dx*dx + dy*dy + dz*dz;
 }
 
-int Vec3i::getZ() const
+double Vec3i::distSqrToCenter(double x2, double y2, double z2) const
 {
-    return this->z; 
+    double dx = (x + 0.5) - x2;
+    double dy = (y + 0.5) - y2;
+    double dz = (z + 0.5) - z2;
+    return dx*dx + dy*dy + dz*dz;
 }
 
 double Vec3i::distSqr(const Vec3i& other) const
 {
-    double dx = (double)(this->x - other.getX());
-    double dy = (double)(this->y - other.getY());
-    double dz = (double)(this->z - other.getZ());
-    return dx * dx + dy * dy + dz * dz;
+    return distSqr(other.getX(), other.getY(), other.getZ());
 }

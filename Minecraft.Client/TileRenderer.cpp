@@ -1858,31 +1858,31 @@ bool TileRenderer::tesselateLeverInWorld( Tile* tt, int x, int y, int z )
 		if ( flipped )
 		{
 			corners[i]->z -= 1 / 16.0f;
-			corners[i]->xRot( 40 * PI / 180 );
+			corners[i]->xRotInPlace( 40 * PI / 180 );
 		}
 		else
 		{
 			corners[i]->z += 1 / 16.0f;
-			corners[i]->xRot( -40 * PI / 180 );
+			corners[i]->xRotInPlace( -40 * PI / 180 );
 		}
 		if (dir == 0 || dir == 7)
 		{
-			corners[i]->zRot(180 * PI / 180);
+			corners[i]->zRotInPlace(180 * PI / 180);
 		}
 		if ( dir == 6 || dir == 0 )
 		{
-			corners[i]->yRot( 90 * PI / 180 );
+			corners[i]->yRotInPlace( 90 * PI / 180 );
 		}
 
 		if ( dir > 0 && dir < 5 )
 		{
 			corners[i]->y -= 6 / 16.0f;
-			corners[i]->xRot( 90 * PI / 180 );
+			corners[i]->xRotInPlace( 90 * PI / 180 );
 
-			if ( dir == 4 ) corners[i]->yRot( 0 * PI / 180 );
-			if ( dir == 3 ) corners[i]->yRot( 180 * PI / 180 );
-			if ( dir == 2 ) corners[i]->yRot( 90 * PI / 180 );
-			if ( dir == 1 ) corners[i]->yRot( -90 * PI / 180 );
+			if ( dir == 4 ) corners[i]->yRotInPlace( 0 * PI / 180 );
+			if ( dir == 3 ) corners[i]->yRotInPlace( 180 * PI / 180 );
+			if ( dir == 2 ) corners[i]->yRotInPlace( 90 * PI / 180 );
+			if ( dir == 1 ) corners[i]->yRotInPlace( -90 * PI / 180 );
 
 			corners[i]->x += x + 0.5;
 			corners[i]->y += y + 8 / 16.0f;
@@ -2047,26 +2047,26 @@ bool TileRenderer::tesselateTripwireSourceInWorld(Tile *tt, int x, int y, int z)
 
 		if (powered)
 		{
-			corners[i]->xRot(30 * PI / 180);
+			corners[i]->xRotInPlace(30 * PI / 180);
 			corners[i]->y -= 7 / 16.0f;
 		}
 		else if (attached)
 		{
-			corners[i]->xRot(5 * PI / 180);
+			corners[i]->xRotInPlace(5 * PI / 180);
 			corners[i]->y -= 7 / 16.0f;
 		}
 		else
 		{
-			corners[i]->xRot(-40 * PI / 180);
+			corners[i]->xRotInPlace(-40 * PI / 180);
 			corners[i]->y -= 6 / 16.0f;
 		}
 
-		corners[i]->xRot(90 * PI / 180);
+		corners[i]->xRotInPlace(90 * PI / 180);
 
-		if (dir == Direction::NORTH) corners[i]->yRot(0 * PI / 180);
-		if (dir == Direction::SOUTH) corners[i]->yRot(180 * PI / 180);
-		if (dir == Direction::WEST) corners[i]->yRot(90 * PI / 180);
-		if (dir == Direction::EAST) corners[i]->yRot(-90 * PI / 180);
+		if (dir == Direction::NORTH) corners[i]->yRotInPlace(0 * PI / 180);
+		if (dir == Direction::SOUTH) corners[i]->yRotInPlace(180 * PI / 180);
+		if (dir == Direction::WEST) corners[i]->yRotInPlace(90 * PI / 180);
+		if (dir == Direction::EAST) corners[i]->yRotInPlace(-90 * PI / 180);
 
 		corners[i]->x += x + 0.5;
 		corners[i]->y += y + 5 / 16.0f;
@@ -2158,23 +2158,23 @@ bool TileRenderer::tesselateTripwireSourceInWorld(Tile *tt, int x, int y, int z)
 		{
 			corners[i]->y -= 1.5 / 16.0f;
 			corners[i]->z -= 2.6 / 16.0f;
-			corners[i]->xRot(0 * PI / 180);
+			corners[i]->xRotInPlace(0 * PI / 180);
 		}
 		else if (attached)
 		{
 			corners[i]->y += 0.25 / 16.0f;
 			corners[i]->z -= 2.75 / 16.0f;
-			corners[i]->xRot(10 * PI / 180);
+			corners[i]->xRotInPlace(10 * PI / 180);
 		}
 		else
 		{
-			corners[i]->xRot(50 * PI / 180);
+			corners[i]->xRotInPlace(50 * PI / 180);
 		}
 
-		if (dir == Direction::NORTH) corners[i]->yRot(0 * PI / 180);
-		if (dir == Direction::SOUTH) corners[i]->yRot(180 * PI / 180);
-		if (dir == Direction::WEST) corners[i]->yRot(90 * PI / 180);
-		if (dir == Direction::EAST) corners[i]->yRot(-90 * PI / 180);
+		if (dir == Direction::NORTH) corners[i]->yRotInPlace(0 * PI / 180);
+		if (dir == Direction::SOUTH) corners[i]->yRotInPlace(180 * PI / 180);
+		if (dir == Direction::WEST) corners[i]->yRotInPlace(90 * PI / 180);
+		if (dir == Direction::EAST) corners[i]->yRotInPlace(-90 * PI / 180);
 
 		corners[i]->x += x + 0.5;
 		corners[i]->y += y + 5 / 16.0f;

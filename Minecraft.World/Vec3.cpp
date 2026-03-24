@@ -57,11 +57,11 @@ void Vec3::resetPool()
 
 Vec3 *Vec3::newTemp(double x, double y, double z)
 {
-    ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
-    Vec3 *thisVec = &tls->pool[tls->poolPointer];
-    thisVec->set(x, y, z);
-    tls->poolPointer = ( tls->poolPointer + 1 ) % ThreadStorage::POOL_SIZE;
-    return thisVec;
+	ThreadStorage *tls = static_cast<ThreadStorage *>(TlsGetValue(tlsIdx));
+	Vec3 *thisVec = &tls->pool[tls->poolPointer];
+	thisVec->set(x, y, z);
+	tls->poolPointer = ( tls->poolPointer + 1 ) % ThreadStorage::POOL_SIZE;
+	return thisVec;
 }
 
 Vec3::Vec3(double x, double y, double z)
@@ -213,46 +213,26 @@ Vec3 *Vec3::lerp(Vec3 *v, double a)
     return Vec3::newTemp(x + (v->x - x) * a, y + (v->y - y) * a, z + (v->z - z) * a);
 }
 
-void Vec3::xRot(float degs)
+// Le nuove restituiscono un Vec3*
+Vec3* Vec3::xRot(float degs)
 {
-    double _cos = cos((double)degs); // Use double for precision
+    double _cos = cos((double)degs);
     double _sin = sin((double)degs);
-
-    double xx = x;
-    double yy = y * _cos + z * _sin;
-    double zz = z * _cos - y * _sin;
-
-    x = xx;
-    y = yy;
-    z = zz;
+    return Vec3::newTemp(x, y * _cos + z * _sin, z * _cos - y * _sin);
 }
 
-void Vec3::yRot(float degs)
+Vec3* Vec3::yRot(float degs)
 {
-    double _cos = cos((double)degs); 
+    double _cos = cos((double)degs);
     double _sin = sin((double)degs);
-
-    double xx = x * _cos + z * _sin;
-    double yy = y;
-    double zz = z * _cos - x * _sin;
-
-    x = xx;
-    y = yy;
-    z = zz;
+    return Vec3::newTemp(x * _cos + z * _sin, y, z * _cos - x * _sin);
 }
 
-void Vec3::zRot(float degs)
+Vec3* Vec3::zRot(float degs)
 {
-    double _cos = cos((double)degs); 
+    double _cos = cos((double)degs);
     double _sin = sin((double)degs);
-
-    double xx = x * _cos + y * _sin;
-    double yy = y * _cos - x * _sin;
-    double zz = z;
-
-    x = xx;
-    y = yy;
-    z = zz;
+    return Vec3::newTemp(x * _cos + y * _sin, y * _cos - x * _sin, z);
 }
 
 double Vec3::distanceTo(AABB *box)
@@ -278,7 +258,7 @@ Vec3* Vec3::closestPointOnLine(Vec3* p1, Vec3* p2)
     Vec3* diff = newTemp(x-p1->x, y-p1->y, z-p1->z);
     Vec3* dir = newTemp(p2->x-p1->x, p2->y-p1->y, p2->z-p1->z);
     
-    // Cambiato float in double
+    
     double dot1 = diff->dot(dir);
     if (dot1 <= 0.0) 
         return p1;
@@ -297,4 +277,48 @@ double Vec3::distanceFromLine(Vec3* p1, Vec3* p2)
     Vec3* closestPoint = closestPointOnLine(p1, p2);
     Vec3* diff = newTemp(x-closestPoint->x, y-closestPoint->y, z-closestPoint->z);
     return diff->length();
+}
+
+
+
+void Vec3::xRotInPlace(float degs)
+{
+   double _cos = cos(degs);		// 4J - cos/sin were floats but seems pointless wasting precision here
+	double _sin = sin(degs);
+
+	double xx = x;
+	double yy = y * _cos + z * _sin;
+	double zz = z * _cos - y * _sin;
+
+	x = xx;
+	y = yy;
+	z = zz;;
+}
+
+void Vec3::yRotInPlace(float degs)
+{
+   double _cos = cos(degs);		// 4J - cos/sin were floats but seems pointless wasting precision here
+	double _sin = sin(degs);
+
+	double xx = x * _cos + z * _sin;
+	double yy = y;
+	double zz = z * _cos - x * _sin;
+
+	x = xx;
+	y = yy;
+	z = zz;
+}
+
+void Vec3::zRotInPlace(float degs)
+{
+   double _cos = cos(degs);		// 4J - cos/sin were floats but seems pointless wasting precision here
+	double _sin = sin(degs);
+
+	double xx = x * _cos + y * _sin;
+	double yy = y * _cos - x * _sin;
+	double zz = z;
+
+	x = xx;
+	y = yy;
+	z = zz;
 }

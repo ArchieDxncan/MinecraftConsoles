@@ -1,5 +1,8 @@
 #pragma once
 #include "Biome.h"
+#include "FlowerFeature.h"
+#include "Tile.h"
+#include "Rose.h"
 class LevelSource;
 
 class SwampBiome : public Biome
@@ -11,7 +14,7 @@ public:
 
 public:
 	virtual Feature *getTreeFeature(Random *random);
-
+	virtual Feature* getFlowerFeature(Random* random, int x, int y, int z) override{return new FlowerFeature(Tile::rose_Id, Rose::BLUE_ORCHID);}
 	// 4J Stu - Not using these any more
     //virtual int getGrassColor();
     //virtual int getFolageColor();

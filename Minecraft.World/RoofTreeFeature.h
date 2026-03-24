@@ -2,10 +2,10 @@
 #pragma once
 #include "Feature.h"
 
-class DarkOakFeature : public Feature
+class RoofTreeFeature : public Feature
 {
 public:
-    DarkOakFeature(bool doUpdate);
+    RoofTreeFeature(bool doUpdate);
     virtual bool place(Level *level, Random *random, int x, int y, int z);
 
 private:

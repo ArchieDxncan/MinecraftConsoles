@@ -14,7 +14,8 @@ SavannaBiome::SavannaBiome(int id) : Biome(id)
     
     decorator->treeCount = 1;
     decorator->flowerCount = 4;
-    decorator->grassCount = 20; 
+    decorator->grassCount = 20;
+ 
 }
 
 Feature *SavannaBiome::getTreeFeature(Random *random)
@@ -29,12 +30,24 @@ Feature *SavannaBiome::getTreeFeature(Random *random)
     return new TreeFeature(false);
 }
 
-int SavannaBiome::getGrassColor()
+int SavannaBiome::getGrassColor() const
 {
     return 0xBFB755; 
 }
 
-int SavannaBiome::getFolageColor() 
+int SavannaBiome::getFoliageColor() const
 {
     return 0xAEA42A; 
+}
+
+Feature *SavannaBiome::getFlowerFeature(Random *random, int x, int y, int z)
+{
+   
+    return nullptr; 
+}
+
+int SavannaBiome::getRandomDoublePlantType(Random *random)
+{
+   
+    return 0; 
 }

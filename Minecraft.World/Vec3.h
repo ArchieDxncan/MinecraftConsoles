@@ -61,9 +61,12 @@ public:
     Vec3 *lerp(Vec3 *v, double a);
     
     
-    void xRot(float degs);
-    void yRot(float degs);
-    void zRot(float degs);
+    Vec3* xRot(float degs);
+    Vec3* yRot(float degs);
+    Vec3* zRot(float degs);
+    void xRotInPlace(float degs);
+    void yRotInPlace(float degs);
+    void zRotInPlace(float degs);
 
     // 4J Added
     double distanceTo(AABB *box);

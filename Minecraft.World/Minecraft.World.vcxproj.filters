@@ -822,14 +822,17 @@
     <ClCompile Include="LeafTile2.cpp" />
     <ClCompile Include="LeafTileItem2.cpp" />
     <ClCompile Include="SavannaTreeFeature.cpp" />
-    <ClCompile Include="DarkOakFeature.cpp" />
+    <ClCompile Include="RoofTreeFeature.cpp" />
     <ClCompile Include="SavannaBiome.cpp" />
-    <ClCompile Include="RoofedForestBiome.cpp" />
     <ClCompile Include="PrismarineTile.cpp" />
     <ClCompile Include="FishFoodItem.cpp" />
     <ClCompile Include="Tallgrass2.cpp" />
     <ClCompile Include="Endermite.cpp" />
     <ClCompile Include="Vec3i.cpp" />
+    <ClCompile Include="BlockPos.cpp" />
+    <ClCompile Include="MutatedBiome.cpp" />
+    <ClCompile Include="ChunkPrimer.cpp" />
+    <ClCompile Include="DoublePlantFeature.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
@@ -1821,14 +1824,17 @@
     <ClInclude Include="LeafTile2.h" />
     <ClInclude Include="LeafTileItem2.h" />
     <ClInclude Include="SavannaTreeFeature.h" />
-    <ClInclude Include="DarkOakFeature.h" />
+    <ClInclude Include="RoofTreeFeature.h" />
     <ClInclude Include="SavannaBiome.h" />
-    <ClInclude Include="RoofedForestBiome.h" />
     <ClInclude Include="PrismarineTile.h" />
     <ClInclude Include="FishFoodItem.h" />
     <ClInclude Include="Tallgrass2.h" />
     <ClInclude Include="Endermite.h" />
     <ClInclude Include="Vec3i.h" />
+    <ClInclude Include="BlockPos.h" />
+    <ClInclude Include="MutatedBiome.h" />
+    <ClInclude Include="ChunkPrimer.h" />
+    <ClInclude Include="DoublePlantFeature.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Minecraft.Client\Xbox\res\audio\Minecraft.xgs" />

@@ -4,6 +4,9 @@ using namespace std;
 #include "LevelSource.h"
 #include "Mob.h"
 #include "WeighedRandom.h"
+#include "BlockPos.h"
+#include "ChunkPrimer.h"
+
 
 class Feature;
 class MobCategory;
@@ -14,6 +17,8 @@ class BirchFeature;
 class SwampTreeFeature;
 class ChunkRebuildData;
 class PerlinNoise;
+class MutatedBiome;
+class ChunkPrimer;
 
 class Biome
 {
@@ -48,9 +53,20 @@ public:
     static Biome *jungleHills;
     static Biome *savanna;
     static Biome *roofedForest;
-    static Biome *flowerForest;
 
-    static const int BIOME_COUNT = 23; // 4J Stu added
+    static Biome *flowerForest;
+    static Biome *Biome::birchForest;
+
+    static Biome *Biome::birchForestHills ;
+
+    static Biome *Biome::birchForestM ;
+
+    static Biome *Biome::birchForestHillsM;
+
+    static Biome *Biome::roofedForestM;
+    static Biome *Biome::deepOcean;
+
+    static const int BIOME_COUNT = 32;
 
 public:
     wstring m_name;
@@ -75,7 +91,8 @@ public:
         int minCount;
         int maxCount;
 
-        MobSpawnerData(eINSTANCEOF mobClass, int probabilityWeight, int minCount, int maxCount) : WeighedRandomItem(probabilityWeight)
+        MobSpawnerData(eINSTANCEOF mobClass, int probabilityWeight, int minCount, int maxCount) 
+            : WeighedRandomItem(probabilityWeight)
         {
             this->mobClass = mobClass;
             this->minCount = minCount;
@@ -83,7 +100,7 @@ public:
         }
     };
 
-protected:
+public:
     vector<MobSpawnerData *> enemies;
     vector<MobSpawnerData *> friendlies;
     vector<MobSpawnerData *> waterFriendlies;
@@ -104,7 +121,6 @@ public:
     bool snowCovered;
     bool _hasRain;
 
-    // 4J Added
     eMinecraftColour m_grassColor;
     eMinecraftColour m_foliageColor;
     eMinecraftColour m_waterColor;
@@ -121,12 +137,11 @@ protected:
     Biome *setName(const wstring &name);
     Biome *setLeafColor(int leafColor);
   
-    public:
-    
+public:    
     virtual Biome *setColor(int color, bool b = false);
 
-    // 4J Added
-    Biome *setLeafFoliageWaterSkyColor(eMinecraftColour grassColor, eMinecraftColour foliageColor, eMinecraftColour waterColour, eMinecraftColour skyColour);
+    Biome *setLeafFoliageWaterSkyColor(eMinecraftColour grassColor, eMinecraftColour foliageColor, 
+                                        eMinecraftColour waterColour, eMinecraftColour skyColour);
 
 public:
     virtual int getSkyColor(float temp);
@@ -137,22 +152,49 @@ public:
     virtual bool hasRain();
     virtual bool isHumid();
 
-    virtual float getCreatureProbability();
+    
     virtual int getDownfallInt();
     virtual int getTemperatureInt();
     
     virtual float getDownfall();            
     virtual float getTemperature();         
     
-   
-    virtual float getTemperature(int x, int y, int z); 
+    virtual float getTemperature(const BlockPos& pos);
+    virtual float getTemperature(int x, int y, int z);
 
     virtual void decorate(Level *level, Random *random, int xo, int zo);
     
-    
     virtual void buildSurfaceAtDefault(Level *level, Random *random, byte* chunkBlocks, int x, int z, double noiseVal);
     
-    virtual int getGrassColor();
-    virtual int getFolageColor();
+    
+    virtual void buildSurfaceAtDefault(Level *level, Random *random, byte* chunkBlocks, const BlockPos& pos, double noiseVal);
+    
+    
+   
     virtual int getWaterColor(); 
+
+    public:
+    
+    void setWaterSkyColor(int waterRGB, int skyRGB) {
+        m_waterColor = (eMinecraftColour)waterRGB;   
+        m_skyColor = (eMinecraftColour)skyRGB;
+    }
+    void setDebugName(const wstring& name) { m_name = name; }
+    int getWaterColor() const { return m_waterColor; }   
+    int getSkyColor() const { return m_skyColor; }
+    
+    virtual int getBaseBiomeId() const { return id; }   
+    virtual int getFoliageColor() const;               // rename from getFolageColor
+    virtual bool isSame(const Biome* other) const;
+    virtual int getTemperatureCategory() const;
+    virtual void buildSurfaceAt(Level* level, Random* random, ChunkPrimer* primer, int x, int z, double noiseVal);
+
+    
+    virtual float getCreatureProbability() const;
+    virtual int getGrassColor() const;
+    virtual int Biome::getFolageColor()const{
+    return getFoliageColor(); }
+    virtual Feature *getFlowerFeature(Random *random, int x, int y, int z);
+    virtual int getRandomDoublePlantType(Random *random);
+    
 };
