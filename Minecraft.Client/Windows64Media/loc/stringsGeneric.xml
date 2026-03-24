@@ -9004,4 +9004,7 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 		<value>Sea Lantern</value>
 	</data>	
 	
+	<data name="IDS_WINDOWS_EXIT">
+		<value>Exit Minecraft</value>
+	</data>	
 </root>

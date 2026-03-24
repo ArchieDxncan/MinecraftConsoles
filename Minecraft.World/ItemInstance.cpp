@@ -562,34 +562,27 @@ vector<HtmlString> *ItemInstance::getHoverText(shared_ptr<Player> player, bool a
 		title.italics = true;
 	}
 
-	// 4J: This is for showing aux values, not useful in console version
-	/*
 	if (advanced)
 	{
 		wstring suffix = L"";
 
-		if (title.length() > 0)
+		if (title.text.length() > 0)
 		{
-			title += L" (";
+			title.text += L" (";
 			suffix = L")";
 		}
 
+		wchar_t buf[64];
 		if (isStackedByData())
-		{
-			title += String.format("#%04d/%d%s", id, auxValue, suffix);
-		}
+			swprintf_s(buf, 64, L"#%04d/%d%s", id, auxValue, suffix.c_str());
 		else
-		{
-			title += String.format("#%04d%s", id, suffix);
-		}
+			swprintf_s(buf, 64, L"#%04d%s", id, suffix.c_str());
+		title.text += buf;
 	}
 	else if (!hasCustomHoverName() && id == Item::map_Id)
-	*/
-
-	/*if (!hasCustomHoverName() && id == Item::map_Id)
 	{
 		title.text += L" #" + std::to_wstring(auxValue);
-	}*/
+	}
 
 	lines->push_back(title);
 
@@ -615,7 +608,7 @@ vector<HtmlString> *ItemInstance::getHoverText(shared_ptr<Player> player, bool a
 
 		if (tag->contains(L"display"))
 		{
-			//CompoundTag *display = tag->getCompound(L"display");
+			CompoundTag *display = tag->getCompound(L"display");
 
 			//if (display->contains(L"color"))
 			//{
@@ -631,8 +624,7 @@ vector<HtmlString> *ItemInstance::getHoverText(shared_ptr<Player> player, bool a
 			//	}
 			//}
 
-			// 4J: Lore isn't in use in game
-			/*if (display->contains(L"Lore"))
+			if (display->contains(L"Lore"))
 			{
 				ListTag<StringTag> *lore = (ListTag<StringTag> *) display->getList(L"Lore");
 				if (lore->size() > 0)
@@ -643,7 +635,7 @@ vector<HtmlString> *ItemInstance::getHoverText(shared_ptr<Player> player, bool a
 						lines->push_back(lore->get(i)->data);
 					}
 				}
-			}*/
+			}
 		}
 	}
 
@@ -674,7 +666,7 @@ vector<HtmlString> *ItemInstance::getHoverText(shared_ptr<Player> player, bool a
 	{
 		if (isDamaged())
 		{
-			wstring damageStr = L"Durability: LOCALISE " + std::to_wstring((getMaxDamage()) - getDamageValue()) + L" / " + std::to_wstring(getMaxDamage());
+			wstring damageStr = L"Durability: " + std::to_wstring((getMaxDamage()) - getDamageValue()) + L" / " + std::to_wstring(getMaxDamage());
 			lines->push_back(HtmlString(damageStr));
 		}
 	}
