@@ -19,7 +19,7 @@ protected:
 	Model *armor;
 
 public:
-	LivingEntityRenderer(Model *model, float shadow, bool slimHands = 0, bool createNewVar = 0);
+	LivingEntityRenderer(Model *model, float shadow);
 	virtual void render(shared_ptr<Entity> mob, double x, double y, double z, float rot, float a);
 	virtual void setArmor(Model *armor);
 

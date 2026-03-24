@@ -4,7 +4,7 @@
 class HumanoidModel : public Model
 {
 public:
-	ModelPart *head, *hair, *body, *jacket, *arm0, *sleeve0, *arm1, *sleeve1, *leg0, *pants0, *leg1, *pants1, *ear, *cloak;
+	ModelPart *head, *hair, *body, *arm0, *arm1, *leg0, *leg1, *ear, *cloak;
 	//ModelPart *hat; 
 
 	int holdingLeftHand;
@@ -37,12 +37,8 @@ public:
 		eAnim_DisableRenderLeg0,
 		eAnim_DisableRenderLeg1,
 		eAnim_DisableRenderHair,
-		eAnim_SmallModel,
-		eAnim_DisableRenderJacket,
-		eAnim_DisableRenderSleeve0,
-		eAnim_DisableRenderSleeve1,
-		eAnim_DisableRenderPants0,
-		eAnim_DisableRenderPants1
+		eAnim_SmallModel // Maggie Simpson for riding horse, etc
+
 	};
 
 	static const unsigned int m_staticBitmaskIgnorePlayerCustomAnimSetting= (1<<HumanoidModel::eAnim_ForceAnim) |
@@ -51,20 +47,13 @@ public:
 		(1<<HumanoidModel::eAnim_DisableRenderTorso) |
 		(1<<HumanoidModel::eAnim_DisableRenderLeg0) |
 		(1<<HumanoidModel::eAnim_DisableRenderLeg1) |
-		(1<<HumanoidModel::eAnim_DisableRenderHair) |
-		(1<<HumanoidModel::eAnim_DisableRenderJacket) |
-		(1<<HumanoidModel::eAnim_DisableRenderSleeve0) |
-		(1<<HumanoidModel::eAnim_DisableRenderSleeve1) |
-		(1<<HumanoidModel::eAnim_DisableRenderPants0) |
-		(1<<HumanoidModel::eAnim_DisableRenderPants1);
+		(1<<HumanoidModel::eAnim_DisableRenderHair);
 
 
-	void _init(float g, float yOffset, int texWidth, int texHeight, bool slimHands, bool mirror);	// 4J added
+	void _init(float g, float yOffset, int texWidth, int texHeight);	// 4J added
     HumanoidModel();
     HumanoidModel(float g);
-	HumanoidModel(float g, float yOffset, int texWidth, int texHeight);
-	HumanoidModel(float g, float yOffset, int texWidth, int texHeight, bool slimHands);
-	HumanoidModel(float g, float yOffset, int texWidth, int texHeight, bool slimHands, bool mirror);
+    HumanoidModel(float g, float yOffset, int texWidth, int texHeight);
 	virtual void render(shared_ptr<Entity> entity, float time, float r, float bob, float yRot, float xRot, float scale, bool usecompiled);
     virtual void setupAnim(float time, float r, float bob, float yRot, float xRot, float scale, shared_ptr<Entity> entity, unsigned int uiBitmaskOverrideAnim = 0);
     void renderHair(float scale, bool usecompiled);

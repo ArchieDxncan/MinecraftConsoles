@@ -9,11 +9,6 @@ enum eBodyPart
 	eBodyPart_Arm1,
 	eBodyPart_Leg0,
 	eBodyPart_Leg1,
-	eBodyPart_Jacket,
-	eBodyPart_Sleeve0,
-	eBodyPart_Sleeve1,
-	eBodyPart_Pants0,
-	eBodyPart_Pants1,
 };
 
 typedef struct 
