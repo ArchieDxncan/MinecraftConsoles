@@ -21,7 +21,7 @@ Users can download our [Nightly Build](https://github.com/piebotc/LegacyEvolved/
 
 Huge thanks to the following projects:
 
-- [Patoke/LCERenewed](https://github.com/Patoke/LCERenewed) - for some of the deeper patches that required deep decompilation
+- [Patoke/LCERenewed](https://github.com/Patoke/LCERenewed) - for some of the patches that required deep decompilation
 - [smartcmd/MinecraftConsoles](https://github.com/smartcmd/MinecraftConsoles) - for creating such a great repo
 
 ## Build & Run
