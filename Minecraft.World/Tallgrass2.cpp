@@ -9,34 +9,46 @@
 #include "net.minecraft.stats.h"
 
 
-static const unsigned int DESCRIPTION_IDS[TallGrass2::VARIANT_COUNT] = {
-	IDS_TILE_TALL_GRASS2,   // 0 - Tall Grass
-	IDS_TILE_LARGE_FERN,    // 1 - Large Fern
-	IDS_TILE_LILAC,         // 2 - Lilac
-	IDS_TILE_ROSE_BUSH,     // 3 - Rose Bush
-	IDS_TILE_PEONY,         // 4 - Peony
+// tranq please i beg you make sure the ids are correct so we dont get corrupted worlds from people
+static const int TILE_IDS[TallGrass2::VARIANT_COUNT] = {
+	IDS_TILE_SUNFLOWER,			  // 0 - Sunflower, not implemented yet
+	IDS_TILE_LILAC,				  // 1 - Lilac
+	IDS_TILE_DOUBLE_TALL_GRASS,   // 2 - Tall Grass
+	IDS_TILE_LARGE_FERN,		  // 3 - Large Fern
+	IDS_TILE_ROSE_BUSH,			  // 4 - Rose Bush
+	IDS_TILE_PEONY,				  // 5 - Peony
+};
+
+static const int DESCRIPTION_IDS[TallGrass2::VARIANT_COUNT] = {
+	IDS_DESC_SUNFLOWER,			  // 0 - Sunflower, not implemented yet
+	IDS_DESC_LILAC,				  // 1 - Lilac
+	IDS_DESC_DOUBLE_TALL_GRASS,   // 2 - Tall Grass
+	IDS_DESC_LARGE_FERN,		  // 3 - Large Fern
+	IDS_DESC_ROSE_BUSH,			  // 4 - Rose Bush
+	IDS_DESC_PEONY,				  // 5 - Peony
 };
 
 
 static const wstring TEXTURE_BOTTOM[TallGrass2::VARIANT_COUNT] = {
+	L"tallgrass2_tall_grass_lower",		// Sunflower, not implemented yet
+	L"tallgrass2_lilac_lower",
 	L"tallgrass2_tall_grass_lower",
 	L"tallgrass2_large_fern_lower",
-	L"tallgrass2_lilac_lower",
 	L"tallgrass2_rose_bush_lower",
 	L"tallgrass2_peony_lower",
 };
 
 static const wstring TEXTURE_TOP[TallGrass2::VARIANT_COUNT] = {
+	L"tallgrass2_tall_grass_upper",		// Sunflower, not implemented yet
+	L"tallgrass2_lilac_upper",
 	L"tallgrass2_tall_grass_upper",
 	L"tallgrass2_large_fern_upper",
-	L"tallgrass2_lilac_upper",
 	L"tallgrass2_rose_bush_upper",
-	L"tallgrass2_peony_upper",
+	L"tallgrass2_peony_upper"
 };
 
 
-TallGrass2::TallGrass2(int id)
-	: Bush(id, Material::replaceable_plant)
+TallGrass2::TallGrass2(int id) : Bush(id, Material::replaceable_plant)
 {
 	this->updateDefaultShape();
 }

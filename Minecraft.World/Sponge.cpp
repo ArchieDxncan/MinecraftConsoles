@@ -5,7 +5,8 @@
 
 #include "Sponge.h"
 
-const unsigned int Sponge::SPONGE_NAMES[SPONGE_NAMES_LENGTH] = { IDS_TILE_SPONGE, IDS_TILE_SPONGE };
+const unsigned int Sponge::SPONGE_NAMES[SPONGE_NAMES_LENGTH] = { IDS_TILE_SPONGE, IDS_TILE_WET_SPONGE };
+const unsigned int Sponge::SPONGE_DESCRIPTIONS[SPONGE_NAMES_LENGTH] = { IDS_DESC_SPONGE, IDS_DESC_WET_SPONGE };
 
 Sponge::Sponge(int id) : Tile(id, Material::sponge)
 {
@@ -18,6 +19,13 @@ void Sponge::onPlace(Level *level, int x, int y, int z)
 {
     wet = level->getData(x, y, z) == 1;
     tryAbsorb(level, x, y, z);
+}
+
+unsigned int Sponge::getDescriptionId(int iData)
+{
+    if (iData < 0 || iData >= SPONGE_NAMES_LENGTH) iData = 0;
+
+    return SPONGE_DESCRIPTIONS[iData];
 }
 
 void Sponge::neighborChanged(Level* level, int x, int y, int z, int type)

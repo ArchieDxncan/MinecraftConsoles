@@ -4,8 +4,13 @@
 #include "net.minecraft.h"
 
 const unsigned int DirtTile::DIRT_NAMES[DIRT_NAMES_LENGTH] = { IDS_TILE_DIRT,
-IDS_TILE_DIRT,
-IDS_TILE_DIRT
+IDS_TILE_PODZOL,
+IDS_TILE_COARSE_DIRT
+};
+
+const unsigned int DirtTile::DIRT_DESCRIPTIONS[DIRT_NAMES_LENGTH] = { IDS_DESC_DIRT,
+IDS_DESC_PODZOL,
+IDS_DESC_COARSE_DIRT
 };
 
 const wstring DirtTile::TEXTURE_NAMES[] = { L"dirt", L"coarse_dirt", L"dirt_podzol"};
@@ -21,7 +26,7 @@ unsigned int DirtTile::getDescriptionId(int iData)
 {
     if (iData < 0 || iData >= DIRT_NAMES_LENGTH) iData = 0;
 
-    return DIRT_NAMES[iData];
+    return DIRT_DESCRIPTIONS[iData];
 }
 
 int DirtTile::getSpawnResourcesAuxValue(int data)

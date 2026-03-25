@@ -51,14 +51,6 @@ void TreeTile2::onRemove(Level* level, int x, int y, int z, int id, int data)
 	}
 }
 
-
-unsigned int TreeTile2::getDescriptionId(int iData /*= -1*/)
-{
-	int type = iData & MASK_TYPE;
-	if (type < 0 || type >= TreeTile2::TREE_NAMES_LENGTH) type = 0;
-	return TreeTile2::TREE_NAMES[type];
-}
-
 Icon* TreeTile2::getTypeTexture(int type)
 {
 	return icons_side[type];

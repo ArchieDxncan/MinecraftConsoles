@@ -10,6 +10,7 @@ public:
 
 
 	static const unsigned int SPONGE_NAMES[SPONGE_NAMES_LENGTH];
+	static const unsigned int SPONGE_DESCRIPTIONS[SPONGE_NAMES_LENGTH];
 	static const wstring TEXTURE_NAMES[];
 
 	bool wet;
@@ -24,6 +25,7 @@ protected:
 	bool absorb(Level* level, int x, int y, int z);
 	void animateTick(Level* level, int x, int y, int z, Random* random);
 	void registerIcons(IconRegister* iconRegister);
+	unsigned int getDescriptionId(int iData);
 	Icon* getTexture(int face, int data);
 	int getSpawnResourcesAuxValue(int data);
 };

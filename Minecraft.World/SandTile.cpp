@@ -5,7 +5,7 @@
 #include "FireTile.h"
 #include "net.minecraft.world.h"
 
-const unsigned int SandTile::SAND_NAMES[SAND_NAMES_LENGTH] = { IDS_TILE_SAND, IDS_TILE_SAND };
+const unsigned int SandTile::SAND_NAMES[SAND_NAMES_LENGTH] = { IDS_TILE_SAND, IDS_TILE_RED_SAND };
 const wstring SandTile::TEXTURE_NAMES[] = { L"sand", L"red_sand" };
 
 SandTile::SandTile(int type, bool isSolidRender) : HeavyTile(type, Material::sand, isSolidRender)

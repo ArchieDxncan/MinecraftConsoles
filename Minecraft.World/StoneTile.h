@@ -15,6 +15,7 @@ public:
 
 	static const int STONE_NAMES_LENGTH = 7;
 
+	static const unsigned int STONE_DESCRIPTIONS[STONE_NAMES_LENGTH];
 	static const unsigned int STONE_NAMES[STONE_NAMES_LENGTH];
 	static const wstring TEXTURE_NAMES[];
 private:

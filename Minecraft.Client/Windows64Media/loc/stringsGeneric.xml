@@ -9006,5 +9006,102 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	
 	<data name="IDS_WINDOWS_EXIT">
 		<value>Exit Minecraft</value>
+	</data>
+
+	<data name="IDS_TILE_PACKED_ICE">
+		<value>Packed Ice</value>
+	</data>
+	
+	<data name="IDS_DESC_PACKED_ICE">
+		<value>A solid unmeltable block of ice that can have objects placed on it.</value>
+	</data>
+
+	<data name="IDS_TILE_RED_SANDSTONE_CHISELED">
+		<value>Chiseled Red Sandstone</value>
+	</data>
+
+	<data name="IDS_TILE_RED_SANDSTONE_SMOOTH">
+		<value>Smooth Red Sandstone</value>
 	</data>	
+
+	<data name="IDS_DESC_RED_SANDSTONE">
+		<value>Red colored Sandstone. It is not influenced by gravity like normal Sand.</value>
+	</data>
+
+	<data name="IDS_DESC_SEA_LANTERN">
+		<value>Underwater light sources that can be found in Ocean Monuments. Can be crafted from Prismarine shards and Prismarine crystals.</value>
+	</data>
+
+	<data name="IDS_TILE_PRISMARINE">
+		<value>Prismarine</value>
+	</data>
+
+	<data name="IDS_DESC_PRISMARINE">
+		<value>Rare decorative stone that can be found in Ocean Monuments. Can be crafted from Prismarine shards.</value>
+	</data>
+
+	<data name="IDS_DESC_DOUBLE_TALL_GRASS">
+		<value>PLACEHOLDER</value>
+	</data>
+
+	<data name="IDS_TILE_DOUBLE_TALL_GRASS">
+		<value>Double Tall Grass</value>
+	</data>
+
+	<data name="IDS_TILE_SUNFLOWER">
+		<value>Sunflower</value>
+	</data>
+
+	<data name="IDS_TILE_LARGE_FERN">
+		<value>Large Fern</value>
+	</data>
+
+	<data name="IDS_TILE_LILAC">
+		<value>Lilac</value>
+	</data>
+
+	<data name="IDS_TILE_ROSE_BUSH">
+		<value>Rose Bush</value>
+	</data>
+
+	<data name="IDS_TILE_PEONY">
+		<value>Peony</value>
+	</data>
+
+	<data name="IDS_ITEM_PRISMARINE_SHARD">
+		<value>Prismarine Shard</value>
+	</data>
+
+	<data name="IDS_ITEM_PRISMARINE_SHARD_DESC">
+		<value>Dropped by Guardians and Elder Guardians. Can be used in crafting Prismarine and Sea Lanterns.</value>
+	</data>	
+
+	<data name="IDS_ITEM_PRISMARINE_CRYSTAL_DESC">
+		<value>Obtained from Sea Lanterns or by defeating Guardians and Elder Guardians. Can be used in crafting Sea Lanterns.</value>
+	</data>	
+
+	<data name="IDS_ITEM_PRISMARINE_DESC">
+		<value>Rare decorative stone that can be found in Ocean Monuments. Can be crafted from Prismarine shards.</value>
+	</data>	
+
+	<data name="IDS_ITEM_PRISMARINE_BRICK_DESC">
+		<value>Decorative Prismarine brick that can be found in Ocean Monuments. Can be crafted from Prismarine shards.</value>
+	</data>	
+
+	<data name="IDS_ITEM_PRISMARINE_DARK_DESC">
+		<value>A rarer form of Prismarine that can be found in Ocean Monuments. Can be crafted with Prismarine shards and an Ink Sac.</value>
+	</data>
+
+	<data name="IDS_TILE_PRISMARINE">
+		<value>Prismarine</value>
+	</data>
+
+	<data name="IDS_TILE_PRISMARINE_BRICKS">
+		<value>Prismarine Bricks</value>
+	</data>
+
+	<data name="IDS_TILE_PRISMARINE_DARK">
+		<value>Dark Prismarine</value>
+	</data>
+
 </root>

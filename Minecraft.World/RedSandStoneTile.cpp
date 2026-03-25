@@ -9,7 +9,7 @@ const wstring RedSandStoneTile::TEXTURE_BOTTOM = L"red_sandstone_bottom";
 const wstring RedSandStoneTile::TEXTURE_NAMES[] = { L"red_sandstone_normal", L"red_sandstone_carved", L"red_sandstone_smooth" };
 
 int RedSandStoneTile::SANDSTONE_NAMES[SANDSTONE_BLOCK_NAMES] = {
-	IDS_TILE_SANDSTONE, IDS_TILE_SANDSTONE_CHISELED, IDS_TILE_SANDSTONE_SMOOTH
+	IDS_TILE_RED_SANDSTONE, IDS_TILE_RED_SANDSTONE_CHISELED, IDS_TILE_RED_SANDSTONE_SMOOTH
 };
 
 RedSandStoneTile::RedSandStoneTile(int id) : Tile(id, Material::stone)

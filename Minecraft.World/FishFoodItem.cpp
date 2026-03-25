@@ -8,8 +8,11 @@
 #include "net.minecraft.world.h"
 #include "FishFoodItem.h"
 
-const unsigned int FishFoodItem::NAMES[FISH_COUNT] = { IDS_ITEM_SKULL_SKELETON, IDS_ITEM_SKULL_SKELETON, IDS_ITEM_SKULL_SKELETON, IDS_ITEM_SKULL_SKELETON };
-const unsigned int FishFoodItem::COOKED_NAMES[FISH_COUNT] = { IDS_ITEM_SKULL_CHARACTER, IDS_ITEM_SKULL_CHARACTER, IDS_ITEM_SKULL_CHARACTER, IDS_ITEM_SKULL_CHARACTER };
+const unsigned int FishFoodItem::NAMES[FISH_COUNT] = { IDS_ITEM_FISH_RAW, IDS_ITEM_SALMON_RAW, IDS_ITEM_CLOWNFISH, IDS_ITEM_PUFFERFISH };
+const unsigned int FishFoodItem::COOKED_NAMES[FISH_COUNT] = { IDS_DESC_FISH_COOKED, IDS_ITEM_SALMON_COOKED, NULL, NULL };
+
+const unsigned int FishFoodItem::DESCRIPTIONS[FISH_COUNT] = { IDS_DESC_FISH_RAW, IDS_DESC_SALMON_RAW, IDS_DESC_CLOWNFISH, IDS_DESC_PUFFERFISH };
+const unsigned int FishFoodItem::COOKED_DESCRIPTIONS[FISH_COUNT] = { IDS_DESC_FISH_COOKED, IDS_DESC_SALMON_COOKED, NULL, NULL };
 // making cod temporarily fish
 const FishType FISH_TYPES[] = {
 	{ 0, L"fish",        2, 0.1f, 5, 0.6f, true  },
@@ -74,10 +77,10 @@ unsigned int FishFoodItem::getDescriptionId(int iData)
 		iData = 0;
 	}
 
-	if (cooked) {
-		return COOKED_NAMES[iData];
-	}
-	return NAMES[iData];
+	if (cooked)
+		return COOKED_DESCRIPTIONS[iData];
+
+	return DESCRIPTIONS[iData];
 }
 
 unsigned int FishFoodItem::getDescriptionId(shared_ptr<ItemInstance> instance)

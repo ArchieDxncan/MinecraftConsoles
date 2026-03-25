@@ -51,12 +51,3 @@ void WoodSlabTile::registerIcons(IconRegister *iconRegister)
 {
 	// None
 }
-
-unsigned int WoodSlabTile::getDescriptionId(int iData)
-{
-	if (iData < 0 || iData >= SLAB_NAMES_LENGTH)
-	{
-		iData = 0;
-	}
-	return SLAB_NAMES[iData];
-}

@@ -22,6 +22,10 @@ class FishFoodItem : public FoodItem
 public:
 	static const unsigned int NAMES[FISH_COUNT];
 	static const unsigned int COOKED_NAMES[FISH_COUNT];
+
+	static const unsigned int DESCRIPTIONS[FISH_COUNT];
+	static const unsigned int COOKED_DESCRIPTIONS[FISH_COUNT];
+
 	int auxValue;
 	bool cooked;
 private:

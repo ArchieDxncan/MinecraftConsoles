@@ -39,7 +39,6 @@ public:
 	virtual int getResourceCount(Random* random);
 	virtual int getResource(int data, Random* random, int playerBonusLevel);
 	virtual void onRemove(Level* level, int x, int y, int z, int id, int data);
-	virtual unsigned int getDescriptionId(int iData = -1);
 
 protected:
 	virtual Icon* getTypeTexture(int type);

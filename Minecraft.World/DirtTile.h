@@ -11,6 +11,7 @@ public:
 	static const int DIRT_NAMES_LENGTH = 3;
 
 	static const unsigned int DIRT_NAMES[DIRT_NAMES_LENGTH];
+	static const unsigned int DIRT_DESCRIPTIONS[DIRT_NAMES_LENGTH];
 	static const wstring TEXTURE_NAMES[];
 private:
 	Icon** icons;

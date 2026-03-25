@@ -5,12 +5,13 @@ class TallGrass2 : public Bush
 {
 	friend class Tile;
 public:
-	static const int TALL_GRASS = 0;
-	static const int LARGE_FERN = 1;
-	static const int LILAC = 2;
-	static const int ROSE_BUSH = 3;
-	static const int PEONY = 4;
-	static const int VARIANT_COUNT = 5;
+	static const int SUNFLOWER = 0;
+	static const int LILAC = 1;
+	static const int TALL_GRASS = 2;
+	static const int LARGE_FERN = 3;
+	static const int ROSE_BUSH = 4;
+	static const int PEONY = 5;
+	static const int VARIANT_COUNT = 6;
 
 	static const int UPPER_BIT = 8;
 

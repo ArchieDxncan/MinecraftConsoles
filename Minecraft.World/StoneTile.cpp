@@ -4,12 +4,16 @@
 #include "net.minecraft.h"
 
 const unsigned int StoneTile::STONE_NAMES[STONE_NAMES_LENGTH] = { IDS_TILE_STONE,
-IDS_TILE_STONE,
-IDS_TILE_STONE,
-IDS_TILE_STONE,
-IDS_TILE_STONE,
-IDS_TILE_STONE,
-IDS_TILE_STONE };
+	IDS_TILE_GRANITE,  IDS_TILE_POLISHED_GRANITE,
+	IDS_TILE_DIORITE,  IDS_TILE_POLISHED_DIORITE,
+	IDS_TILE_ANDESITE, IDS_TILE_POLISHED_ANDESITE 
+};
+
+const unsigned int StoneTile::STONE_DESCRIPTIONS[STONE_NAMES_LENGTH] = { IDS_DESC_STONE,
+	IDS_DESC_GRANITE,  IDS_DESC_POLISHED_GRANITE,
+	IDS_DESC_DIORITE,  IDS_DESC_POLISHED_DIORITE,
+	IDS_DESC_ANDESITE, IDS_DESC_POLISHED_ANDESITE
+};
 
 const wstring StoneTile::TEXTURE_NAMES[] = { L"stone", 
 		L"stone_granite", L"stone_granite_smooth",
@@ -25,7 +29,7 @@ unsigned int StoneTile::getDescriptionId(int iData)
 {
 	if (iData < 0 || iData >= STONE_NAMES_LENGTH) iData = 0;
 
-	return STONE_NAMES[iData];
+	return STONE_DESCRIPTIONS[iData];
 }
 
 int StoneTile::getResource(int data, Random* random, int playerBonusLevel)

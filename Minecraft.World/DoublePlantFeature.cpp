@@ -11,7 +11,7 @@ DoublePlantFeature::DoublePlantFeature(bool doUpdate)
 
 void DoublePlantFeature::setPlantType(int plantType)
 {
-    m_plantType = plantType;
+    m_plantType = (plantType < 1) ? 1 : plantType;
 }
 
 bool DoublePlantFeature::place(Level* level, Random* rand, int x, int y, int z)

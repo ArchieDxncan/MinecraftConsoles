@@ -21,6 +21,7 @@ public:
 
 	static const int FLOWER_NAMES_LENGTH = 9;
 	static const unsigned int FLOWER_NAMES[FLOWER_NAMES_LENGTH];
+	static const unsigned int FLOWER_DESCRIPTIONS[FLOWER_NAMES_LENGTH];
 	static const wstring TEXTURE_NAMES[];
 
 private:
