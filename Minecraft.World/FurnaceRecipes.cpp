@@ -47,6 +47,7 @@ FurnaceRecipes::FurnaceRecipes()
 	addFurnaceRecipy(Tile::lapisOre_Id, new ItemInstance(Item::dye_powder, 1, DyePowderItem::BLUE), .2f);
 	addFurnaceRecipy(Tile::netherQuartz_Id, new ItemInstance(Item::netherQuartz), .2f);
 
+	addFurnaceRecipy(Tile::tree2Trunk_Id, new ItemInstance(Item::coal, 1, 1), .15f);
 }
 
 void FurnaceRecipes::addFurnaceRecipy(int itemId, ItemInstance *result, float value)
