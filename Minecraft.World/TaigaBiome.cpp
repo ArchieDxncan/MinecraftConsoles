@@ -9,6 +9,7 @@
 #include "TallGrass2.h"
 #include "Level.h"
 #include "Random.h"
+#include "MegaPineTreeFeature.h"
 
 TaigaBiome::TaigaBiome(int id, int type) : Biome(id)
 {
@@ -33,9 +34,12 @@ TaigaBiome::TaigaBiome(int id, int type) : Biome(id)
 
 Feature *TaigaBiome::getTreeFeature(Random *random)
 {
-	if ((type == 1 || type == 2) && random->nextInt(3) == 0)
+	if (type == 1 || type == 2)
 	{
-		return new MegaTreeFeature(false, 10 + random->nextInt(20), TreeTile::SPRUCE_TRUNK, LeafTile::EVERGREEN_LEAF);
+		if (random->nextInt(3) == 0)
+		{
+			return new MegaPineTreeFeature(false, random->nextBoolean());
+		}
 	}
 	if (random->nextInt(3) == 0)
 	{
