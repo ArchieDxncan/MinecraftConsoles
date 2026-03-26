@@ -4,13 +4,13 @@
 #include "net.minecraft.h"
 
 const unsigned int DirtTile::DIRT_NAMES[DIRT_NAMES_LENGTH] = { IDS_TILE_DIRT,
-IDS_TILE_PODZOL,
-IDS_TILE_COARSE_DIRT
+IDS_TILE_COARSE_DIRT,
+IDS_TILE_PODZOL
 };
 
 const unsigned int DirtTile::DIRT_DESCRIPTIONS[DIRT_NAMES_LENGTH] = { IDS_DESC_DIRT,
-IDS_DESC_PODZOL,
-IDS_DESC_COARSE_DIRT
+IDS_DESC_COARSE_DIRT,
+IDS_DESC_PODZOL
 };
 
 const wstring DirtTile::TEXTURE_NAMES[] = { L"dirt", L"coarse_dirt", L"dirt_podzol"};
