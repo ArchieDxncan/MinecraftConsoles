@@ -5,7 +5,7 @@
 #include "TallGrass2.h"
 
 DoublePlantFeature::DoublePlantFeature(bool doUpdate)
-    : Feature(doUpdate), m_plantType(1)
+    : Feature(doUpdate), m_plantType(0)
 {
 }
 

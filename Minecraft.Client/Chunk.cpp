@@ -214,7 +214,7 @@ void Chunk::rebuild()
 
 	int r = 1;
 
-	int lists = levelRenderer->getGlobalIndexForChunk(this->x,this->y,this->z,level) * 3;
+	int lists = levelRenderer->getGlobalIndexForChunk(this->x,this->y,this->z,level) * 2;
 	lists += levelRenderer->chunkLists;
 
 	PIXEndNamedEvent();
@@ -324,7 +324,7 @@ void Chunk::rebuild()
 	if( empty )
 	{
 		// 4J - added - clear any renderer data associated with this
-		for (int currentLayer = 0; currentLayer < 3; currentLayer++)
+		for (int currentLayer = 0; currentLayer < 2; currentLayer++)
 		{
 			levelRenderer->setGlobalChunkFlag(this->x, this->y, this->z, level, LevelRenderer::CHUNK_FLAG_EMPTY0, currentLayer);
 			RenderManager.CBuffClear(lists + currentLayer);
@@ -349,7 +349,7 @@ void Chunk::rebuild()
 		bounds.boundingBox[4] = SIZE+g;
 		bounds.boundingBox[5] = XZSIZE+g;
 	}
-	for (int currentLayer = 0; currentLayer < 3; currentLayer++)
+	for (int currentLayer = 0; currentLayer < 2; currentLayer++)
 	{
 		bool renderNextLayer = false;
 		bool rendered = false;
@@ -466,14 +466,9 @@ void Chunk::rebuild()
 		}
 		if((currentLayer==0)&&(!renderNextLayer))
 		{
-			levelRenderer->setGlobalChunkFlag(this->x, this->y, this->z, level, LevelRenderer::CHUNK_FLAG_EMPTY1 | LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
-			RenderManager.CBuffClear(lists + 2);
+			levelRenderer->setGlobalChunkFlag(this->x, this->y, this->z, level, LevelRenderer::CHUNK_FLAG_EMPTY1);
+			RenderManager.CBuffClear(lists + 1);
 			break;
-		}
-		if ((currentLayer == 2) && (!renderNextLayer))
-		{
-			levelRenderer->setGlobalChunkFlag(this->x, this->y, this->z, level, LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
-			RenderManager.CBuffClear(lists + 2);
 		}
 	}
 
@@ -604,15 +599,14 @@ void Chunk::rebuild()
 
 	// 4J - These removed items are now also removed from globalRenderableTileEntities
 
-	// @Patoke: this is now unused in favour of the new render layer
-	//if( LevelChunk::touchedSky )
-	//{
-	//	levelRenderer->clearGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
-	//}
-	//else
-	//{
-	//	levelRenderer->setGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
-	//}
+	if( LevelChunk::touchedSky )
+	{
+		levelRenderer->clearGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
+	}
+	else
+	{
+		levelRenderer->setGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_NOTSKYLIT);
+	}
 	levelRenderer->setGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_COMPILED);
 	PIXEndNamedEvent();
 	return;
@@ -967,11 +961,11 @@ void Chunk::reset()
 //		printf("\t\t [dec] refcount %d at %d, %d, %d\n",refCount,x,y,z);
 		if( refCount == 0 )
 		{
-			int lists = levelRenderer->getGlobalIndexForChunk(x, y, z, level) * 3;
+			int lists = levelRenderer->getGlobalIndexForChunk(x, y, z, level) * 2;
 			if(lists >= 0)
 			{
 				lists += levelRenderer->chunkLists;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 2; i++)
 				{
 					// 4J - added - clear any renderer data associated with this unused list
 					RenderManager.CBuffClear(lists + i);
@@ -995,7 +989,7 @@ int Chunk::getList(int layer)
 {
 	if (!clipChunk->visible) return -1;
 
-	int lists = levelRenderer->getGlobalIndexForChunk(x, y, z, level) * 3;
+	int lists = levelRenderer->getGlobalIndexForChunk(x, y, z,level) * 2;
 	lists += levelRenderer->chunkLists;
 
 	bool empty =  levelRenderer->getGlobalChunkFlag(x, y, z, level, LevelRenderer::CHUNK_FLAG_EMPTY0, layer);
