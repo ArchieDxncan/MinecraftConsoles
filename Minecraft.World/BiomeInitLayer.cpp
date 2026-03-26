@@ -21,7 +21,7 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 	}
 	else
 	{
-		startBiomes = BiomeArray(16);
+		startBiomes = BiomeArray(18);
 		startBiomes[0] = Biome::desert;
 		startBiomes[1] = Biome::forest;
 		startBiomes[2] = Biome::extremeHills;
@@ -38,6 +38,8 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 		startBiomes[13] = Biome::birchForestHillsM;
 		startBiomes[14] = Biome::roofedForestM;
 		startBiomes[15] = Biome::deepOcean;
+		startBiomes[16] = Biome::sunflowersPlains;
+		startBiomes[17] = Biome::iceSpikes;
 	}
 }
 

@@ -76,6 +76,14 @@ int MutatedBiome::getTemperatureCategory() const {
     return m_baseBiome ? m_baseBiome->getTemperatureCategory() : Biome::getTemperatureCategory();
 }
 
+Feature* MutatedBiome::getFlowerFeature(Random* random, int x, int y, int z) {
+    return m_baseBiome ? m_baseBiome->getFlowerFeature(random, x, y, z) : Biome::getFlowerFeature(random, x, y, z);
+}
+
+int MutatedBiome::getRandomDoublePlantType(Random* random) {
+    return m_baseBiome ? m_baseBiome->getRandomDoublePlantType(random) : Biome::getRandomDoublePlantType(random);
+}
+
 void MutatedBiome::buildSurfaceAt(Level* level, Random* random, ChunkPrimer* primer, int x, int z, double noiseVal) {
     if (m_baseBiome)
         m_baseBiome->buildSurfaceAt(level, random, primer, x, z, noiseVal);

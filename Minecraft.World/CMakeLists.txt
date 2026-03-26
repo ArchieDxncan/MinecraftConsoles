@@ -11,7 +11,7 @@ set(MINECRAFT_WORLD_SOURCES
   ${SOURCES_COMMON}
 )
 
-add_library(Minecraft.World STATIC ${MINECRAFT_WORLD_SOURCES})
+add_library(Minecraft.World STATIC ${MINECRAFT_WORLD_SOURCES} "IceSpikeFeature.cpp" "IceSpikeFeature.h")
 
 target_include_directories(Minecraft.World
   PRIVATE

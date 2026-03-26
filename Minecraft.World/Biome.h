@@ -6,6 +6,7 @@ using namespace std;
 #include "WeighedRandom.h"
 #include "BlockPos.h"
 #include "ChunkPrimer.h"
+#include "DoublePlantFeature.h"
 
 
 class Feature;
@@ -65,6 +66,8 @@ public:
 
     static Biome *Biome::roofedForestM;
     static Biome *Biome::deepOcean;
+    static Biome *Biome::sunflowersPlains;
+    static Biome *Biome::iceSpikes;
 
     static const int BIOME_COUNT = 256 ;
 
@@ -79,8 +82,11 @@ public:
     float temperature;
     float downfall;
 
+
     BiomeDecorator *decorator;
     PerlinNoise *m_temperatureNoise;
+    PerlinNoise  *GRASS_COLOR_NOISE;
+    DoublePlantFeature  *DOUBLE_PLANT_GENERATOR;
 
     const int id;
 

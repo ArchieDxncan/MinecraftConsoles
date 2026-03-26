@@ -59,6 +59,7 @@ public:
 	Feature *tulipPinkFeature;
 	Feature *doublePlantFeature;
 
+	int doublePlantCount;
 	int waterlilyCount;
 	int treeCount;
 	int flowerCount;

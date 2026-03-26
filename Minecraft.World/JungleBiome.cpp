@@ -6,13 +6,22 @@
 	#include "net.minecraft.world.entity.animal.h"
 	#include "JungleBiome.h"
 
-	JungleBiome::JungleBiome(int id) : Biome(id)
+	JungleBiome::JungleBiome(int id, bool isEdge) : Biome(id)
 	{
-		decorator->treeCount = 50;
+		this->isEdge = isEdge;
+
+		if (isEdge)
+		{
+			decorator->treeCount = 2;
+		}
+		else
+		{
+			decorator->treeCount = 50;
+			enemies.push_back(new MobSpawnerData(eTYPE_OCELOT, 2, 1, 1));
+		}
+
 		decorator->grassCount = 25;
 		decorator->flowerCount = 4;
-
-		enemies.push_back(new MobSpawnerData(eTYPE_OCELOT, 2, 1, 1));
 
 		// make chicken a lot more common in the jungle
 		friendlies.push_back(new MobSpawnerData(eTYPE_CHICKEN, 10, 4, 4));
@@ -23,13 +32,13 @@
 	{
 		if (random->nextInt(10) == 0)
 		{
-			return new BasicTree(false); // 4J used to return member fancyTree, now returning newly created object so that caller can be consistently resposible for cleanup
+			return new BasicTree(false);
 		}
 		if (random->nextInt(2) == 0)
 		{
-			return new GroundBushFeature(TreeTile::JUNGLE_TRUNK, LeafTile::NORMAL_LEAF);
+			return new GroundBushFeature(TreeTile::JUNGLE_TRUNK, LeafTile::NORMAL_LEAF); // Shrub
 		}
-		if (random->nextInt(3) == 0)
+		if (!this->isEdge && random->nextInt(3) == 0)
 		{
 			return new MegaTreeFeature(false, 10 + random->nextInt(20), TreeTile::JUNGLE_TRUNK, LeafTile::JUNGLE_LEAF);
 		}
@@ -52,12 +61,13 @@
 		PIXBeginNamedEvent(0, "Adding vines");
 		VinesFeature *vines = new VinesFeature();
 
-		for (int i = 0; i < 50; i++)
+		for (int j = 0; j < 50; j++)
 		{
 			int x = xo + random->nextInt(16) + 8;
-			int y = Level::genDepth / 2;
+			int y2 = 128;
 			int z = zo + random->nextInt(16) + 8;
-			vines->place(level, random, x, y, z);
+			vines->place(level, random, x, y2, z);
 		}
+		delete vines;
 		PIXEndNamedEvent();
 	}

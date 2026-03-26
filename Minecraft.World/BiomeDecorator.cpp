@@ -76,6 +76,7 @@ void BiomeDecorator::_init()
 
     doublePlantFeature = new DoublePlantFeature(false);
 
+    doublePlantCount = 0;
     waterlilyCount = 0;
     treeCount = 0;
     flowerCount = 2;
@@ -213,24 +214,24 @@ void BiomeDecorator::decorate()
         }
     }
 
-    // 2blockstall
-    int doublePlantsToGen = (grassCount + flowerCount) / 2;
-    if (doublePlantsToGen > 0 && random->nextInt(3) == 0) 
-    {
-        for (int i = 0; i < doublePlantsToGen; i++) 
-        {
-            int x = xo + random->nextInt(16) + 8;
-            int y = random->nextInt(Level::genDepth); 
-            int z = zo + random->nextInt(16) + 8;
-            
-            
-            int plantType = biome->getRandomDoublePlantType(random); 
-            
-            DoublePlantFeature* dpf = static_cast<DoublePlantFeature*>(doublePlantFeature);
-            dpf->setPlantType(plantType);
-            dpf->place(level, random, x, y, z);
-        }
-    }
+    //int doublePlantsToGen = doublePlantCount; // <-- Usa una variabile specifica per bioma!
+
+    //for (int i = 0; i < doublePlantsToGen; i++) 
+    //{
+    //    // Genera il punto centrale del cluster
+    //    int x = xo + random->nextInt(16) + 8;
+    //    int z = zo + random->nextInt(16) + 8;
+    //    int y = random->nextInt(Level::genDepth); 
+    //    
+    //    int plantType = biome->getRandomDoublePlantType(random); 
+    //    
+    //    DoublePlantFeature* dpf = static_cast<DoublePlantFeature*>(doublePlantFeature);
+    //    dpf->setPlantType(plantType);
+    //    
+    //    // La chiamata place() ora genererà il grappolo grazie al ciclo da 64 inserito nel Passo 1
+    //    dpf->place(level, random, x, y, z);
+    //}
+
     PIXEndNamedEvent();
 
     PIXBeginNamedEvent(0,"Decorate bush/waterlily/mushroom/reeds/pumpkins/cactuses");

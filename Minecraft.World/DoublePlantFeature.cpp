@@ -11,7 +11,7 @@ DoublePlantFeature::DoublePlantFeature(bool doUpdate)
 
 void DoublePlantFeature::setPlantType(int plantType)
 {
-    m_plantType = (plantType < 1) ? 1 : plantType;
+    m_plantType = plantType;
 }
 
 bool DoublePlantFeature::place(Level* level, Random* rand, int x, int y, int z)
@@ -24,8 +24,7 @@ bool DoublePlantFeature::place(Level* level, Random* rand, int x, int y, int z)
         int by = y + rand->nextInt(4) - rand->nextInt(4);
         int bz = z + rand->nextInt(8) - rand->nextInt(8);
 
-        if (by >= Level::maxBuildHeight - 1) continue;
-        if (by < 1) continue;
+        if (by >= Level::maxBuildHeight - 1 || by < 1) continue;
 
         if (level->getTile(bx, by,     bz) != 0) continue;
         if (level->getTile(bx, by + 1, bz) != 0) continue;
@@ -33,8 +32,9 @@ bool DoublePlantFeature::place(Level* level, Random* rand, int x, int y, int z)
         
         if (!static_cast<TallGrass2*>(Tile::tiles[Tile::tallgrass2_Id])->mayPlace(level, bx, by, bz)) continue;
 
-        level->setTileAndData(bx, by,     bz, Tile::tallgrass2_Id, m_plantType,                         Tile::UPDATE_ALL);
-        level->setTileAndData(bx, by + 1, bz, Tile::tallgrass2_Id, m_plantType | TallGrass2::UPPER_BIT, Tile::UPDATE_ALL);
+        
+        level->setTileAndData(bx, by,     bz, Tile::tallgrass2_Id, m_plantType,                    0);
+    level->setTileAndData(bx, by + 1, bz, Tile::tallgrass2_Id, TallGrass2::UPPER_BIT | m_plantType, 0);
 
         placed = true;
     }

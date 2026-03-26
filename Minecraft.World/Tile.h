@@ -380,7 +380,7 @@ public:
 	static const int woolCarpet_Id = 171;
 	static const int clayHardened_Id = 172;
 	static const int coalBlock_Id = 173;
-	static const int packed_ice_Id = 174;
+	static const int packedIce_Id = 174;
 	static const int tallgrass2_Id = 175;
 	//176 standing_banner
 	//177 wall_banner
@@ -629,7 +629,7 @@ public:
 	static Tile* red_sandstone;
 	static Tile* stairs_red_sandstone;
 	static Tile* tree2Trunk;
-	static Tile* packed_ice;
+	static Tile* packedIce;
 	static Tile* seaLantern;
 	static Tile* prismarine;
 

@@ -9,6 +9,7 @@
 #include "Rose.h"
 #include "HugeMushroomFeature.h"
 #include "DoublePlantFeature.h"
+#include "TallGrass2.h"
 #include "../Minecraft.Client/Minecraft.h"
 #include "../Minecraft.Client/Common/Colours/ColourTable.h"
 #include "Level.h"
@@ -175,10 +176,13 @@ void ForestBiome::decorate(Level* level, Random* rand, int xo, int zo)
     {
         do
         {
-            int plantType = rand->nextInt(3);
+            int l1 = rand->nextInt(3);
             DoublePlantFeature plantFeature;
+            if (l1 == 0) plantFeature.setPlantType(TallGrass2::LILAC);
+            else if (l1 == 1) plantFeature.setPlantType(TallGrass2::ROSE_BUSH);
+            else if (l1 == 2) plantFeature.setPlantType(TallGrass2::PEONY);
 
-            for (int attempts = 2; attempts >= 0; --attempts)
+            for (int attempts = 0; attempts < 5; ++attempts)
             {
                 int dx = rand->nextInt(16) + 8;
                 int dz = rand->nextInt(16) + 8;
