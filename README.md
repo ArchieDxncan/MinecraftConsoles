@@ -1,4 +1,4 @@
- ![Tutorial World](.github/minecraft_title.png)
+![Logo](.github/minecraft_title.png)
 # Legacy Evolved
 This project aims to backport the newer title updates back to the Minecraft: Legacy Console Edition Source Code Leak (which is based on TU19).
 
@@ -16,6 +16,13 @@ See our our [Contributor's Guide](./CONTRIBUTING.md) for more information on the
 
 # Download
 Users can download our [Nightly Build](https://github.com/piebotc/LegacyEvolved/releases/tag/nightly)! Simply download the `.zip` file and extract it!
+
+# Acknowledgments
+
+Huge thanks to the following projects:
+
+- [Patoke/LCERenewed](https://github.com/Patoke/LCERenewed) - for some of the patches that required deep decompilation
+- [smartcmd/MinecraftConsoles](https://github.com/smartcmd/MinecraftConsoles) - for creating such a great repo
 
 ## Build & Run
 
