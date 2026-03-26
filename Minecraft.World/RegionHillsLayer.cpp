@@ -34,6 +34,14 @@ intArray RegionHillsLayer::getArea(int xo, int yo, int w, int h)
 				{
 					next = Biome::taigaHills->id;
 				}
+				else if (old == Biome::coldTaiga->id)
+				{
+					next = Biome::coldTaigaHills->id;
+				}
+				else if (old == Biome::megaTaiga->id)
+				{
+					next = Biome::megaTaigaHills->id;
+				}
 				else if (old == Biome::plains->id)
 				{
 					next = Biome::forest->id;
@@ -42,11 +50,19 @@ intArray RegionHillsLayer::getArea(int xo, int yo, int w, int h)
 				{
 					next = Biome::iceMountains->id;
 				}
+				else if (old == Biome::iceFlats->id)
+				{
+					next = Biome::iceSpikes->id;
+				}
 				else if (old == Biome::jungle->id)
 				{
 					next = Biome::jungleHills->id;
 
 				}
+				/*else if (old == Biome::savanna->id)
+				{
+					next = Biome::savannaPlateau->id;
+				}*/
 				if (next == old)
 				{
 					result[x + y * w] = old;

@@ -7,6 +7,7 @@
 #include "Sapling.h"
 #include "SavannaTreeFeature.h"
 #include "RoofTreeFeature.h"
+#include "MegaPineTreeFeature.h"
 
 int Sapling::SAPLING_NAMES[SAPLING_NAMES_SIZE] = {    
     IDS_TILE_SAPLING_OAK,
@@ -85,7 +86,27 @@ void Sapling::growTree(Level *level, int x, int y, int z, Random *random)
 
     if (data == TYPE_EVERGREEN)
     {
-        f = new SpruceFeature(true);
+        for (ox = 0; ox >= -1; ox--)
+        {
+            for (oz = 0; oz >= -1; oz--)
+            {
+                if (isSapling(level, x + ox, y, z + oz, TYPE_EVERGREEN) && 
+                    isSapling(level, x + ox + 1, y, z + oz, TYPE_EVERGREEN) && 
+                    isSapling(level, x + ox, y, z + oz + 1, TYPE_EVERGREEN) && 
+                    isSapling(level, x + ox + 1, y, z + oz + 1, TYPE_EVERGREEN))
+                {
+                    f = new MegaPineTreeFeature(true, random->nextBoolean());
+                    multiblock = true;
+                    break;
+                }
+            }
+            if (f != nullptr) break;
+        }
+        if (f == nullptr)
+        {
+            ox = oz = 0;
+            f = new SpruceFeature(true);
+        }
     }
     else if (data == TYPE_BIRCH)
     {
