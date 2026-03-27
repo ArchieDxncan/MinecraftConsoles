@@ -5,6 +5,7 @@ set(_MINECRAFT_SERVER_COMMON_ROOT
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/AllowAllCuller.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/ArchiveFile.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/ArrowRenderer.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/ArmorStandModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/ArmorStandRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/BatModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/BatRenderer.cpp"
@@ -284,6 +285,7 @@ set(_MINECRAFT_SERVER_COMMON_ROOT
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EnderParticle.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermanModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermanRenderer.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermiteModel.cpp
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermiteRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EntityRenderDispatcher.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EntityRenderer.cpp"
@@ -386,6 +388,7 @@ set(_MINECRAFT_SERVER_COMMON_ROOT
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/PreStitchedTextureMap.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/ProgressRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/QuadrupedModel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RabbitModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RabbitRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/Rect2i.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RedDustParticle.cpp"
