@@ -17,9 +17,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: docker
-    container:
-      image: ubuntu:22.04
+    runs-on: codeberg-medium
     steps:
       - name: Checkout
         uses: https://code.forgejo.org/actions/checkout@v4
@@ -62,9 +60,7 @@ jobs:
 
   release:
     needs: build
-    runs-on: docker
-    container:
-      image: ubuntu:22.04
+    runs-on: codeberg-small
     steps:
       - name: Download build artifacts
         uses: https://code.forgejo.org/actions/download-artifact@v3
@@ -127,9 +123,7 @@ jobs:
   cleanup:
     needs: [build, release]
     if: always()
-    runs-on: docker
-    container:
-      image: ubuntu:22.04
+    runs-on: codeberg-tiny
     steps:
       - name: Delete build artifacts
         env:
