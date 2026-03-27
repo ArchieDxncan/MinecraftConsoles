@@ -38,7 +38,7 @@ jobs:
             nix-${{ runner.os }}-
 
       - name: Build
-        run: nix build .#unwrapped --out-link result-unwrapped --max-jobs 4 --cores 4
+        run: nix build .#unwrapped --out-link result-unwrapped --max-jobs 1 --cores 1
 
       - name: Package artifacts
         run: |
