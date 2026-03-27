@@ -72,6 +72,16 @@ const wchar_t *Textures::preLoaded[TN_COUNT] =
 	L"mob/char5",
 	L"mob/char6",
 	L"mob/char7",
+	L"mob/char8",
+	L"mob/char9",
+	L"mob/char10",
+	L"mob/char11",
+	L"mob/char12",
+	L"mob/char13",
+	L"mob/char14",
+	L"mob/char15",
+	L"mob/char16",
+	L"mob/char17",
 	L"terrain/moon",
 	L"terrain/sun",
 	L"armor/power",
@@ -1048,7 +1058,6 @@ int Textures::loadHttpTexture(const wstring& url, const wstring& backup)
     }
     if (texture == nullptr || texture->id < 0)
 	{
-		if (backup.empty() ) return -1;
         return loadTexture(TN_COUNT, backup);
     }
     return texture->id;
@@ -1198,6 +1207,59 @@ int Textures::loadMemTexture(const wstring& url, int backup)
 		return loadTexture(backup);
 	}
 	return texture->id;
+}
+
+// 4J-PB - adding for texture in memory (from global title storage)
+int Textures::getHeight(const wstring& url, int backup)
+{
+	MemTexture *texture = nullptr;
+    auto it = memTextures.find(url);
+    if (it != memTextures.end())
+	{
+		texture = (*it).second;
+	}
+	if(texture == nullptr && app.IsFileInMemoryTextures(url))
+	{
+		// If we haven't loaded it yet, but we have the data for it then add it
+		texture = addMemTexture(url, new MobSkinMemTextureProcessor() );
+	}
+	if(texture != nullptr)
+	{
+		if (texture->loadedImage != nullptr && !texture->isLoaded)
+		{
+			// 4J - Disable mipmapping in general for skins & capes. Have seen problems with edge-on polys for some eg mumbo jumbo
+			if( ( url.substr(0,7) == L"dlcskin" ) ||
+				( url.substr(0,7) == L"dlccape" ) )
+			{
+				MIPMAP = false;
+			}
+
+			if (texture->id < 0)
+			{
+				texture->id = getTexture(texture->loadedImage, C4JRender::TEXTURE_FORMAT_RxGyBzAw, MIPMAP);
+			}
+			else
+			{
+				loadTexture(texture->loadedImage, texture->id);
+			}
+			texture->isLoaded = true;
+			MIPMAP = true;
+		}
+	}
+	if (texture == nullptr || texture->id < 0)
+	{
+		BufferedImage* img = readImage(static_cast<TEXTURE_NAME>(backup), wstring(preLoaded[backup]) + L".png");
+
+		if (img)
+		{
+			int h = img->getHeight();
+			delete img;
+			return h;
+		}
+
+		return 32;
+	}
+	return texture->loadedImage->getHeight();
 }
 
 MemTexture *Textures::addMemTexture(const wstring& name,MemTextureProcessor *processor)
@@ -1600,6 +1662,16 @@ TEXTURE_NAME OriginalImages[] =
 	TN_MOB_CHAR5,
 	TN_MOB_CHAR6,
 	TN_MOB_CHAR7,
+	TN_MOB_CHAR8,
+	TN_MOB_CHAR9,
+	TN_MOB_CHAR10,
+	TN_MOB_CHAR11,
+	TN_MOB_CHAR12,
+	TN_MOB_CHAR13,
+	TN_MOB_CHAR14,
+	TN_MOB_CHAR15,
+	TN_MOB_CHAR16,
+	TN_MOB_CHAR17,
 
 	TN_MISC_MAPBG,
 

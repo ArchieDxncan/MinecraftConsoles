@@ -8,7 +8,9 @@
 #include "../../ModelPart.h"
 #include "../../Options.h"
 #include "../../../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "Skins.h"
 #include "UIControl_PlayerSkinPreview.h"
+#include <string>
 
 //#define SKIN_PREVIEW_BOB_ANIM
 #define SKIN_PREVIEW_WALKING_ANIM
@@ -257,7 +259,24 @@ void UIControl_PlayerSkinPreview::render(EntityRenderer *renderer, double x, dou
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);
 
-	HumanoidModel *model = static_cast<HumanoidModel *>(renderer->getModel());
+	HumanoidModel *model;
+	Textures *textures = Minecraft::GetInstance()->textures;
+	int skinId = textures->loadMemTexture(m_customTextureUrl, m_backupTexture) - 37;
+
+	if (slim[skinId] == true)
+	{
+		if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 64)
+			model = static_cast<HumanoidModel *>(renderer->getNewModelSlim());
+		else if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 32)
+			model = static_cast<HumanoidModel *>(renderer->getModelSlim());
+	}
+	else
+	{
+		if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 64)
+			model = static_cast<HumanoidModel *>(renderer->getNewModel());
+		else  if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 32)
+			model = static_cast<HumanoidModel *>(renderer->getModel());
+	}
 
 	//getAttackAnim(mob, a);
 	//if (armor != nullptr) armor->attackTime = model->attackTime;

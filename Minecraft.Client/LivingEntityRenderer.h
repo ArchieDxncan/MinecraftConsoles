@@ -1,7 +1,7 @@
 #pragma once
 #include "ResourceLocation.h"
 #include "EntityRenderer.h"
-#include "../Minecraft.World/LivingEntity.h"
+#include "..\Minecraft.World\LivingEntity.h"
 
 class LivingEntity;
 
@@ -19,7 +19,7 @@ protected:
 	Model *armor;
 
 public:
-	LivingEntityRenderer(Model *model, float shadow);
+	LivingEntityRenderer(Model *model, float shadow, bool slimHands = 0, bool createNewVar = 0);
 	virtual void render(shared_ptr<Entity> mob, double x, double y, double z, float rot, float a);
 	virtual void setArmor(Model *armor);
 

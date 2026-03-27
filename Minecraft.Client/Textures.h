@@ -1,5 +1,5 @@
 #pragma once
-#include "../Minecraft.World/ArrayWithLength.h"
+#include "..\Minecraft.World\ArrayWithLength.h"
 
 class DynamicTexture;
 class BufferedImage;
@@ -63,6 +63,16 @@ typedef enum _TEXTURE_NAME
 	TN_MOB_CHAR5,
 	TN_MOB_CHAR6,
 	TN_MOB_CHAR7,
+	TN_MOB_CHAR8,
+	TN_MOB_CHAR9,
+	TN_MOB_CHAR10,
+	TN_MOB_CHAR11,
+	TN_MOB_CHAR12,
+	TN_MOB_CHAR13,
+	TN_MOB_CHAR14,
+	TN_MOB_CHAR15,
+	TN_MOB_CHAR16,
+	TN_MOB_CHAR17,
 	TN_TERRAIN_MOON,
 	TN_TERRAIN_SUN,
 	TN_POWERED_CREEPER,
@@ -330,6 +340,7 @@ public:
 	// 4J-PB - for the GTS textures
 	int				loadMemTexture(const wstring& url, const wstring& backup);
 	int				loadMemTexture(const wstring& url, int backup);
+	int				getHeight(const wstring& url, int backup);
 	MemTexture *	addMemTexture(const wstring& url, MemTextureProcessor *processor);
 	//MemTexture *	getMemTexture(const wstring& url, MemTextureProcessor *processor);
 	void			removeMemTexture(const wstring& url);
