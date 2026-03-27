@@ -67,11 +67,35 @@ void PrimedTnt::tick()
 	yo = y;
 	zo = z;
 
-	yd -= 0.04f;
-	move(xd, yd, zd);
-	xd *= 0.98f;
-	yd *= 0.98f;
-	zd *= 0.98f;
+	 this->updateInWaterState();
+	bool inWater = this->isInWater() || this->isInLava();
+
+
+	 if (inWater)
+    {
+        yd -= 0.0392f;  
+    }
+    else
+    {
+        yd -= 0.04f;   
+    }
+
+    move(xd, yd, zd);
+
+
+	if (inWater)
+    {
+        xd *= 0.8f;
+        yd *= 0.8f;
+        zd *= 0.8f;
+    }
+    else
+    {
+        xd *= 0.98f;
+        yd *= 0.98f;
+        zd *= 0.98f;
+    }
+
 
 	if (onGround)
 	{
