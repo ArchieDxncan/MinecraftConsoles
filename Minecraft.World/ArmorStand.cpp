@@ -106,6 +106,7 @@ bool ArmorStand::interact(shared_ptr<Player> player)
     float lookYDiff = -tan(pitchRad) * distHoriz;
     float hitY = (player->y + 1.62f + lookYDiff) - this->y;
 
+    
     int targetSlot = SLOT_WEAPON;
     if (hitY >= 0.1f && hitY < 0.55f) {
         targetSlot = SLOT_BOOTS;
@@ -118,34 +119,38 @@ bool ArmorStand::interact(shared_ptr<Player> player)
     }
 
     shared_ptr<ItemInstance> playerItem = player->getCarriedItem();
+    
+  
+    int slotToInteract = (playerItem != nullptr) ? getEquipmentSlotForItem(playerItem) : targetSlot;
 
+    if (isSlotDisabled(slotToInteract)) return false;
+
+    shared_ptr<ItemInstance> standItem = getItemInSlot(slotToInteract);
+
+    
     if (playerItem != nullptr) {
-    int correctSlot = getEquipmentSlotForItem(playerItem);
-    if (isSlotDisabled(correctSlot)) return false;
+        shared_ptr<ItemInstance> toPlace = ItemInstance::clone(playerItem);
+        toPlace->count = 1;
+        setEquippedSlot(slotToInteract, toPlace);
 
-    shared_ptr<ItemInstance> standItem = getItemInSlot(correctSlot);
-    
-    
-    shared_ptr<ItemInstance> toPlace = ItemInstance::clone(playerItem);
-    toPlace->count = 1;
-    setEquippedSlot(correctSlot, toPlace);
-
-    
-    if (standItem != nullptr) {
-        
-        if (playerItem->count > 1) {
-            playerItem->remove(1);
-            if (!player->inventory->add(standItem)) spawnAtLocation(standItem, 0.0f);
+        if (standItem != nullptr) {
+            if (playerItem->count > 1) {
+                playerItem->remove(1);
+                if (!player->inventory->add(standItem)) spawnAtLocation(standItem, 0.0f);
+            } else {
+                player->inventory->setItem(player->inventory->selected, standItem);
+            }
         } else {
-            
-            player->inventory->setItem(player->inventory->selected, standItem);
+            playerItem->remove(1);
         }
-    } else {
-        
-        playerItem->remove(1);
+    } 
+    
+    else if (standItem != nullptr) {
+        player->inventory->setItem(player->inventory->selected, standItem);
+        setEquippedSlot(slotToInteract, nullptr);
     }
+
     return true;
-}
 }
 bool ArmorStand::hurt(DamageSource *source, float damage)
 {
