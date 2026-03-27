@@ -158,7 +158,10 @@
             cp build/Minecraft.Client/Minecraft.Client.exe $out/client/
             cp build/Minecraft.Client/iggy_w64.dll $out/client/ 2>/dev/null || true
             cp -r build/Minecraft.Client/Common $out/client/ 2>/dev/null || true
+            cp -r build/Minecraft.Client/music $out/client/ 2>/dev/null || true
             cp -r build/Minecraft.Client/Windows64 $out/client/ 2>/dev/null || true
+            cp -r build/Minecraft.Client/Windows64Media $out/client/ 2>/dev/null || true
+            cp -r build/Minecraft.Client/iggy* $out/client/ 2>/dev/null || true
 
             # Install server
             cp build/Minecraft.Server/Minecraft.Server.exe $out/server/
