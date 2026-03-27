@@ -138,7 +138,7 @@
 #include "SeaLanternTile.h"
 
 #include "PrismarineTile.h"
-#include "Tallgrass2.h"
+#include "TallGrass2.h"
 
 #include "PackedIceTile.h"
 
