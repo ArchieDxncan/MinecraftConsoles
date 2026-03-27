@@ -285,7 +285,7 @@ set(_MINECRAFT_SERVER_COMMON_ROOT
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EnderParticle.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermanModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermanRenderer.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermiteModel.cpp
+  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermiteModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EndermiteRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EntityRenderDispatcher.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/EntityRenderer.cpp"
