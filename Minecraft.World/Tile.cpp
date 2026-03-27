@@ -17,7 +17,7 @@
 #include "net.minecraft.h"
 #include "Tile.h"
 
-#include "facing.h"
+#include "Facing.h"
 
 
 
