@@ -917,6 +917,36 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 			}
 		}
 
+		// Client-side registration: if we still have no IQNet entry for this remote
+		// player, create one so they appear in the Tab player list.
+		// Find the first available IQNet slot (customData == 0, skip slot 0 which
+		// is the host). We can't use packet->m_playerIndex directly because on
+		// dedicated servers the game-level player index starts at 0 for real
+		// players, conflicting with the IQNet host slot.
+		if (matchedQNetPlayer == nullptr)
+		{
+			for (int s = 1; s < MINECRAFT_NET_MAX_PLAYERS; ++s)
+			{
+				IQNetPlayer* qp = &IQNet::m_player[s];
+				if (qp->GetCustomDataValue() == 0 && qp->m_gamertag[0] == 0)
+				{
+					BYTE smallId = static_cast<BYTE>(s);
+					qp->m_smallId = smallId;
+					qp->m_isRemote = true;
+					qp->m_isHostPlayer = false;
+					qp->m_resolvedXuid = pktXuid;
+					wcsncpy_s(qp->m_gamertag, 32, packet->name.c_str(), _TRUNCATE);
+					if (smallId >= IQNet::s_playerCount)
+						IQNet::s_playerCount = smallId + 1;
+
+					extern CPlatformNetworkManagerStub* g_pPlatformNetworkManager;
+					g_pPlatformNetworkManager->NotifyPlayerJoined(qp);
+					matchedQNetPlayer = qp;
+					break;
+				}
+			}
+		}
+
 		if (matchedQNetPlayer != nullptr)
 		{
 			// Store packet-authoritative XUID on this network slot so later lookups by XUID
@@ -1088,28 +1118,27 @@ void ClientConnection::handleRemoveEntity(shared_ptr<RemoveEntitiesPacket> packe
 		for (int i = 0; i < packet->ids.length; i++)
 		{
 			shared_ptr<Entity> entity = getEntity(packet->ids[i]);
-			if (entity != nullptr && entity->GetType() == eTYPE_PLAYER)
+			if (entity != nullptr)
 			{
 				shared_ptr<Player> player = dynamic_pointer_cast<Player>(entity);
 				if (player != nullptr)
 				{
-					PlayerUID xuid = player->getXuid();
-					INetworkPlayer* np = g_NetworkManager.GetPlayerByXuid(xuid);
-					if (np != nullptr)
+					// Match by gamertag in the IQNet array (XUID may be 0 on dedicated servers)
+					for (int s = 1; s < MINECRAFT_NET_MAX_PLAYERS; ++s)
 					{
-						NetworkPlayerXbox* npx = (NetworkPlayerXbox*)np;
-						IQNetPlayer* qp = npx->GetQNetPlayer();
-						if (qp != nullptr)
+						IQNetPlayer* qp = &IQNet::m_player[s];
+						if (qp->GetCustomDataValue() != 0 &&
+							_wcsicmp(qp->m_gamertag, player->getName().c_str()) == 0)
 						{
 							extern CPlatformNetworkManagerStub* g_pPlatformNetworkManager;
 							g_pPlatformNetworkManager->NotifyPlayerLeaving(qp);
 							qp->m_smallId = 0;
 							qp->m_isRemote = false;
 							qp->m_isHostPlayer = false;
-							// Clear resolved id to avoid stale XUID -> player matches after disconnect.
 							qp->m_resolvedXuid = INVALID_XUID;
 							qp->m_gamertag[0] = 0;
 							qp->SetCustomDataValue(0);
+							break;
 						}
 					}
 				}
