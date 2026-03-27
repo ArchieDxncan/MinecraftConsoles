@@ -51,6 +51,13 @@ void SkullTileRenderer::renderSkull(float x, float y, float z, int face, float r
 		//model = zombieModel;
 		break;
 	case SkullTileEntity::TYPE_CHAR:
+	{
+		Textures *textures = Minecraft::GetInstance()->textures;
+
+		if (getHeight(&PlayerRenderer::DEFAULT_LOCATION) == 64)
+		{
+			model = new SkeletonHeadModel(0, 0, 64, 64);
+		}
 		//if (!extra.empty())
 		//{
 		//	wstring url = "http://skins.minecraft.net/MinecraftSkins/" + StringUtil.stripColor(extra) + ".png";
@@ -67,6 +74,7 @@ void SkullTileRenderer::renderSkull(float x, float y, float z, int face, float r
 			bindTexture(&PlayerRenderer::DEFAULT_LOCATION);
 		}
 		break;
+	}
 	case SkullTileEntity::TYPE_CREEPER:
 		bindTexture(&CREEPER_LOCATION);
 		break;
