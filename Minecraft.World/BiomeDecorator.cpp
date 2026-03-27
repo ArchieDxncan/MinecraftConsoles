@@ -5,7 +5,7 @@
 #include "net.minecraft.world.level.biome.h"
 #include "Rose.h"
 #include "TallGrass.h"
-#include "Tallgrass2.h"
+#include "TallGrass2.h"
 #include "DoublePlantFeature.h"
 
 BiomeDecorator::BiomeDecorator(Biome *biome)
