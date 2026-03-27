@@ -32,11 +32,7 @@ jobs:
       - name: Cache Nix store
         uses: https://code.forgejo.org/actions/cache@v4
         with:
-          path: |
-            ~/.cache/nix
-            /nix/store
-            /nix/var/nix/db
-            /nix/var/nix/gcroots
+          path: ~/.cache/nix
           key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
           restore-keys: |
             nix-${{ runner.os }}-
