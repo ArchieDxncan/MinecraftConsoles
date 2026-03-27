@@ -4,15 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'main'
+      - main
     paths-ignore:
       - '.gitignore'
       - '*.md'
-      - '.gitea/**'
-      - '!.gitea/workflows/nightly.yml'
-
-permissions:
-  contents: write
+      - '.forgejo/**'
+      - '!.forgejo/workflows/nightly.yml'
 
 concurrency:
   group: nightly
@@ -20,144 +17,126 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: codeberg-medium
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: https://code.forgejo.org/actions/checkout@v4
 
-    - name: Install Nix
-      uses: https://github.com/cachix/install-nix-action@v27
-      with:
-        extra_nix_config: |
-          experimental-features = nix-command flakes
-          accept-flake-config = true
+      - name: Install Nix
+        uses: https://github.com/cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
 
-    # Caches the Nix store so the Windows SDK fixed-output derivation
-    # (downloaded via xwin) is not re-fetched on every run.
-    - name: Cache Nix store
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/nix
-          /nix/store
-          /nix/var/nix/db
-          /nix/var/nix/gcroots
-        key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
-        restore-keys: |
-          nix-${{ runner.os }}-
+      - name: Cache Nix store
+        uses: https://code.forgejo.org/actions/cache@v4
+        with:
+          path: |
+            ~/.cache/nix
+            /nix/store
+            /nix/var/nix/db
+            /nix/var/nix/gcroots
+          key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-keys: |
+            nix-${{ runner.os }}-
 
-    - name: Build
-      run: nix build .#unwrapped --out-link result-unwrapped
+      - name: Build
+        run: nix build .#unwrapped --out-link result-unwrapped --max-jobs 4 --cores 4
 
-    - name: Package artifacts
-      run: |
-        mkdir -p staging
+      - name: Package artifacts
+        run: |
+          mkdir -p staging
+          cd result-unwrapped/client
+          zip -r ../../staging/LCEWindows64.zip .
+          cp Minecraft.Client.exe ../../staging/
+          cd ../..
 
-        # Client zip (full runtime)
-        cd result-unwrapped/client
-        zip -r ../../staging/LCEWindows64.zip .
-        # Standalone exe for quick updates
-        cp Minecraft.Client.exe ../../staging/
-        cd ../..
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-windows64
-        path: staging/*
+      - name: Upload build artifacts
+        uses: https://code.forgejo.org/actions/upload-artifact@v3
+        with:
+          name: build-windows64
+          path: staging/*
 
   release:
     needs: build
-    runs-on: ubuntu-latest
-
+    runs-on: codeberg-small
     steps:
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: artifacts
-        merge-multiple: true
+      - name: Download build artifacts
+        uses: https://code.forgejo.org/actions/download-artifact@v3
+        with:
+          path: artifacts
+          merge-multiple: true
 
-    - name: Publish nightly release
-      env:
-        FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        set -euo pipefail
-
-        API="${{ github.server_url }}/api/v1"
-        REPO="${{ github.repository }}"
-        TAG="nightly"
-        AUTH="Authorization: token $FORGEJO_TOKEN"
-
-        # Check whether the nightly tag/release already exists
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-          -H "$AUTH" \
-          "$API/repos/$REPO/releases/tags/$TAG")
-
-        if [[ "$HTTP_STATUS" == "200" ]]; then
-          echo "[info] Updating existing nightly release..."
-          RELEASE=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/tags/$TAG")
-          RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
-
-          # Wipe all existing assets so the release stays current
-          ASSETS=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/$RELEASE_ID/assets")
-          for ASSET_ID in $(echo "$ASSETS" | jq -r '.[].id'); do
-            curl -s -X DELETE -H "$AUTH" \
-              "$API/repos/$REPO/releases/$RELEASE_ID/assets/$ASSET_ID"
-          done
-
-          # Update release metadata
-          curl -s -X PATCH \
-            -H "$AUTH" -H "Content-Type: application/json" \
-            "$API/repos/$REPO/releases/$RELEASE_ID" \
-            -d '{
-              "name": "Nightly Client Release",
-              "prerelease": true,
-              "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# \ud83d\udea8 First time here? \ud83d\udea8\nDownload `LCEWindows64.zip` and extract it to the folder where you want to keep the game. The other files are already inside the `.zip`!"
-            }'
-        else
-          echo "[info] Creating new nightly release..."
-          RELEASE=$(curl -s -X POST \
-            -H "$AUTH" -H "Content-Type: application/json" \
-            "$API/repos/$REPO/releases" \
-            -d '{
-              "tag_name": "'"$TAG"'",
-              "name": "Nightly Client Release",
-              "prerelease": true,
-              "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# \ud83d\udea8 First time here? \ud83d\udea8\nDownload `LCEWindows64.zip` and extract it to the folder where you want to keep the game. The other files are already inside the `.zip`!"
-            }')
-          RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
-        fi
-
-        echo "[info] Uploading assets to release $RELEASE_ID..."
-        for FILE in artifacts/*; do
-          FILENAME=$(basename "$FILE")
-          echo "[info]   -> $FILENAME"
-          curl -s -X POST \
+      - name: Publish nightly release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ forge.repository }}
+          API: ${{ forge.server_url }}/api/v1
+        run: |
+          set -euo pipefail
+          TAG="nightly"
+          AUTH="Authorization: token $GITHUB_TOKEN"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "$AUTH" \
-            -F "attachment=@$FILE;filename=$FILENAME" \
-            "$API/repos/$REPO/releases/$RELEASE_ID/assets" > /dev/null
-        done
-        echo "[info] Done."
+            "$API/repos/$REPO/releases/tags/$TAG")
+          if [[ "$HTTP_STATUS" == "200" ]]; then
+            echo "[info] Updating existing nightly release..."
+            RELEASE=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/tags/$TAG")
+            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
+            ASSETS=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/$RELEASE_ID/assets")
+            for ASSET_ID in $(echo "$ASSETS" | jq -r '.[].id'); do
+              curl -s -X DELETE -H "$AUTH" \
+                "$API/repos/$REPO/releases/$RELEASE_ID/assets/$ASSET_ID"
+            done
+            curl -s -X PATCH \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              "$API/repos/$REPO/releases/$RELEASE_ID" \
+              -d '{
+                "name": "Nightly Client Release",
+                "prerelease": true,
+                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
+              }'
+          else
+            echo "[info] Creating new nightly release..."
+            RELEASE=$(curl -s -X POST \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              "$API/repos/$REPO/releases" \
+              -d '{
+                "tag_name": "'"$TAG"'",
+                "name": "Nightly Client Release",
+                "prerelease": true,
+                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
+              }')
+            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
+          fi
+
+          echo "[info] Uploading assets..."
+          for FILE in artifacts/*; do
+            FILENAME=$(basename "$FILE")
+            curl -s -X POST \
+              -H "$AUTH" \
+              -F "attachment=@$FILE;filename=$FILENAME" \
+              "$API/repos/$REPO/releases/$RELEASE_ID/assets" > /dev/null
+          done
 
   cleanup:
     needs: [build, release]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: codeberg-tiny
     steps:
-    - name: Delete build artifacts
-      env:
-        FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        API="${{ github.server_url }}/api/v1"
-        REPO="${{ github.repository }}"
-        AUTH="Authorization: token $FORGEJO_TOKEN"
+      - name: Delete build artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ forge.repository }}
+          API: ${{ forge.server_url }}/api/v1
+        run: |
+          AUTH="Authorization: token $GITHUB_TOKEN"
 
-        ARTIFACTS=$(curl -s -H "$AUTH" \
-          "$API/repos/$REPO/actions/artifacts?name=build-windows64")
+          ARTIFACTS=$(curl -s -H "$AUTH" \
+            "$API/repos/$REPO/actions/artifacts?name=build-windows64")
 
-        for ARTIFACT_ID in $(echo "$ARTIFACTS" | jq -r '.artifacts[].id // empty'); do
-          echo "[info] Deleting artifact $ARTIFACT_ID"
-          curl -s -X DELETE -H "$AUTH" \
-            "$API/repos/$REPO/actions/artifacts/$ARTIFACT_ID"
-        done
+          for ARTIFACT_ID in $(echo "$ARTIFACTS" | jq -r '.artifacts[].id // empty'); do
+            curl -s -X DELETE -H "$AUTH" \
+              "$API/repos/$REPO/actions/artifacts/$ARTIFACT_ID"
+          done

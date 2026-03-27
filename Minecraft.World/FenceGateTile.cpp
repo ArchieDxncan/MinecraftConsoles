@@ -21,6 +21,8 @@ bool FenceGateTile::mayPlace(Level *level, int x, int y, int z)
 	return Tile::mayPlace(level, x, y, z);
 }
 
+
+
 AABB *FenceGateTile::getAABB(Level *level, int x, int y, int z)
 {
 	int data = level->getData(x, y, z);
