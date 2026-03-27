@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "Random.h"
 #include "MegaPineTreeFeature.h"
+#include <BlockBlobFeature.h>
 
 TaigaBiome::TaigaBiome(int id, int type) : Biome(id)
 {
@@ -52,23 +53,15 @@ void TaigaBiome::decorate(Level *level, Random *random, int xo, int zo)
 {
     if (type == 1 || type == 2)
     {
+        BlockBlobFeature mossyBoulder(Tile::mossyCobblestone_Id, 0);
         int count = random->nextInt(3);
         for (int i = 0; i < count; ++i)
         {
             int x = xo + random->nextInt(16) + 8;
             int z = zo + random->nextInt(16) + 8;
             int y = level->getHeightmap(x, z);
-            
-            for (int dx = -1; dx <= 1; ++dx) {
-                for (int dy = -1; dy <= 1; ++dy) {
-                    for (int dz = -1; dz <= 1; ++dz) {
-                        int tileAt = level->getTile(x + dx, y + dy, z + dz);
-                        if (random->nextInt(4) != 0 && (tileAt == 0 || tileAt == Tile::grass_Id)) {
-                            level->setTileAndData(x + dx, y + dy, z + dz, Tile::mossyCobblestone_Id, 0, Tile::UPDATE_CLIENTS);
-                        }
-                    }
-                }
-            }
+
+            mossyBoulder.place(level, random, x, y, z);
         }
     }
 
