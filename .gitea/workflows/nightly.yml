@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: |
           chmod +x build-linux.sh
-          INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
+          INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
 
       - name: Package artifacts
         run: |
