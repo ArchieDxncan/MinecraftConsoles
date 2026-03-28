@@ -44,7 +44,7 @@ jobs:
       - name: Cache Windows SDK
         uses: https://code.forgejo.org/actions/cache@v4
         with:
-          path: ~/.cache/xwin
+          path: .xwin
           key: xwin-${{ runner.os }}-v1
           restore-keys: |
             xwin-${{ runner.os }}-
