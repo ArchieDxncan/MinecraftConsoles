@@ -34,7 +34,7 @@ jobs:
 
       - name: Install xwin (Binary)
         run: |
-          curl -L https://github.com/zeromake/xwin/releases/latest/download/xwin-0.8.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+          curl -L https://github.com/Jake-Shadle/xwin/releases/latest/download/xwin-0.8.0-x86_64-unknown-linux-musl.tar.gz | tar xz
           sudo mv xwin /usr/bin/
           xwin --version
           
