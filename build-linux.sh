@@ -3,7 +3,7 @@ set -euo pipefail
 VERSION="0.0.0" # man we're using nightly :sob:
 SOURCE_DIR="${1:-.}"
 BUILD_TYPE="${2:-Release}"
-XWIN_CACHE="${XWIN_CACHE:-$HOME/.cache/xwin}"
+XWIN_CACHE="${XWIN_CACHE:-$PWD/xwin}"
 INSTALL_DIR="${INSTALL_PREFIX:-$HOME/.local/share/evolved-lce}"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
