@@ -30,7 +30,12 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build rsync zip \
-            clang lld llvm cargo rustc
+            clang lld llvm
+
+      - name: Install Rust toolchain
+        uses: wackbyte/rust-toolchain@trunk
+        with:
+          toolchain: stable
 
       - name: Install xwin
         run: |
