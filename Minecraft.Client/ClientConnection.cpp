@@ -54,6 +54,8 @@
 #include "PS3/Network/SonyVoiceChat.h"
 #endif
 #include "DLCTexturePack.h"
+#include "..\Minecraft.World\HandshakeManager.h"
+#include "..\Minecraft.World\AuthModule.h"
 
 #ifdef _WINDOWS64
 #include "Xbox\Network\NetworkPlayerXbox.h"
@@ -140,6 +142,9 @@ ClientConnection::ClientConnection(Minecraft *minecraft, Socket *socket, int iUs
 	}
 
 	deferredEntityLinkPackets = vector<DeferredEntityLinkPacket>();
+
+	handshakeManager = nullptr;
+	authComplete = false;
 }
 
 bool ClientConnection::isPrimaryConnection() const
@@ -202,6 +207,7 @@ ClientConnection::~ClientConnection()
 	delete connection;
 	delete random;
 	delete savedDataStorage;
+	delete handshakeManager;
 }
 
 void ClientConnection::tick()
@@ -4128,4 +4134,35 @@ ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<
 {
 	m_recievedTick = GetTickCount();
 	m_packet = packet;
+}
+
+void ClientConnection::beginAuth()
+{
+	handshakeManager = new HandshakeManager(false);
+	handshakeManager->registerModule(new MojangAuthModule());
+	handshakeManager->registerModule(new ElyByAuthModule());
+	handshakeManager->registerModule(new KeypairOfflineAuthModule());
+	handshakeManager->registerModule(new OfflineAuthModule());
+
+	auto initial = handshakeManager->createInitialPacket();
+	if (initial) send(initial);
+}
+
+void ClientConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+{
+	if (done || authComplete) return;
+	if (!handshakeManager) return;
+
+	auto response = handshakeManager->handlePacket(packet);
+	if (response) send(response);
+
+	if (handshakeManager->isComplete())
+	{
+		authComplete = true;
+	}
+	else if (handshakeManager->isFailed())
+	{
+		done = true;
+		message = L"Auth handshake failed";
+	}
 }

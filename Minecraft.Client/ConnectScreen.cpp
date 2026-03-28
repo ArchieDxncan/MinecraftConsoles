@@ -11,13 +11,14 @@
 ConnectScreen::ConnectScreen(Minecraft *minecraft, const wstring& ip, int port)
 {
 	aborted = false;
+	preLoginSent = false;
 //    System.out.println("Connecting to " + ip + ", " + port);
     minecraft->setLevel(nullptr);
 #if 1
 	// 4J - removed from separate thread, but need to investigate what we actually need here
     connection = new ClientConnection(minecraft, ip, port);
     if (aborted) return;
-    connection->send(std::make_shared<PreLoginPacket>(minecraft->user->name));
+    connection->beginAuth();
 #else
 
     new Thread() {
@@ -47,6 +48,11 @@ void ConnectScreen::tick()
 {
     if (connection != nullptr)
 	{
+		if (!preLoginSent && connection->authComplete)
+		{
+			preLoginSent = true;
+			connection->send(std::make_shared<PreLoginPacket>(minecraft->user->name));
+		}
         connection->tick();
     }
 }

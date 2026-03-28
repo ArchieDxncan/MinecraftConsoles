@@ -5,6 +5,7 @@ class Socket;
 class LoginPacket;
 class Connection;
 class Random;
+class HandshakeManager;
 using namespace std;
 
 class PendingConnection : public PacketListener
@@ -43,6 +44,10 @@ public:
 	wstring getName();
 	virtual bool isServerPacketListener();
 	virtual bool isDisconnected();
+	HandshakeManager *handshakeManager;
+	bool authComplete;
+	void initAuth();
+	virtual void handleAuth(const shared_ptr<AuthPacket> &packet);
 
 private:
 	void sendPreLoginResponse();
