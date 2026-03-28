@@ -64,44 +64,25 @@ bool PrimedTnt::isPickable()
 void PrimedTnt::tick()
 {
 	xo = x;
-	yo = y;
-	zo = z;
-    this->updateInWaterState();
-    bool inWater = this->isInWater() || this->isInLava();
+    yo = y;
+    zo = z;
 
-
-     if (inWater)
-    {
-        yd -= 0.0392f;  
-    }
-    else
-    {
-        yd -= 0.04f;   
-    }
+    yd -= 0.04f; // sempre, senza distinzione acqua/aria
 
     move(xd, yd, zd);
 
+    xd *= 0.98f;
+    yd *= 0.98f;
+    zd *= 0.98f;
 
-    if (inWater)
+    if (onGround)
     {
-        xd *= 0.8f;
-        yd *= 0.8f;
-        zd *= 0.8f;
-    }
-    else
-    {
-        xd *= 0.98f;
-        yd *= 0.98f;
-        zd *= 0.98f;
+        xd *= 0.7f;
+        zd *= 0.7f;
+        yd *= -0.5f;
     }
 
-
-	if (onGround)
-	{
-		xd *= 0.7f;
-		zd *= 0.7f;
-		yd *= -0.5f;
-	}
+	this->updateInWaterState();
 
 	if (life-- <= 0)
 	{
