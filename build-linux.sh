@@ -2,6 +2,7 @@
 set -euo pipefail
 VERSION="0.0.0" # man we're using nightly :sob:
 SOURCE_DIR="${1:-.}"
+BUILD_CI="${BUILD_CI:-0}"
 BUILD_TYPE="${2:-Release}"
 XWIN_CACHE="${XWIN_CACHE:-$PWD/.xwin}"
 INSTALL_DIR="${INSTALL_PREFIX:-$HOME/.local/share/evolved-lce}"
@@ -114,7 +115,8 @@ do_cmake_configure() {
 
 do_build() {
     info "Building with $(nproc) cores..."
-    cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" -j "$(nproc)"
+    cores=$([ "$BUILD_CI" = "1" ] && echo 2 || nproc)
+    cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" -j "$cores"
     success "Build complete"
 }
 
