@@ -50,8 +50,6 @@ vector<wstring> MojangAuthModule::supportedVariations()
 	return {L"java", L"bedrock"};
 }
 
-// --- KeypairOfflineAuthModule ---
-
 const wchar_t *KeypairOfflineAuthModule::schemeName() { return L"mcconsoles:keypair_offline"; }
 
 vector<wstring> KeypairOfflineAuthModule::supportedVariations()

@@ -485,6 +485,9 @@ typedef struct _MessageBoxInfo
 	//C4JStringTable *pStringTable; // 4J Stu - We don't need this for our internal message boxes
 	WCHAR *pwchFormatString;
 	DWORD dwFocusButton;
+	const wchar_t *rawTitle;
+	const wchar_t *rawText;
+	const wchar_t **rawOptions;
 } MessageBoxInfo;
 
 typedef struct _DLCOffersParam

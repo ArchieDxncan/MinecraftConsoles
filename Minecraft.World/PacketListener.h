@@ -229,6 +229,5 @@ public:
 	virtual void handleXZ(shared_ptr<XZPacket> packet);
 	virtual void handleGameCommand(shared_ptr<GameCommandPacket> packet);
 
-	// MCConsoles Auth
-	virtual void handleAuth(shared_ptr<AuthPacket> packet);
+	virtual void handleAuth(const shared_ptr<AuthPacket> &packet);
 };

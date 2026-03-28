@@ -14,6 +14,8 @@
 #include "..\Minecraft.World\net.minecraft.world.item.h"
 #include "..\Minecraft.World\SharedConstants.h"
 #include "Settings.h"
+#include "..\Minecraft.World\HandshakeManager.h"
+#include "..\Minecraft.World\AuthModule.h"
 #if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
 #include "..\Minecraft.Server\ServerLogManager.h"
 #include "..\Minecraft.Server\Access\Access.h"
@@ -59,10 +61,14 @@ PendingConnection::PendingConnection(MinecraftServer *server, Socket *socket, co
 	this->server = server;
 	connection = new Connection(socket, id, this);
 	connection->fakeLag = FAKE_LAG;
+
+	handshakeManager = nullptr;
+	authComplete = false;
 }
 
 PendingConnection::~PendingConnection()
 {
+	delete handshakeManager;
 	delete connection;
 }
 
@@ -98,6 +104,13 @@ void PendingConnection::disconnect(DisconnectPacket::eDisconnectReason reason)
 
 void PendingConnection::handlePreLogin(shared_ptr<PreLoginPacket> packet)
 {
+	if (handshakeManager && !authComplete)
+	{
+		app.DebugPrintf("PendingConnection: PreLogin received before auth complete, disconnecting\n");
+		disconnect(DisconnectPacket::eDisconnect_Closed);
+		return;
+	}
+
 	if (packet->m_netcodeVersion != MINECRAFT_NET_VERSION)
 	{
 		app.DebugPrintf("Netcode version is %d not equal to %d\n", packet->m_netcodeVersion, MINECRAFT_NET_VERSION);
@@ -393,4 +406,34 @@ bool PendingConnection::isServerPacketListener()
 bool PendingConnection::isDisconnected()
 {
 	return done;
+}
+
+void PendingConnection::initAuth()
+{
+	handshakeManager = new HandshakeManager(true);
+	handshakeManager->registerModule(new MojangAuthModule());
+	handshakeManager->registerModule(new ElyByAuthModule());
+	handshakeManager->registerModule(new KeypairOfflineAuthModule());
+	handshakeManager->registerModule(new OfflineAuthModule());
+}
+
+void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+{
+	if (done || authComplete) return;
+
+	if (!handshakeManager)
+		initAuth();
+
+	auto response = handshakeManager->handlePacket(packet);
+	if (response) send(response);
+
+	if (handshakeManager->isComplete())
+	{
+		authComplete = true;
+		name = std::move(handshakeManager->finalUsername);
+	}
+	else if (handshakeManager->isFailed())
+	{
+		disconnect(DisconnectPacket::eDisconnect_Closed);
+	}
 }
