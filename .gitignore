@@ -420,3 +420,5 @@ result
 result-*
 .direnv/
 .xwin-cache/
+
+.xwin
