@@ -49,6 +49,15 @@ jobs:
           restore-keys: |
             xwin-${{ runner.os }}-
 
+      - name: Create Tool Symlinks
+        run: |
+          CLANG_CL_PATH=$(ls /usr/bin/clang-cl-[0-9]* | head -n 1)
+          LLVM_ML_PATH=$(ls /usr/bin/llvm-ml-[0-9]* | head -n 1)
+          sudo ln -s "$CLANG_CL_PATH" /usr/bin/clang-cl
+          sudo ln -s "$LLVM_ML_PATH" /usr/bin/llvm-ml
+          clang-cl --version
+          llvm-ml --version
+
       - name: Build
         run: |
           chmod +x build-linux.sh
