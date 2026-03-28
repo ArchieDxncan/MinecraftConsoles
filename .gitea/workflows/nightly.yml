@@ -43,12 +43,14 @@ jobs:
           
       - name: Create Tool Symlinks
         run: |
-          CLANG_CL_PATH=$(ls /usr/bin/clang-cl-[0-9]* | head -n 1)
-          LLVM_ML_PATH=$(ls /usr/bin/llvm-ml-[0-9]* | head -n 1)
-          sudo ln -s "$CLANG_CL_PATH" /usr/bin/clang-cl
-          sudo ln -s "$LLVM_ML_PATH" /usr/bin/llvm-ml
+          sudo ln -sf /usr/bin/clang-cl-19 /usr/bin/clang-cl
+          sudo ln -sf /usr/bin/llvm-ml-19 /usr/bin/llvm-ml
+          sudo ln -sf /usr/bin/lld-link-19 /usr/bin/lld-link
+          sudo ln -sf /usr/bin/clang-19 /usr/bin/clang
+          sudo ln -sf /usr/bin/llvm-rc-19 /usr/bin/llvm-rc
+          sudo ln -sf /usr/bin/llvm-lib-19 /usr/bin/llvm-lib
+          sudo ln -sf /usr/bin/llvm-mt-19 /usr/bin/llvm-mt
           clang-cl --version
-          llvm-ml --version
 
       - name: Build
         run: |
