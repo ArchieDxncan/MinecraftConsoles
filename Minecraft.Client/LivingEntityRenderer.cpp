@@ -62,6 +62,7 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	{
 		return;
 	}
+	app.DebugPrintf("LivingEntityRenderer::render called for type %d\n", _mob->GetType());
 
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);
@@ -416,8 +417,7 @@ void LivingEntityRenderer::renderArrows(shared_ptr<LivingEntity> mob, float a)
 		{
 			glPushMatrix();
 
-			ModelPart *modelPart;
-			modelPart = resModel->getRandomModelPart(random);
+			ModelPart *modelPart = resModel->getRandomModelPart(random);
 
 			Cube *cube = modelPart->cubes[random.nextInt(modelPart->cubes.size())];
 			modelPart->translateTo(1 / 16.0f);

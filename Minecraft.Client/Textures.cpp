@@ -1058,6 +1058,7 @@ int Textures::loadHttpTexture(const wstring& url, const wstring& backup)
     }
     if (texture == nullptr || texture->id < 0)
 	{
+		if (backup.empty() ) return -1;
         return loadTexture(TN_COUNT, backup);
     }
     return texture->id;
@@ -1209,7 +1210,6 @@ int Textures::loadMemTexture(const wstring& url, int backup)
 	return texture->id;
 }
 
-// 4J-PB - adding for texture in memory (from global title storage)
 int Textures::getHeight(const wstring& url, int backup)
 {
 	MemTexture *texture = nullptr;
@@ -1261,6 +1261,37 @@ int Textures::getHeight(const wstring& url, int backup)
 	}
 	return texture->loadedImage->getHeight();
 }
+
+int Textures::getHeight(ResourceLocation resource)
+{
+    if (resource.isPreloaded())
+    {
+        TEXTURE_NAME tex = resource.getTexture();
+
+        BufferedImage* img = readImage(tex, wstring(preLoaded[tex]) + L".png");
+        if (img)
+        {
+            int h = img->getHeight();
+            delete img;
+            return h;
+        }
+
+        return 32;
+    }
+
+    const wstring& path = resource.getPath();
+
+    BufferedImage* img = readImage(TN_COUNT, path);
+    if (img)
+    {
+        int h = img->getHeight();
+        delete img;
+        return h;
+    }
+
+    return 32;
+}
+
 
 MemTexture *Textures::addMemTexture(const wstring& name,MemTextureProcessor *processor)
 {

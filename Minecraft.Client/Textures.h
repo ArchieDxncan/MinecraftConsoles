@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Minecraft.World\ArrayWithLength.h"
+#include "../Minecraft.World/ArrayWithLength.h"
 
 class DynamicTexture;
 class BufferedImage;
@@ -341,6 +341,7 @@ public:
 	int				loadMemTexture(const wstring& url, const wstring& backup);
 	int				loadMemTexture(const wstring& url, int backup);
 	int				getHeight(const wstring& url, int backup);
+	int				getHeight(ResourceLocation resource);
 	MemTexture *	addMemTexture(const wstring& url, MemTextureProcessor *processor);
 	//MemTexture *	getMemTexture(const wstring& url, MemTextureProcessor *processor);
 	void			removeMemTexture(const wstring& url);
