@@ -595,6 +595,7 @@ void ServerPlayer::die(DamageSource *source)
 bool ServerPlayer::hurt(DamageSource *dmgSource, float dmg)
 {
 	if (isInvulnerable()) return false;
+	if (gameMode == nullptr||gameMode->isCreative()) return false;
 
 	// 4J: Not relevant to console servers
 	// Allow falldamage on dedicated pvpservers -- so people cannot cheat their way out of 'fall traps'

@@ -1384,6 +1384,7 @@ void Player::setDefaultHeadHeight()
 bool Player::hurt(DamageSource *source, float dmg)
 {
 	if (isInvulnerable()) return false;
+	
 	if ( hasInvulnerablePrivilege() || (abilities.invulnerable && !source->isBypassInvul()) )	return false;
 
 	// 4J-JEV: Fix for PSVita: #3987 - [IN GAME] The user can take damage/die, when attempting to re-enter fly mode when falling from a height.

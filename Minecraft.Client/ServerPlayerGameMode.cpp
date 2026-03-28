@@ -56,11 +56,10 @@ bool ServerPlayerGameMode::isSurvival()
 	return gameModeForPlayer->isSurvival();
 }
 
-bool ServerPlayerGameMode::isCreative()
-{
-	return gameModeForPlayer->isCreative();
+bool ServerPlayerGameMode::isCreative() {
+    if (!this || !gameModeForPlayer) return false; 
+    return gameModeForPlayer->isCreative();
 }
-
 void ServerPlayerGameMode::updateGameMode(GameType *gameType)
 {
 	if (gameModeForPlayer == GameType::NOT_SET)
