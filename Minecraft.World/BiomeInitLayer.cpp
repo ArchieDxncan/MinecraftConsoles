@@ -22,7 +22,7 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 	{
 		// Only use biomes that are actually initialized in Biome::staticCtor()
 		// to avoid null pointer crashes during world generation.
-		startBiomes = BiomeArray(15);
+		startBiomes = BiomeArray(14);
 		startBiomes[0]  = Biome::desert;
 		startBiomes[1]  = Biome::forest;
 		startBiomes[2]  = Biome::extremeHills;
@@ -37,7 +37,7 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 		startBiomes[11] = Biome::sunflowersPlains;
 		startBiomes[12] = Biome::coldTaiga;
 		startBiomes[13] = Biome::megaTaiga;
-		startBiomes[14] = Biome::iceSpikes;
+		//startBiomes[14] = Biome::iceSpikes;
 	}
 }
 

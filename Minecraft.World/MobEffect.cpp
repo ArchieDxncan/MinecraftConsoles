@@ -137,9 +137,12 @@ void MobEffect::applyEffectTick(shared_ptr<LivingEntity> mob, int amplification)
 	}
 	else if (id == poison->id)
 	{
-		if (mob->getHealth() > 1)
+		float health = mob->getHealth();
+		if (health > 1.0f)
 		{
-			mob->hurt(DamageSource::magic, 1);
+			float safeDmg = health - 1.0f;
+			if (safeDmg > 0.0f)
+				mob->hurt(DamageSource::magic, safeDmg);
 		}
 	}
 	else if (id == wither->id)
