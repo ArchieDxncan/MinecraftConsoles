@@ -33,7 +33,7 @@ jobs:
             clang lld llvm
 
       - name: Install Rust toolchain
-        uses: wackbyte/rust-toolchain
+        uses: wackbyte/rust-toolchain@trunk
         with:
           toolchain: stable
 
