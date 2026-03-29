@@ -28,8 +28,10 @@ void AuthProfileManager::load()
 		auto readWstr = [&file]() -> wstring {
 			uint16_t len = 0;
 			file.read(reinterpret_cast<char *>(&len), sizeof(len));
+			if (!file || len > 4096) return {};
 			wstring s(len, L'\0');
 			file.read(reinterpret_cast<char *>(s.data()), len * sizeof(wchar_t));
+			if (!file) return {};
 			return s;
 		};
 
