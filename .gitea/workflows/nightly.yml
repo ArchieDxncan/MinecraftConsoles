@@ -2,14 +2,8 @@ name: Nightly Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'main'
-    paths-ignore:
-      - '.gitignore'
-      - '*.md'
-      - '.gitea/**'
-      - '!.gitea/workflows/nightly.yml'
+  schedule:
+    - cron: '30 23 * * *'  # 11:30 PM UTC
 
 permissions:
   contents: write
@@ -29,11 +23,11 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 19
+          sudo ./llvm.sh 21
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build rsync zip \
-            clang-19 lld-19 llvm-19 clang-tools-19
+            clang-21 lld-21 llvm-21 clang-tools-21
 
       - name: Install xwin (Binary)
         run: |
@@ -43,19 +37,19 @@ jobs:
           
       - name: Create Tool Symlinks
         run: |
-          sudo ln -sf /usr/bin/clang-cl-19 /usr/bin/clang-cl
-          sudo ln -sf /usr/bin/llvm-ml-19 /usr/bin/llvm-ml
-          sudo ln -sf /usr/bin/lld-link-19 /usr/bin/lld-link
-          sudo ln -sf /usr/bin/clang-19 /usr/bin/clang
-          sudo ln -sf /usr/bin/llvm-rc-19 /usr/bin/llvm-rc
-          sudo ln -sf /usr/bin/llvm-lib-19 /usr/bin/llvm-lib
-          sudo ln -sf /usr/bin/llvm-mt-19 /usr/bin/llvm-mt
+          sudo ln -sf /usr/bin/clang-cl-21 /usr/bin/clang-cl
+          sudo ln -sf /usr/bin/llvm-ml-21 /usr/bin/llvm-ml
+          sudo ln -sf /usr/bin/lld-link-21 /usr/bin/lld-link
+          sudo ln -sf /usr/bin/clang-21 /usr/bin/clang
+          sudo ln -sf /usr/bin/llvm-rc-21 /usr/bin/llvm-rc
+          sudo ln -sf /usr/bin/llvm-lib-21 /usr/bin/llvm-lib
+          sudo ln -sf /usr/bin/llvm-mt-21 /usr/bin/llvm-mt
           clang-cl --version
 
       - name: Build
         run: |
           chmod +x build-linux.sh
-          INSTALL_PREFIX=$PWD/result BUILD_CI=1 ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
+          INSTALL_PREFIX=$PWD/result BUILD_CI=1 ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
 
       - name: Package artifacts
         run: |
