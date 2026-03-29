@@ -993,9 +993,31 @@ bool LivingEntity::onLadder()
 	int yt = Mth::floor(bb->y0);
 	int zt = Mth::floor(z);
 
-	// 4J-PB - TU9 - add climbable vines
 	int iTile = level->getTile(xt, yt, zt);
-	return  (iTile== Tile::ladder_Id) || (iTile== Tile::vine_Id);
+	switch (iTile)
+	{
+	case Tile::ladder_Id:
+	case Tile::vine_Id: // 4J-PB - TU9 - add climbable vines
+		return true;
+	case Tile::trapdoor_Id: // hexagonny - add climbable (opened) trapdoors
+	{
+		if ((level->getData(xt, yt, zt) & 0x4) != 0)
+		{
+			switch (level->getTile(xt, yt + 1, zt))
+			{
+			case Tile::ladder_Id:
+			case Tile::vine_Id:
+				return false;
+			default:
+				return level->getTile(xt, yt - 1, zt) == Tile::ladder_Id;
+			}
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return false;
 }
 
 bool LivingEntity::isShootable()
