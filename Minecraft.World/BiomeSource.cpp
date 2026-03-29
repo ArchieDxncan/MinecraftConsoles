@@ -5,8 +5,8 @@
 #include "net.minecraft.world.level.newbiome.layer.h"
 #include "System.h"
 #include "BiomeSource.h"
-#include "..\Minecraft.Client\Minecraft.h"
-#include "..\Minecraft.Client\ProgressRenderer.h"
+#include "../Minecraft.Client/Minecraft.h"
+#include "../Minecraft.Client/ProgressRenderer.h"
 
 // 4J - removal of separate temperature & downfall layers brought forward from 1.2.3
 void BiomeSource::_init()
@@ -24,6 +24,11 @@ void BiomeSource::_init()
 	playerSpawnBiomes.push_back(Biome::forestHills);
 	playerSpawnBiomes.push_back(Biome::jungle);
 	playerSpawnBiomes.push_back(Biome::jungleHills);
+	playerSpawnBiomes.push_back(Biome::savanna);
+	playerSpawnBiomes.push_back(Biome::roofedForest);
+	playerSpawnBiomes.push_back(Biome::flowerForest);
+	playerSpawnBiomes.push_back(Biome::sunflowersPlains);
+	playerSpawnBiomes.push_back(Biome::iceSpikes);
 }
 
 void BiomeSource::_init(int64_t seed, LevelType *generator)

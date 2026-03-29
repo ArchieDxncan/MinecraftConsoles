@@ -9,28 +9,28 @@
 #include "PlayerList.h"
 #include "MultiPlayerLevel.h"
 
-#include "..\Minecraft.World\net.minecraft.network.packet.h"
-#include "..\Minecraft.World\net.minecraft.world.damagesource.h"
-#include "..\Minecraft.World\net.minecraft.world.inventory.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\net.minecraft.world.level.storage.h"
-#include "..\Minecraft.World\net.minecraft.world.level.dimension.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.projectile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.item.trading.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.scores.h"
-#include "..\Minecraft.World\net.minecraft.world.scores.criteria.h"
-#include "..\Minecraft.World\net.minecraft.stats.h"
-#include "..\Minecraft.World\net.minecraft.locale.h"
+#include "../Minecraft.World/net.minecraft.network.packet.h"
+#include "../Minecraft.World/net.minecraft.world.damagesource.h"
+#include "../Minecraft.World/net.minecraft.world.inventory.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/net.minecraft.world.level.storage.h"
+#include "../Minecraft.World/net.minecraft.world.level.dimension.h"
+#include "../Minecraft.World/net.minecraft.world.entity.projectile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.item.trading.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.entity.h"
+#include "../Minecraft.World/net.minecraft.world.scores.h"
+#include "../Minecraft.World/net.minecraft.world.scores.criteria.h"
+#include "../Minecraft.World/net.minecraft.stats.h"
+#include "../Minecraft.World/net.minecraft.locale.h"
 
-#include "..\Minecraft.World\Pos.h"
-#include "..\Minecraft.World\Random.h"
+#include "../Minecraft.World/Pos.h"
+#include "../Minecraft.World/Random.h"
 
-#include "..\Minecraft.World\LevelChunk.h"
+#include "../Minecraft.World/LevelChunk.h"
 #include "LevelRenderer.h"
 
 
@@ -595,6 +595,7 @@ void ServerPlayer::die(DamageSource *source)
 bool ServerPlayer::hurt(DamageSource *dmgSource, float dmg)
 {
 	if (isInvulnerable()) return false;
+	if (gameMode == nullptr||gameMode->isCreative()) return false;
 
 	// 4J: Not relevant to console servers
 	// Allow falldamage on dedicated pvpservers -- so people cannot cheat their way out of 'fall traps'

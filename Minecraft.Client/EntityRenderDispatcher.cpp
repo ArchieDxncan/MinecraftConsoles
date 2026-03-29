@@ -1,18 +1,18 @@
 #include "stdafx.h"
 #include "EntityRenderDispatcher.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.projectile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.monster.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.global.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.boss.enderdragon.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.npc.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.item.alchemy.h"
+#include "../Minecraft.World/net.minecraft.world.entity.projectile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.entity.monster.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.entity.global.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.entity.boss.enderdragon.h"
+#include "../Minecraft.World/net.minecraft.world.entity.npc.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.item.alchemy.h"
 #include "SpiderRenderer.h"
 #include "PigRenderer.h"
 #include "SheepRenderer.h"
@@ -24,7 +24,6 @@
 #include "PlayerRenderer.h"
 #include "GhastRenderer.h"
 #include "SquidRenderer.h"
-#include "MobRenderer.h"
 #include "GiantMobRenderer.h"
 #include "EntityRenderer.h"
 #include "PaintingRenderer.h"
@@ -44,7 +43,7 @@
 #include "ExperienceOrbRenderer.h"
 #include "SilverfishRenderer.h"
 #include "MushroomCowRenderer.h"
-#include "SnowmanRenderer.h"
+#include "SnowManRenderer.h"
 #include "LavaSlimeRenderer.h"
 #include "VillagerRenderer.h"
 #include "EnderDragonRenderer.h"
@@ -82,6 +81,10 @@
 #include "ZombieRenderer.h"
 #include "BatRenderer.h"
 #include "CaveSpiderRenderer.h"
+#include "RabbitRenderer.h"
+#include "ArmorStandRenderer.h"
+#include "EndermiteRenderer.h"
+#include "MobRenderer.h"
 
 double EntityRenderDispatcher::xOff = 0.0;
 double EntityRenderDispatcher::yOff = 0.0;
@@ -132,6 +135,8 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 
 	renderers[eTYPE_WITHERBOSS] = new WitherBossRenderer();
 
+	renderers[eTYPE_RABBIT] = new RabbitRenderer();
+
 	renderers[eTYPE_ENTITY] = new DefaultRenderer();
 	renderers[eTYPE_PAINTING] = new PaintingRenderer();        
 	renderers[eTYPE_ITEM_FRAME] = new ItemFrameRenderer();
@@ -167,6 +172,9 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 	renderers[eTYPE_HORSE] = new HorseRenderer(new ModelHorse(), .75f);
 
 	renderers[eTYPE_LIGHTNINGBOLT] = new LightningBoltRenderer();
+
+	renderers[eTYPE_ARMORSTAND] = new ArmorStandRenderer();
+	renderers[eTYPE_ENDERMITE] = new EndermiteRenderer();
 	glDisable(GL_LIGHTING);
 
 	for( auto& it : renderers )

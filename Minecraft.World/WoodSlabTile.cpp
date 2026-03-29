@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "WoodSlabTile.h"
-#include "woodtile.h"
-#include "treetile.h"
+#include "WoodTile.h"
+#include "TreeTile.h"
 #include "net.minecraft.world.level.h"
 #include "net.minecraft.world.level.biome.h"
 #include "net.minecraft.world.item.h"
@@ -11,6 +11,8 @@ const unsigned int WoodSlabTile::SLAB_NAMES[SLAB_NAMES_LENGTH] = {	IDS_TILE_STON
 	IDS_TILE_STONESLAB_SPRUCE,
 	IDS_TILE_STONESLAB_BIRCH,
 	IDS_TILE_STONESLAB_JUNGLE,
+	IDS_TILE_STONESLAB_ACACIA,
+	IDS_TILE_STONESLAB_DARK_OAK
 };
 
 // 	public static final String[] WOOD_NAMES = {
@@ -48,13 +50,4 @@ int WoodSlabTile::getAuxName(int auxValue)
 void WoodSlabTile::registerIcons(IconRegister *iconRegister)
 {
 	// None
-}
-
-unsigned int WoodSlabTile::getDescriptionId(int iData)
-{
-	if (iData < 0 || iData >= SLAB_NAMES_LENGTH)
-	{
-		iData = 0;
-	}
-	return SLAB_NAMES[iData];
 }

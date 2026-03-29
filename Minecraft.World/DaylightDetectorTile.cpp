@@ -8,8 +8,9 @@
 #include "JavaMath.h"
 #include "DaylightDetectorTile.h"
 
-DaylightDetectorTile::DaylightDetectorTile(int id) : BaseEntityTile(id, Material::wood, isSolidRender() )
+DaylightDetectorTile::DaylightDetectorTile(int id, bool inverted) : BaseEntityTile(id, Material::wood, isSolidRender() )
 {
+	this->inverted = inverted;
 	updateDefaultShape();
 }
 
@@ -72,10 +73,25 @@ void DaylightDetectorTile::updateSignalStrength(Level *level, int x, int y, int 
 		target = Redstone::SIGNAL_MAX;
 	}
 
+	if (inverted)
+		target = Redstone::SIGNAL_MAX - target;
+
 	if (current != target)
 	{
 		level->setData(x, y, z, target, UPDATE_ALL);
 	}
+}
+
+bool DaylightDetectorTile::use(Level* level, int x, int y, int z, shared_ptr<Player> player, int clickedFace, float clickX, float clickY, float clickZ, bool soundOnly/*=false*/) 
+{
+	if (inverted)
+	{
+		level->setTileAndData(x, y, z, Tile::daylightDetector_Id, 0, UPDATE_CLIENTS);
+	} else {
+		level->setTileAndData(x, y, z, Tile::invertedDaylightDetector_Id, 0, UPDATE_CLIENTS);
+	}
+
+	return true;
 }
 
 bool DaylightDetectorTile::isCubeShaped()
@@ -109,6 +125,11 @@ Icon *DaylightDetectorTile::getTexture(int face, int data)
 
 void DaylightDetectorTile::registerIcons(IconRegister *iconRegister)
 {
-	icons[0] = iconRegister->registerIcon(getIconName() + L"_top");
+	if (inverted) {
+		icons[0] = iconRegister->registerIcon(L"inverted_" + getIconName());
+	}
+	else {
+		icons[0] = iconRegister->registerIcon(getIconName() + L"_top");
+	}
 	icons[1] = iconRegister->registerIcon(getIconName() + L"_side");
 }

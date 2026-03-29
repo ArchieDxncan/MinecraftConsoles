@@ -5,13 +5,13 @@
 #include "LocalPlayer.h"
 #include "Options.h"
 #include "TextureAtlas.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\Level.h"
-#include "..\Minecraft.World\AABB.h"
-#include "..\Minecraft.World\Mth.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/Level.h"
+#include "../Minecraft.World/AABB.h"
+#include "../Minecraft.World/Mth.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
 
 ResourceLocation EntityRenderer::SHADOW_LOCATION = ResourceLocation(TN__CLAMP__MISC_SHADOW);
 
@@ -19,6 +19,9 @@ ResourceLocation EntityRenderer::SHADOW_LOCATION = ResourceLocation(TN__CLAMP__M
 EntityRenderer::EntityRenderer()
 {
 	model = nullptr;
+	modelSlim = nullptr;
+	newModel = nullptr;
+	newModelSlim = nullptr;
 	tileRenderer = new TileRenderer();
 	shadowRadius = 0;
 	shadowStrength = 1.0f;

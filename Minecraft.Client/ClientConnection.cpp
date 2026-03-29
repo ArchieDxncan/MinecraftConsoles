@@ -9,46 +9,46 @@
 #include "TakeAnimationParticle.h"
 #include "CritParticle.h"
 #include "User.h"
-#include "..\Minecraft.World\net.minecraft.world.level.storage.h"
-#include "..\Minecraft.World\net.minecraft.world.level.chunk.h"
-#include "..\Minecraft.World\net.minecraft.stats.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.ai.attributes.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.npc.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.projectile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.global.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.boss.enderdragon.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.monster.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.item.trading.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.inventory.h"
-#include "..\Minecraft.World\net.minecraft.world.h"
-#include "..\Minecraft.World\net.minecraft.world.level.saveddata.h"
-#include "..\Minecraft.World\net.minecraft.world.level.dimension.h"
-#include "..\Minecraft.World\net.minecraft.world.effect.h"
-#include "..\Minecraft.World\net.minecraft.world.food.h"
-#include "..\Minecraft.World\SharedConstants.h"
-#include "..\Minecraft.World\AABB.h"
-#include "..\Minecraft.World\Pos.h"
-#include "..\Minecraft.World\Socket.h"
+#include "../Minecraft.World/net.minecraft.world.level.storage.h"
+#include "../Minecraft.World/net.minecraft.world.level.chunk.h"
+#include "../Minecraft.World/net.minecraft.stats.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.ai.attributes.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.entity.npc.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.entity.projectile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.global.h"
+#include "../Minecraft.World/net.minecraft.world.entity.boss.enderdragon.h"
+#include "../Minecraft.World/net.minecraft.world.entity.monster.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.entity.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.item.trading.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.inventory.h"
+#include "../Minecraft.World/net.minecraft.world.h"
+#include "../Minecraft.World/net.minecraft.world.level.saveddata.h"
+#include "../Minecraft.World/net.minecraft.world.level.dimension.h"
+#include "../Minecraft.World/net.minecraft.world.effect.h"
+#include "../Minecraft.World/net.minecraft.world.food.h"
+#include "../Minecraft.World/SharedConstants.h"
+#include "../Minecraft.World/AABB.h"
+#include "../Minecraft.World/Pos.h"
+#include "../Minecraft.World/Socket.h"
 #include "Minecraft.h"
 #include "ProgressRenderer.h"
 #include "LevelRenderer.h"
 #include "Options.h"
 #include "MinecraftServer.h"
 #include "ClientConstants.h"
-#include "..\Minecraft.World\SoundTypes.h"
-#include "..\Minecraft.World\BasicTypeContainers.h"
+#include "../Minecraft.World/SoundTypes.h"
+#include "../Minecraft.World/BasicTypeContainers.h"
 #include "TexturePackRepository.h"
 #ifdef _XBOX
-#include "Common\XUI\XUI_Scene_Trading.h"
+#include "Common/XUI/XUI_Scene_Trading.h"
 #else
-#include "Common\UI\UI.h"
+#include "Common/UI/UI.h"
 #endif
 #ifdef __PS3__
 #include "PS3/Network/SonyVoiceChat.h"
@@ -56,15 +56,38 @@
 #include "DLCTexturePack.h"
 
 #ifdef _WINDOWS64
-#include "Xbox\Network\NetworkPlayerXbox.h"
-#include "Common\Network\PlatformNetworkManagerStub.h"
+#include "Xbox/Network/NetworkPlayerXbox.h"
+#include "Common/Network/PlatformNetworkManagerStub.h"
 #endif
 
 
 #ifdef _DURANGO
-#include "..\Minecraft.World\DurangoStats.h"
-#include "..\Minecraft.World\GenericStats.h"
+#include "../Minecraft.World/DurangoStats.h"
+#include "../Minecraft.World/GenericStats.h"
 #endif
+namespace
+{
+	char mapIconToFrame(char iconSlot)
+	{
+		if (iconSlot >= 8) return iconSlot - 4;
+		return iconSlot;
+	}
+
+	// Same hash as getRandomPlayerMapIcon in MapItemSavedData.cpp, returning
+	// the Iggy/SWF frame index (0-7) instead of the raw icon slot.
+	char computePlayerMapFrame(int entityId, int playerIndex)
+	{
+		static const char PLAYER_MAP_ICON_SLOTS[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
+		unsigned int seed = static_cast<unsigned int>(entityId);
+		seed ^= static_cast<unsigned int>(playerIndex * 0x9E3779B9u);
+		seed ^= (seed >> 16);
+		seed *= 0x7FEB352Du;
+		seed ^= (seed >> 15);
+		seed *= 0x846CA68Bu;
+		seed ^= (seed >> 16);
+		return mapIconToFrame(PLAYER_MAP_ICON_SLOTS[seed % 8]);
+	}
+}
 
 namespace
 {
@@ -4092,7 +4115,8 @@ void ClientConnection::handleSetPlayerTeamPacket(shared_ptr<SetPlayerTeamPacket>
 
 void ClientConnection::handleParticleEvent(shared_ptr<LevelParticlesPacket> packet)
 {
-    ePARTICLE_TYPE particleId = (ePARTICLE_TYPE)Integer::parseInt(packet->getName());
+    wstring particleName = packet->getName();
+    ePARTICLE_TYPE particleId = (ePARTICLE_TYPE)Integer::parseInt(particleName);
 
 	for (int i = 0; i < packet->getCount(); i++)
 	{

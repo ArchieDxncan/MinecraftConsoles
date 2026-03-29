@@ -5,20 +5,20 @@
 #include "TrackedEntity.h"
 #include "ServerPlayer.h"
 #include "ServerLevel.h"
-#include "..\Minecraft.World\Mth.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.monster.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.global.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.projectile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.boss.enderdragon.h"
-#include "..\Minecraft.World\net.minecraft.network.packet.h"
-#include "..\Minecraft.World\net.minecraft.network.h"
-#include "..\Minecraft.World\net.minecraft.world.level.dimension.h"
-#include "..\Minecraft.World\BasicTypeContainers.h"
-#include "..\Minecraft.World\net.minecraft.world.level.chunk.h"
+#include "../Minecraft.World/Mth.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.entity.monster.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.entity.global.h"
+#include "../Minecraft.World/net.minecraft.world.entity.projectile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.boss.enderdragon.h"
+#include "../Minecraft.World/net.minecraft.network.packet.h"
+#include "../Minecraft.World/net.minecraft.network.h"
+#include "../Minecraft.World/net.minecraft.world.level.dimension.h"
+#include "../Minecraft.World/BasicTypeContainers.h"
+#include "../Minecraft.World/net.minecraft.world.level.chunk.h"
 #include "PlayerConnection.h"
 
 EntityTracker::EntityTracker(ServerLevel *level)
@@ -67,6 +67,7 @@ void EntityTracker::addEntity(shared_ptr<Entity> e)
 	else if (e->instanceof(eTYPE_EXPERIENCEORB)) addEntity(e, 16 * 10, 20, true);
 	else if (e->instanceof(eTYPE_ENDER_CRYSTAL)) addEntity(e, 16 * 16, INT_MAX, false);
 	else if (e->instanceof(eTYPE_ITEM_FRAME)) addEntity(e, 16 * 10, INT_MAX, false);
+	else if (e->instanceof(eTYPE_ARMORSTAND)) addEntity(e, 16 * 4, 1, true);
 }
 
 void EntityTracker::addEntity(shared_ptr<Entity> e, int range, int updateInterval)

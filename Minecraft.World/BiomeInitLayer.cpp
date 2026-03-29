@@ -8,7 +8,6 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 {
 	this->parent = parent;
 
-
 	if(levelType == LevelType::lvl_normal_1_1)
 	{
 		startBiomes = BiomeArray(6);
@@ -21,14 +20,24 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 	}
 	else
 	{
-		startBiomes = BiomeArray(7);
-		startBiomes[0] = Biome::desert;
-		startBiomes[1] = Biome::forest;
-		startBiomes[2] = Biome::extremeHills;
-		startBiomes[3] = Biome::swampland;
-		startBiomes[4] = Biome::plains;
-		startBiomes[5] = Biome::taiga;
-		startBiomes[6] = Biome::jungle;
+		// Only use biomes that are actually initialized in Biome::staticCtor()
+		// to avoid null pointer crashes during world generation.
+		startBiomes = BiomeArray(14);
+		startBiomes[0]  = Biome::desert;
+		startBiomes[1]  = Biome::forest;
+		startBiomes[2]  = Biome::extremeHills;
+		startBiomes[3]  = Biome::swampland;
+		startBiomes[4]  = Biome::plains;
+		startBiomes[5]  = Biome::taiga;
+		startBiomes[6]  = Biome::jungle;
+		startBiomes[7]  = Biome::savanna;
+		startBiomes[8]  = Biome::roofedForest;
+		startBiomes[9]  = Biome::flowerForest;
+		startBiomes[10] = Biome::birchForest;
+		startBiomes[11] = Biome::sunflowersPlains;
+		startBiomes[12] = Biome::coldTaiga;
+		startBiomes[13] = Biome::megaTaiga;
+		//startBiomes[14] = Biome::iceSpikes;
 	}
 }
 
@@ -47,25 +56,27 @@ intArray BiomeInitLayer::getArea(int xo, int yo, int w, int h)
 		for (int x = 0; x < w; x++)
 		{
 			initRandom(x + xo, y + yo);
-            int old = b[x + y * w];
-            if (old == 0)
+			int old = b[x + y * w];
+			if (old == 0)
 			{
-                result[x + y * w] = 0;
-            }
+				result[x + y * w] = 0;
+			}
 			else if (old == Biome::mushroomIsland->id)
 			{
-                result[x + y * w] = old;
-            }
-			else if (old == 1)
+				result[x + y * w] = old;
+			}
+			else if (old == 1) // Normal land
 			{
-                result[x + y * w] = startBiomes[nextRandom(startBiomes.length)]->id;
-            }
-			else
+				result[x + y * w] = startBiomes[nextRandom(startBiomes.length)]->id;
+			}
+			else // Snowy/Cold areas
 			{
-				int isTaiga = startBiomes[nextRandom(startBiomes.length)]->id;
-				if (isTaiga == Biome::taiga->id)
+				int picked = startBiomes[nextRandom(startBiomes.length)]->id;
+				// Only let cold biomes remain in snowy areas, everything else becomes ice plains
+				if (picked == Biome::taiga->id || picked == Biome::coldTaiga->id ||
+				    picked == Biome::megaTaiga->id || picked == Biome::iceSpikes->id)
 				{
-					result[x + y * w] = isTaiga;
+					result[x + y * w] = picked;
 				}
 				else
 				{

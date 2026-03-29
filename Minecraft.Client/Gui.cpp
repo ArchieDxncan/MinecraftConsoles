@@ -3,31 +3,31 @@
 #include "ItemRenderer.h"
 #include "GameRenderer.h"
 #include "Options.h"
-#include "MultiplayerLocalPlayer.h"
+#include "MultiPlayerLocalPlayer.h"
 #include "Textures.h"
 #include "TextureAtlas.h"
 #include "GameMode.h"
 #include "Lighting.h"
 #include "ChatScreen.h"
 #include "MultiPlayerLevel.h"
-#include "..\Minecraft.World\JavaMath.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.effect.h"
-#include "..\Minecraft.World\net.minecraft.world.food.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\LevelData.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\System.h"
-#include "..\Minecraft.World\Language.h"
+#include "../Minecraft.World/JavaMath.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.effect.h"
+#include "../Minecraft.World/net.minecraft.world.food.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/LevelData.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/System.h"
+#include "../Minecraft.World/Language.h"
 #include "EntityRenderDispatcher.h"
-#include "..\Minecraft.World\Dimension.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.boss.enderdragon.h"
+#include "../Minecraft.World/Dimension.h"
+#include "../Minecraft.World/net.minecraft.world.entity.boss.enderdragon.h"
 #include "EnderDragonRenderer.h"
-#include "..\Minecraft.World\net.minecraft.h"
-#include "..\Minecraft.World\net.minecraft.world.h"
-#include "..\Minecraft.World\LevelChunk.h"
-#include "..\Minecraft.World\Biome.h"
+#include "../Minecraft.World/net.minecraft.h"
+#include "../Minecraft.World/net.minecraft.world.h"
+#include "../Minecraft.World/LevelChunk.h"
+#include "../Minecraft.World/Biome.h"
 #include <Common/UI/UI.h>
 
 ResourceLocation Gui::PUMPKIN_BLUR_LOCATION = ResourceLocation(TN__BLUR__MISC_PUMPKINBLUR);
@@ -1063,13 +1063,6 @@ void Gui::render(float a, bool mouseFree, int xMouse, int yMouse)
         glTranslatef(static_cast<float>(-debugLeft), static_cast<float>(-debugTop), 0.f);
 
         vector<wstring> lines;
-
-        // Only show version/branch for player 0 to avoid cluttering each splitscreen viewport
-        if (iPad == 0)
-        {
-            lines.push_back(ClientConstants::VERSION_STRING);
-            lines.push_back(ClientConstants::BRANCH_STRING);
-        }
 
         if (minecraft->options->renderDebug && minecraft->player != nullptr && minecraft->level != nullptr)
         {

@@ -36,45 +36,49 @@
 #include "FrustumCuller.h"
 #include "Camera.h"
 
-#include "..\Minecraft.World\MobEffect.h"
-#include "..\Minecraft.World\Difficulty.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.phys.h"
-#include "..\Minecraft.World\File.h"
-#include "..\Minecraft.World\net.minecraft.world.level.storage.h"
-#include "..\Minecraft.World\net.minecraft.h"
-#include "..\Minecraft.World\net.minecraft.stats.h"
-#include "..\Minecraft.World\System.h"
-#include "..\Minecraft.World\ByteBuffer.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.level.chunk.h"
-#include "..\Minecraft.World\net.minecraft.world.level.dimension.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\Minecraft.World.h"
-#include "Windows64\Windows64_Xuid.h"
+#include "../Minecraft.World/MobEffect.h"
+#include "../Minecraft.World/Difficulty.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.phys.h"
+#include "../Minecraft.World/File.h"
+#include "../Minecraft.World/net.minecraft.world.level.storage.h"
+#include "../Minecraft.World/net.minecraft.h"
+#include "../Minecraft.World/net.minecraft.stats.h"
+#include "../Minecraft.World/System.h"
+#include "../Minecraft.World/ByteBuffer.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.level.chunk.h"
+#include "../Minecraft.World/net.minecraft.world.level.dimension.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/Minecraft.World.h"
+#include "Windows64/Windows64_Xuid.h"
 #include "ClientConnection.h"
-#include "..\Minecraft.World\HellRandomLevelSource.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.monster.h"
-#include "..\Minecraft.World\StrongholdFeature.h"
-#include "..\Minecraft.World\IntCache.h"
-#include "..\Minecraft.World\Villager.h"
-#include "..\Minecraft.World\SparseLightStorage.h"
-#include "..\Minecraft.World\SparseDataStorage.h"
-#include "..\Minecraft.World\ChestTileEntity.h"
+#include "../Minecraft.World/HellRandomLevelSource.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.entity.monster.h"
+#include "../Minecraft.World/StrongholdFeature.h"
+#include "../Minecraft.World/IntCache.h"
+#include "../Minecraft.World/Villager.h"
+#include "../Minecraft.World/SparseLightStorage.h"
+#include "../Minecraft.World/SparseDataStorage.h"
+#include "../Minecraft.World/ChestTileEntity.h"
 #include "TextureManager.h"
 #ifdef _XBOX
-#include "Xbox\Network\NetworkPlayerXbox.h"
+#include "Xbox/Network/NetworkPlayerXbox.h"
 #endif
-#include "Common\UI\IUIScene_CreativeMenu.h"
-#include "Common\UI\UIFontData.h"
+#include "Common/UI/IUIScene_CreativeMenu.h"
+#include "Common/UI/UIFontData.h"
 #include "DLCTexturePack.h"
+#ifdef _WINDOWS64
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "Windows64/stb_image_write.h"
+#endif
 
 #ifdef __ORBIS__
-#include "Orbis\Network\PsPlusUpsellWrapper_Orbis.h"
+#include "Orbis/Network/PsPlusUpsellWrapper_Orbis.h"
 #endif
 
 // #define DISABLE_SPU_CODE
@@ -1548,6 +1552,9 @@ void Minecraft::run_middle()
 						{
 							localplayers[i]->ullButtonsPressed|=1LL<<MINECRAFT_ACTION_RENDER_DEBUG;
 						}
+
+						if(g_KBMInput.IsKeyPressed(KeyboardMouseInput::KEY_SCREENSHOT))
+							localplayers[i]->ullButtonsPressed|=1LL<<MINECRAFT_ACTION_SCREENSHOT;
 
 						// In flying mode, Shift held = sneak/descend
 						if(g_KBMInput.IsKBMActive() && g_KBMInput.IsKeyDown(KeyboardMouseInput::KEY_SNEAK))
@@ -3142,14 +3149,15 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 							{
 								*piUse=IDS_TOOLTIPS_UNLEASH;
 							}
-							else if (heldItemId == Item::lead_Id)
+							// 4J: fix improper tooltips for TU20
+							/*else if (heldItemId == Item::lead_Id)
 							{
 								if (!pig->isLeashed()) *piUse=IDS_TOOLTIPS_LEASH;
 							}
 							else if (heldItemId == Item::nameTag_Id)
 							{
 								*piUse = IDS_TOOLTIPS_NAME;
-							}
+							}*/
 							else if (pig->hasSaddle()) // does the pig have a saddle?
 							{
 								*piUse=IDS_TOOLTIPS_MOUNT;
@@ -3736,6 +3744,78 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 			player->SetThirdPersonView((player->ThirdPersonView()+1)%3);
 			//options->thirdPersonView = !options->thirdPersonView;
 		}
+
+#ifdef _WINDOWS64
+		if(player->ullButtonsPressed&(1LL<<MINECRAFT_ACTION_SCREENSHOT))
+		{
+			extern ID3D11Device* g_pd3dDevice;
+			extern ID3D11DeviceContext* g_pImmediateContext;
+			extern IDXGISwapChain* g_pSwapChain;
+
+			ID3D11Texture2D* pBackBuffer = nullptr;
+			HRESULT hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
+			if (SUCCEEDED(hr))
+			{
+				D3D11_TEXTURE2D_DESC desc;
+				pBackBuffer->GetDesc(&desc);
+				desc.Usage = D3D11_USAGE_STAGING;
+				desc.BindFlags = 0;
+				desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+				desc.MiscFlags = 0;
+
+				ID3D11Texture2D* pStaging = nullptr;
+				hr = g_pd3dDevice->CreateTexture2D(&desc, nullptr, &pStaging);
+				if (SUCCEEDED(hr))
+				{
+					g_pImmediateContext->CopyResource(pStaging, pBackBuffer);
+
+					// Build path next to the executable
+					wchar_t exePath[MAX_PATH];
+					GetModuleFileNameW(NULL, exePath, MAX_PATH);
+					wchar_t* lastSlash = wcsrchr(exePath, L'\\');
+					if (lastSlash) *(lastSlash + 1) = L'\0';
+					wstring screenshotDirPath = wstring(exePath) + L"screenshots";
+					CreateDirectoryW(screenshotDirPath.c_str(), NULL);
+
+					SYSTEMTIME st;
+					GetLocalTime(&st);
+					wchar_t filename[128];
+					swprintf_s(filename, L"%04d-%02d-%02d_%02d.%02d.%02d.png",
+						st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+					wstring screenshotPath = screenshotDirPath + L"\\" + filename;
+
+					D3D11_MAPPED_SUBRESOURCE mapped;
+					hr = g_pImmediateContext->Map(pStaging, 0, D3D11_MAP_READ, 0, &mapped);
+					if (SUCCEEDED(hr))
+					{
+						// Copy RGBA rows (back buffer is R8G8B8A8_UNORM, already RGBA)
+						unsigned char* rgba = new unsigned char[desc.Width * desc.Height * 4];
+						for (UINT row = 0; row < desc.Height; row++)
+						{
+							unsigned char* src = (unsigned char*)mapped.pData + row * mapped.RowPitch;
+							unsigned char* dst = rgba + row * desc.Width * 4;
+							memcpy(dst, src, desc.Width * 4);
+						}
+						g_pImmediateContext->Unmap(pStaging, 0);
+
+						// Save PNG via stb_image_write
+						string narrowPath(screenshotPath.begin(), screenshotPath.end());
+						int writeResult = stbi_write_png(narrowPath.c_str(), desc.Width, desc.Height, 4, rgba, desc.Width * 4);
+						delete[] rgba;
+
+						// Local chat message — only on success
+						if (writeResult)
+						{
+							wstring msg = L"Saved screenshot to " + wstring(filename);
+							gui->addMessage(msg, iPad);
+						}
+					}
+					pStaging->Release();
+				}
+				pBackBuffer->Release();
+			}
+		}
+#endif
 
 		if((player->ullButtonsPressed&(1LL<<MINECRAFT_ACTION_GAME_INFO)) && gameMode->isInputAllowed(MINECRAFT_ACTION_GAME_INFO))
 		{

@@ -183,6 +183,9 @@ bool DyePowderItem::growCrop(shared_ptr<ItemInstance> itemInstance, Level *level
 		}
 		return true;
 	}
+	
+
+
 	else if (tile == Tile::mushroom_brown_Id || tile == Tile::mushroom_red_Id)
 	{
 		if(!bTestUseOnOnly)
