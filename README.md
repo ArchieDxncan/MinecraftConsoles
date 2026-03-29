@@ -1,4 +1,4 @@
-#This is my own fork, this will be used for testing out my own features, adding code from other projects and merging commits from the main repo that are yet to be merged.
+# This is my own fork, this will be used for testing out my own features, adding code from other projects and merging commits from the main repo that are yet to be merged.
 
 ![Legacy Edition Banner](.github/banner.png)
 # MinecraftConsoles (Legacy Console Edition)
