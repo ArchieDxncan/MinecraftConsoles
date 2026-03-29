@@ -66,6 +66,30 @@
 #include "..\Minecraft.World\GenericStats.h"
 #endif
 
+namespace
+{
+	char mapIconToFrame(char iconSlot)
+	{
+		if (iconSlot >= 8) return iconSlot - 4;
+		return iconSlot;
+	}
+
+	// Same hash as getRandomPlayerMapIcon in MapItemSavedData.cpp, returning
+	// the Iggy/SWF frame index (0-7) instead of the raw icon slot.
+	char computePlayerMapFrame(int entityId, int playerIndex)
+	{
+		static const char PLAYER_MAP_ICON_SLOTS[] = { 0, 1, 2, 3, 8, 9, 10, 11 };
+		unsigned int seed = static_cast<unsigned int>(entityId);
+		seed ^= static_cast<unsigned int>(playerIndex * 0x9E3779B9u);
+		seed ^= (seed >> 16);
+		seed *= 0x7FEB352Du;
+		seed ^= (seed >> 15);
+		seed *= 0x846CA68Bu;
+		seed ^= (seed >> 16);
+		return mapIconToFrame(PLAYER_MAP_ICON_SLOTS[seed % 8]);
+	}
+}
+
 ClientConnection::ClientConnection(Minecraft *minecraft, const wstring& ip, int port)
 {
 	// 4J Stu - No longer used as we use the socket version below.
@@ -377,6 +401,7 @@ void ClientConnection::handleLogin(shared_ptr<LoginPacket> packet)
 
 		BYTE networkSmallId = getSocket()->getSmallId();
 		app.UpdatePlayerInfo(networkSmallId, packet->m_playerIndex, packet->m_uiGamePrivileges);
+		app.SetPlayerMapIcon(minecraft->player->getName().c_str(), computePlayerMapFrame(packet->clientVersion, packet->m_playerIndex));
 		minecraft->player->setPlayerGamePrivilege(Player::ePlayerGamePrivilege_All, packet->m_uiGamePrivileges);
 
 		// Assume all privileges are on, so that the first message we see only indicates things that have been turned off
@@ -447,6 +472,7 @@ void ClientConnection::handleLogin(shared_ptr<LoginPacket> packet)
 
 		BYTE networkSmallId = getSocket()->getSmallId();
 		app.UpdatePlayerInfo(networkSmallId, packet->m_playerIndex, packet->m_uiGamePrivileges);
+		app.SetPlayerMapIcon(player->getName().c_str(), computePlayerMapFrame(packet->clientVersion, packet->m_playerIndex));
 		player->setPlayerGamePrivilege(Player::ePlayerGamePrivilege_All, packet->m_uiGamePrivileges);
 
 		// Assume all privileges are on, so that the first message we see only indicates things that have been turned off
@@ -917,6 +943,36 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 			}
 		}
 
+		// Client-side registration: if we still have no IQNet entry for this remote
+		// player, create one so they appear in the Tab player list.
+		// Find the first available IQNet slot (customData == 0, skip slot 0 which
+		// is the host). We can't use packet->m_playerIndex directly because on
+		// dedicated servers the game-level player index starts at 0 for real
+		// players, conflicting with the IQNet host slot.
+		if (matchedQNetPlayer == nullptr)
+		{
+			for (int s = 1; s < MINECRAFT_NET_MAX_PLAYERS; ++s)
+			{
+				IQNetPlayer* qp = &IQNet::m_player[s];
+				if (qp->GetCustomDataValue() == 0 && qp->m_gamertag[0] == 0)
+				{
+					BYTE smallId = static_cast<BYTE>(s);
+					qp->m_smallId = smallId;
+					qp->m_isRemote = true;
+					qp->m_isHostPlayer = false;
+					qp->m_resolvedXuid = pktXuid;
+					wcsncpy_s(qp->m_gamertag, 32, packet->name.c_str(), _TRUNCATE);
+					if (smallId >= IQNet::s_playerCount)
+						IQNet::s_playerCount = smallId + 1;
+
+					extern CPlatformNetworkManagerStub* g_pPlatformNetworkManager;
+					g_pPlatformNetworkManager->NotifyPlayerJoined(qp);
+					matchedQNetPlayer = qp;
+					break;
+				}
+			}
+		}
+
 		if (matchedQNetPlayer != nullptr)
 		{
 			// Store packet-authoritative XUID on this network slot so later lookups by XUID
@@ -946,6 +1002,7 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 	player->setPlayerIndex( packet->m_playerIndex );
 	player->setCustomSkin( packet->m_skinId );
 	player->setCustomCape( packet->m_capeId );
+	app.SetPlayerMapIcon(packet->name.c_str(), computePlayerMapFrame(packet->id, packet->m_playerIndex));
 	player->setPlayerGamePrivilege(Player::ePlayerGamePrivilege_All, packet->m_uiGamePrivileges);
 
     if (!player->customTextureUrl.empty() && player->customTextureUrl.substr(0, 3).compare(L"def") != 0 && !app.IsFileInMemoryTextures(player->customTextureUrl))
@@ -1088,28 +1145,27 @@ void ClientConnection::handleRemoveEntity(shared_ptr<RemoveEntitiesPacket> packe
 		for (int i = 0; i < packet->ids.length; i++)
 		{
 			shared_ptr<Entity> entity = getEntity(packet->ids[i]);
-			if (entity != nullptr && entity->GetType() == eTYPE_PLAYER)
+			if (entity != nullptr)
 			{
 				shared_ptr<Player> player = dynamic_pointer_cast<Player>(entity);
 				if (player != nullptr)
 				{
-					PlayerUID xuid = player->getXuid();
-					INetworkPlayer* np = g_NetworkManager.GetPlayerByXuid(xuid);
-					if (np != nullptr)
+					// Match by gamertag in the IQNet array (XUID may be 0 on dedicated servers)
+					for (int s = 1; s < MINECRAFT_NET_MAX_PLAYERS; ++s)
 					{
-						NetworkPlayerXbox* npx = (NetworkPlayerXbox*)np;
-						IQNetPlayer* qp = npx->GetQNetPlayer();
-						if (qp != nullptr)
+						IQNetPlayer* qp = &IQNet::m_player[s];
+						if (qp->GetCustomDataValue() != 0 &&
+							_wcsicmp(qp->m_gamertag, player->getName().c_str()) == 0)
 						{
 							extern CPlatformNetworkManagerStub* g_pPlatformNetworkManager;
 							g_pPlatformNetworkManager->NotifyPlayerLeaving(qp);
 							qp->m_smallId = 0;
 							qp->m_isRemote = false;
 							qp->m_isHostPlayer = false;
-							// Clear resolved id to avoid stale XUID -> player matches after disconnect.
 							qp->m_resolvedXuid = INVALID_XUID;
 							qp->m_gamertag[0] = 0;
 							qp->SetCustomDataValue(0);
+							break;
 						}
 					}
 				}
