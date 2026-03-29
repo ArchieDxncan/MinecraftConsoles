@@ -22,6 +22,7 @@
 #include "SpringFeature.h"
 #include "SpruceFeature.h"
 #include "TallGrassFeature.h"
+#include "DoublePlantFeature.h"
 #include "TreeFeature.h"
 
 #include "HugeMushroomFeature.h"
@@ -30,6 +31,8 @@
 #include "BonusChestFeature.h"
 #include "SpikeFeature.h"
 #include "EndPodiumFeature.h"
+#include "SavannaTreeFeature.h"
+#include "RoofTreeFeature.h"
 
 #include "DesertWellFeature.h"
 #include "MegaTreeFeature.h"

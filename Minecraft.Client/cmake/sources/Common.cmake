@@ -612,6 +612,12 @@ set(_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_MODEL
   "${CMAKE_CURRENT_SOURCE_DIR}/WolfModel.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/ZombieModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/ZombieModel.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/RabbitModel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/RabbitModel.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandModel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandModel.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteModel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteModel.h"
 )
 source_group("net/minecraft/client/model" FILES ${_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_MODEL})
 
@@ -884,6 +890,9 @@ set(_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_RENDERER_ENTITY
   "${CMAKE_CURRENT_SOURCE_DIR}/WolfRenderer.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/ZombieRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/ZombieRenderer.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/RabbitRenderer.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandRenderer.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteRenderer.cpp"
 )
 source_group("net/minecraft/client/renderer/entity" FILES ${_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_RENDERER_ENTITY})
 

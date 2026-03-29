@@ -18,12 +18,12 @@
 #include "EntityPos.h"
 #include "Entity.h"
 #include "SoundTypes.h"
-#include "..\minecraft.Client\HumanoidModel.h"
-#include "..\Minecraft.Client\MinecraftServer.h"
-#include "..\Minecraft.Client\MultiPlayerLevel.h"
-#include "..\Minecraft.Client\MultiplayerLocalPlayer.h"
-#include "..\Minecraft.Client\ServerLevel.h"
-#include "..\Minecraft.Client\PlayerList.h"
+#include "../Minecraft.Client/HumanoidModel.h"
+#include "../Minecraft.Client/MinecraftServer.h"
+#include "../Minecraft.Client/MultiPlayerLevel.h"
+#include "../Minecraft.Client/MultiPlayerLocalPlayer.h"
+#include "../Minecraft.Client/ServerLevel.h"
+#include "../Minecraft.Client/PlayerList.h"
 
 const wstring Entity::RIDING_TAG = L"Riding";
 
@@ -1609,8 +1609,13 @@ void Entity::rideTick()
 
 	// jeb: This caused the crosshair to "drift" while riding horses. For now I've just disabled it,
 	//      because I can't figure out what it's needed for. Riding boats and minecarts seem unaffected...
-	// yRot += yra;
-	// xRot += xra;
+	// 
+	// 3UR: re-enabled this for TU20 but only for rideable minecarts
+	if (riding->instanceof(eTYPE_MINECART_RIDEABLE))
+	{
+		yRot += yra;
+		xRot += xra;
+	}
 }
 
 void Entity::positionRider()

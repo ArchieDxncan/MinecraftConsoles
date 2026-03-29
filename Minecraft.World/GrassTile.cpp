@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "..\Minecraft.Client\Minecraft.h"
+#include "../Minecraft.Client/Minecraft.h"
 #include "GrassTile.h"
 #include "net.minecraft.world.level.h"
 #include "net.minecraft.world.level.biome.h"
@@ -8,7 +8,7 @@
 
 // AP - included for PSVita Alpha cut out optimisation
 #include "IntBuffer.h"
-#include "..\Minecraft.Client\Tesselator.h"
+#include "../Minecraft.Client/Tesselator.h"
 
 GrassTile::GrassTile(int id) : Tile(id, Material::grass)
 {
@@ -22,7 +22,7 @@ GrassTile::GrassTile(int id) : Tile(id, Material::grass)
 Icon *GrassTile::getTexture(int face, int data)
 {
 	if (face == Facing::UP) return iconTop;
-	if (face == Facing::DOWN) return Tile::dirt->getTexture(face);
+	if (face == Facing::DOWN) return Tile::dirt->getTexture(face, 0);
 	return icon;
 }
 
@@ -106,7 +106,7 @@ void GrassTile::tick(Level *level, int x, int y, int z, Random *random)
 				int yt = y + random->nextInt(5) - 3;
 				int zt = z + random->nextInt(3) - 1;
 				int above = level->getTile(xt, yt + 1, zt);
-				if (level->getTile(xt, yt, zt) == Tile::dirt_Id && level->getRawBrightness(xt, yt + 1, zt) >= MIN_BRIGHTNESS && Tile::lightBlock[above] <= 2)
+				if (level->getTile(xt, yt, zt) == Tile::dirt_Id && level->getData(xt, yt, zt) == 0 && level->getRawBrightness(xt, yt + 1, zt) >= MIN_BRIGHTNESS && Tile::lightBlock[above] <= 2)
 				{
 					level->setTileAndUpdate(xt, yt, zt, Tile::grass_Id);
 				}

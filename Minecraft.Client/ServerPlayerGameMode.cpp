@@ -3,13 +3,13 @@
 #include "ServerLevel.h"
 #include "ServerPlayer.h"
 #include "PlayerConnection.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.network.packet.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\net.minecraft.world.level.chunk.h"
-#include "..\Minecraft.World\net.minecraft.world.level.dimension.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.network.packet.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/net.minecraft.world.level.chunk.h"
+#include "../Minecraft.World/net.minecraft.world.level.dimension.h"
 #include "MultiPlayerLevel.h"
 #include "LevelRenderer.h"
 
@@ -56,11 +56,10 @@ bool ServerPlayerGameMode::isSurvival()
 	return gameModeForPlayer->isSurvival();
 }
 
-bool ServerPlayerGameMode::isCreative()
-{
-	return gameModeForPlayer->isCreative();
+bool ServerPlayerGameMode::isCreative() {
+    if (!this || !gameModeForPlayer) return false; 
+    return gameModeForPlayer->isCreative();
 }
-
 void ServerPlayerGameMode::updateGameMode(GameType *gameType)
 {
 	if (gameModeForPlayer == GameType::NOT_SET)

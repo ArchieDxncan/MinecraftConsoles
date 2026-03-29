@@ -1,21 +1,21 @@
 #include "stdafx.h"
 #include "ItemRenderer.h"
-#include "tileRenderer.h"
-#include "entityRenderDispatcher.h"
+#include "TileRenderer.h"
+#include "EntityRenderDispatcher.h"
 //#include "ItemFrame"
 #include "ItemFrameRenderer.h"
 #include "TextureAtlas.h"
 
-#include "..\Minecraft.World\JavaMath.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.Item.h"
-#include "..\Minecraft.World\net.minecraft.world.Item.h"
-#include "..\Minecraft.World\net.minecraft.world.Item.alchemy.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\StringHelpers.h"
+#include "../Minecraft.World/JavaMath.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.item.alchemy.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/StringHelpers.h"
 #include "Minecraft.h"
-#include "..\Minecraft.World\Item.h"
-#include "..\Minecraft.World\net.minecraft.world.h"
-#include "..\Minecraft.World\net.minecraft.h"
+#include "../Minecraft.World/Item.h"
+#include "../Minecraft.World/net.minecraft.world.h"
+#include "../Minecraft.World/net.minecraft.h"
 #include "CompassTexture.h"
 #include "Minimap.h"
 
@@ -61,6 +61,9 @@ void ItemFrameRenderer::drawFrame(shared_ptr<ItemFrame> itemFrame)
 	Tile *wood = Tile::wood;
 	float depth = 1.0f / 16.0f;
 	float width = 12.0f / 16.0f;
+	if (itemFrame->getItem() && itemFrame->getItem()->getItem() == Item::map) {
+		width = 1.0f;
+	}
 	float widthHalf = width / 2.0f;
 
 	// Back
@@ -142,15 +145,15 @@ void ItemFrameRenderer::drawItem(shared_ptr<ItemFrame> entity)
 
 		glRotatef(180, 0, 1, 0);
 		glRotatef(180, 0, 0, 1);
-		glScalef(1.0f / 256.0f, 1.0f / 256.0f, 1.0f / 256.0f);
-		glTranslatef(-65, -107, -3);
+		glScalef(1.0f / 128.0f, 1.0f / 128.0f, 1.0f / 128.0f);
+		glTranslatef(-64.0f, -87.0f, -3.0f);
 		glNormal3f(0, 0, -1);
 		t->begin();
 		int vo = 7;
-		t->vertexUV(0 - vo, 128 + vo, 0, 0, 1);
-		t->vertexUV(128 + vo, 128 + vo, 0, 1, 1);
-		t->vertexUV(128 + vo, 0 - vo, 0, 1, 0);
-		t->vertexUV(0 - vo, 0 - vo, 0, 0, 0);
+		t->vertexUV(0.0f, 128.0f, 0.0f, 0.0f, 1.0f);
+		t->vertexUV(128.0f, 128.0f, 0.0f, 1.0f, 1.0f);
+		t->vertexUV(128.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		t->vertexUV(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		t->end();
 
  		shared_ptr<MapItemSavedData> data = Item::map->getSavedData(itemEntity->getItem(), entity->level);

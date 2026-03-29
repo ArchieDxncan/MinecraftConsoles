@@ -8,15 +8,15 @@
 #include "PlayerRenderer.h"
 #include "EntityRenderDispatcher.h"
 #include "Lighting.h"
-#include "MultiplayerLocalPlayer.h"
+#include "MultiPlayerLocalPlayer.h"
 #include "Minimap.h"
 #include "MultiPlayerLevel.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.level.tile.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\net.minecraft.world.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.level.tile.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/net.minecraft.world.h"
 
 ResourceLocation ItemInHandRenderer::ENCHANT_GLINT_LOCATION = ResourceLocation(TN__BLUR__MISC_GLINT);
 ResourceLocation ItemInHandRenderer::MAP_BACKGROUND_LOCATION = ResourceLocation(TN_MISC_MAPBG);
@@ -243,8 +243,11 @@ void ItemInHandRenderer::renderItem(shared_ptr<LivingEntity> mob, shared_ptr<Ite
 		MemSect(31);
         minecraft->textures->bindTexture(minecraft->textures->getTextureLocation(Icon::TYPE_TERRAIN));
 		MemSect(0);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         tileRenderer->renderTile(Tile::tiles[item->id], item->getAuxValue(), SharedConstants::TEXTURE_LIGHTING ? 1.0f : mob->getBrightness(1));		// 4J - change brought forward from 1.8.2
-    }
+		glDisable(GL_BLEND);
+	}
 	else
 	{
 		MemSect(31);

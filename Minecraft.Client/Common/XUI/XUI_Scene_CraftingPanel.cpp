@@ -4,16 +4,16 @@
 #include "stdafx.h"
 
 #include <assert.h>
-#include "..\..\MultiplayerLocalPlayer.h"
-#include "..\..\..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\..\..\Minecraft.World\net.minecraft.world.item.crafting.h"
-#include "..\..\..\Minecraft.World\net.minecraft.world.inventory.h"
-#include "..\..\..\Minecraft.World\Tile.h"
-#include "..\..\..\Minecraft.World\net.minecraft.stats.h"
-#include "..\..\Common\Tutorial\Tutorial.h"
-#include "..\..\Common\Tutorial\TutorialMode.h"
-#include "..\..\Common\Tutorial\TutorialEnum.h"
-#include "..\..\Minecraft.h"
+#include "../../MultiPlayerLocalPlayer.h"
+#include "../../../Minecraft.World/net.minecraft.world.item.h"
+#include "../../../Minecraft.World/net.minecraft.world.item.crafting.h"
+#include "../../../Minecraft.World/net.minecraft.world.inventory.h"
+#include "../../../Minecraft.World/Tile.h"
+#include "../../../Minecraft.World/net.minecraft.stats.h"
+#include "../../Common/Tutorial/Tutorial.h"
+#include "../../Common/Tutorial/TutorialMode.h"
+#include "../../Common/Tutorial/TutorialEnum.h"
+#include "../../Minecraft.h"
 #include "XUI_Ctrl_CraftIngredientSlot.h"
 #include "XUI_Ctrl_SlotList.h"
 
@@ -99,10 +99,12 @@ HRESULT CXuiSceneCraftingPanel::OnInit( XUIMessageInit* pInitData, BOOL& bHandle
 		m_iCraftablesMaxHSlotC=m_iMaxHSlot3x3C;
 
 		// set up the ingredients descriptions
-		for(int i=0;i<4;i++)
+		for(int i=0;i<9;i++)
 		{
+			pObj = nullptr;
+			m_pCraftIngredientDescA[i] = nullptr;
 			XuiObjectFromHandle( m_hCraftIngredientDescA[i], &pObj );
-			m_pCraftIngredientDescA[i] = static_cast<CXuiCtrlCraftIngredientSlot *>(pObj);
+			if(pObj) m_pCraftIngredientDescA[i] = static_cast<CXuiCtrlCraftIngredientSlot *>(pObj);
 		}
 	}
 	else
@@ -124,10 +126,12 @@ HRESULT CXuiSceneCraftingPanel::OnInit( XUIMessageInit* pInitData, BOOL& bHandle
 		m_iCraftablesMaxHSlotC=m_iMaxHSlot2x2C;
 
 		// set up the ingredients descriptions
-		for(int i=0;i<4;i++)
+		for(int i=0;i<9;i++)
 		{
+			pObj = nullptr;
+			m_pCraftIngredientDescA[i] = nullptr;
 			XuiObjectFromHandle( m_hCraftIngredientDescA[i], &pObj );
-			m_pCraftIngredientDescA[i] = static_cast<CXuiCtrlCraftIngredientSlot *>(pObj);
+			if(pObj) m_pCraftIngredientDescA[i] = static_cast<CXuiCtrlCraftIngredientSlot *>(pObj);
 		}
 	}
 
@@ -413,7 +417,7 @@ void CXuiSceneCraftingPanel::hideAllIngredientsSlots()
 {
 	for(int i=0;i<m_iIngredientsC;i++)
 	{
-		m_pCraftIngredientDescA[i]->SetShow(FALSE);
+		if(m_pCraftIngredientDescA[i]) m_pCraftIngredientDescA[i]->SetShow(FALSE);
 	}
 }
 
@@ -467,17 +471,17 @@ void CXuiSceneCraftingPanel::setIngredientSlotRedBox(int index, bool show)
 
 void CXuiSceneCraftingPanel::setIngredientDescriptionItem(int iPad, int index, shared_ptr<ItemInstance> item)
 {
-	m_pCraftIngredientDescA[index]->SetIcon(iPad, item->id,item->getAuxValue(),item->GetCount(),8,31,TRUE,item->isFoil(),FALSE);
+	if(m_pCraftIngredientDescA[index]) m_pCraftIngredientDescA[index]->SetIcon(iPad, item->id,item->getAuxValue(),item->GetCount(),8,31,TRUE,item->isFoil(),FALSE);
 }
 
 void CXuiSceneCraftingPanel::setIngredientDescriptionRedBox(int index, bool show)
 {
-	m_pCraftIngredientDescA[index]->SetRedBox(show?TRUE:FALSE);
+	if(m_pCraftIngredientDescA[index]) m_pCraftIngredientDescA[index]->SetRedBox(show?TRUE:FALSE);
 }
 
 void CXuiSceneCraftingPanel::setIngredientDescriptionText(int index, LPCWSTR text)
 {
-	m_pCraftIngredientDescA[index]->SetDescription(text);
+	if(m_pCraftIngredientDescA[index]) m_pCraftIngredientDescA[index]->SetDescription(text);
 }
 
 void CXuiSceneCraftingPanel::setShowCraftHSlot(int iIndex, bool show)
@@ -511,9 +515,9 @@ void CXuiSceneCraftingPanel::UpdateMultiPanel()
 	{
 	case DISPLAY_INVENTORY:
 		// turn off all the ingredients display
-		for(int i=0;i<4;i++)
+		for(int i=0;i<9;i++)
 		{
-			m_pCraftIngredientDescA[i]->SetShow(FALSE);
+			if(m_pCraftIngredientDescA[i]) m_pCraftIngredientDescA[i]->SetShow(FALSE);
 		}
 
 		XuiElementSetShow(m_hGridInventory,TRUE);
@@ -533,7 +537,7 @@ void CXuiSceneCraftingPanel::UpdateMultiPanel()
 		// display the ingredients
 		for(int i=0;i<m_iIngredientsC;i++)
 		{
-			m_pCraftIngredientDescA[i]->SetShow(TRUE);
+			if(m_pCraftIngredientDescA[i]) m_pCraftIngredientDescA[i]->SetShow(TRUE);
 		}
 
 		if(m_iIngredientsC==0)

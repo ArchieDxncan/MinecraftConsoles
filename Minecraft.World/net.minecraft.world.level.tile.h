@@ -44,7 +44,7 @@
 #include "FlowerPotTile.h"
 #include "FurnaceTile.h"
 #include "GlassTile.h"
-#include "Glowstonetile.h"
+#include "GlowstoneTile.h"
 #include "GrassTile.h"
 #include "GravelTile.h"
 #include "HalfSlabTile.h"
@@ -57,6 +57,7 @@
 #include "JukeboxTile.h"
 #include "LadderTile.h"
 #include "LeafTile.h"
+#include "LeafTile2.h"
 #include "LevelEvent.h"
 #include "LeverTile.h"
 #include "LiquidTile.h"
@@ -92,6 +93,7 @@
 #include "RotatedPillarTile.h"
 #include "SandStoneTile.h"
 #include "Sapling.h"
+
 #include "SignTile.h"
 #include "SkullTile.h"
 #include "SmoothStoneBrickTile.h"
@@ -126,8 +128,18 @@
 #include "WoodButtonTile.h"
 #include "WorkbenchTile.h"
 #include "WoodTile.h"
-#include "HalfSlabTile.h"
+
 #include "WoodSlabTile.h"
 #include "WoolCarpetTile.h"
+#include "Rose.h"
+#include "SandTile.h"
+#include "RedSandStoneTile.h"
+#include "TreeTile2.h"
+#include "SeaLanternTile.h"
+
+#include "PrismarineTile.h"
+#include "TallGrass2.h"
+
+#include "PackedIceTile.h"
 
 

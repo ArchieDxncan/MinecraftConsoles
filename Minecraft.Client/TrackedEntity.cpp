@@ -2,18 +2,18 @@
 #include "TrackedEntity.h"
 #include "ServerPlayer.h"
 #include "PlayerConnection.h"
-#include "..\Minecraft.World\Mth.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.item.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.monster.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.player.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.animal.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.global.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.projectile.h"
-#include "..\Minecraft.World\net.minecraft.network.packet.h"
-#include "..\Minecraft.World\net.minecraft.world.item.h"
-#include "..\Minecraft.World\net.minecraft.world.level.saveddata.h"
-#include "..\Minecraft.World\net.minecraft.world.entity.ai.attributes.h"
+#include "../Minecraft.World/Mth.h"
+#include "../Minecraft.World/net.minecraft.world.entity.h"
+#include "../Minecraft.World/net.minecraft.world.entity.item.h"
+#include "../Minecraft.World/net.minecraft.world.entity.monster.h"
+#include "../Minecraft.World/net.minecraft.world.entity.player.h"
+#include "../Minecraft.World/net.minecraft.world.entity.animal.h"
+#include "../Minecraft.World/net.minecraft.world.entity.global.h"
+#include "../Minecraft.World/net.minecraft.world.entity.projectile.h"
+#include "../Minecraft.World/net.minecraft.network.packet.h"
+#include "../Minecraft.World/net.minecraft.world.item.h"
+#include "../Minecraft.World/net.minecraft.world.level.saveddata.h"
+#include "../Minecraft.World/net.minecraft.world.entity.ai.attributes.h"
 #include "MinecraftServer.h"
 #include "ServerLevel.h"
 #include "PlayerList.h"
@@ -674,6 +674,11 @@ shared_ptr<Packet> TrackedEntity::getAddEntityPacket()
 		return std::make_shared<AddEntityPacket>(e, AddEntityPacket::BOAT, yRotp, xRotp, xp, yp, zp);
 	}
 	else if (e->instanceof(eTYPE_ENDERDRAGON))
+	{
+		yHeadRotp = Mth::floor(e->getYHeadRot() * 256 / 360);
+		return std::make_shared<AddMobPacket>(dynamic_pointer_cast<LivingEntity>(e), yRotp, xRotp, xp, yp, zp, yHeadRotp);
+	}
+	else if (e->instanceof(eTYPE_ARMORSTAND))
 	{
 		yHeadRotp = Mth::floor(e->getYHeadRot() * 256 / 360);
 		return std::make_shared<AddMobPacket>(dynamic_pointer_cast<LivingEntity>(e), yRotp, xRotp, xp, yp, zp, yHeadRotp);

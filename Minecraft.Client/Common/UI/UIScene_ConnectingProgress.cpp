@@ -12,6 +12,7 @@ static int ConnectingProgress_OnRejectedDialogOK(LPVOID, int iPad, const C4JStor
 	return 0;
 }
 #endif
+#include "../../Minecraft.h"
 
 UIScene_ConnectingProgress::UIScene_ConnectingProgress(int iPad, void *_initData, UILayer *parentLayer) : UIScene(iPad, parentLayer)
 {

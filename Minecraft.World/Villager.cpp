@@ -14,7 +14,7 @@
 #include "net.minecraft.world.item.trading.h"
 #include "net.minecraft.world.level.tile.h"
 #include "net.minecraft.world.level.h"
-#include "..\Minecraft.Client\Textures.h"
+#include "../Minecraft.Client/Textures.h"
 #include "Villager.h"
 #include "AbstractContainerMenu.h"
 
@@ -472,6 +472,7 @@ void Villager::addOffers(int addCount)
 		addItemForPurchase(newOffers, Tile::glass_Id, random, getRecipeChance(.2f));
 		addItemForPurchase(newOffers, Item::compass_Id, random, getRecipeChance(.2f));
 		addItemForPurchase(newOffers, Item::clock_Id, random, getRecipeChance(.2f));
+		addItemForPurchase(newOffers, Item::nameTag_Id, random, getRecipeChance(.2f));
 
 		if (random->nextFloat() < getRecipeChance(0.07f))
 		{

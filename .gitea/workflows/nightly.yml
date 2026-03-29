@@ -1,0 +1,153 @@
+name: Nightly Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * *'  # 11:30 PM UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: codeberg-medium
+    steps:
+      - name: Checkout
+        uses: https://code.forgejo.org/actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build rsync zip \
+            clang-21 lld-21 llvm-21 clang-tools-21
+
+      - name: Install xwin (Binary)
+        run: |
+          curl -L https://github.com/Jake-Shadle/xwin/releases/download/0.8.0/xwin-0.8.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+          sudo mv xwin-*/xwin /usr/bin/
+          xwin --version
+          
+      - name: Create Tool Symlinks
+        run: |
+          sudo ln -sf /usr/bin/clang-cl-21 /usr/bin/clang-cl
+          sudo ln -sf /usr/bin/llvm-ml-21 /usr/bin/llvm-ml
+          sudo ln -sf /usr/bin/lld-link-21 /usr/bin/lld-link
+          sudo ln -sf /usr/bin/clang-21 /usr/bin/clang
+          sudo ln -sf /usr/bin/llvm-rc-21 /usr/bin/llvm-rc
+          sudo ln -sf /usr/bin/llvm-lib-21 /usr/bin/llvm-lib
+          sudo ln -sf /usr/bin/llvm-mt-21 /usr/bin/llvm-mt
+          clang-cl --version
+
+      - name: Build
+        run: |
+          chmod +x build-linux.sh
+          INSTALL_PREFIX=$PWD/result BUILD_CI=1 ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
+
+      - name: Package artifacts
+        run: |
+          mkdir -p staging
+          cd result/client
+          zip -r ../../staging/LCEWindows64.zip .
+          cp Minecraft.Client.exe ../../staging/
+          cd ../..
+          cd result/server
+          zip -r ../../staging/LCEWindows64Server.zip .
+          cp Minecraft.Server.exe ../../staging/
+          cd ../..
+
+      - name: Upload build artifacts
+        uses: https://code.forgejo.org/actions/upload-artifact@v3
+        with:
+          name: build-windows64
+          path: staging/*
+
+  release:
+    needs: build
+    runs-on: codeberg-small
+    steps:
+      - name: Download build artifacts
+        uses: https://code.forgejo.org/actions/download-artifact@v3
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish nightly release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ forge.repository }}
+          API: ${{ forge.server_url }}/api/v1
+        run: |
+          set -euo pipefail
+          TAG="nightly"
+          AUTH="Authorization: token $GITHUB_TOKEN"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "$AUTH" \
+            "$API/repos/$REPO/releases/tags/$TAG")
+          if [[ "$HTTP_STATUS" == "200" ]]; then
+            echo "[info] Updating existing nightly release..."
+            RELEASE=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/tags/$TAG")
+            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
+            ASSETS=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/$RELEASE_ID/assets")
+            for ASSET_ID in $(echo "$ASSETS" | jq -r '.[].id'); do
+              curl -s -X DELETE -H "$AUTH" \
+                "$API/repos/$REPO/releases/$RELEASE_ID/assets/$ASSET_ID"
+            done
+            curl -s -X PATCH \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              "$API/repos/$REPO/releases/$RELEASE_ID" \
+              -d '{
+                "name": "Nightly Release",
+                "prerelease": true,
+                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
+              }'
+          else
+            echo "[info] Creating new nightly release..."
+            RELEASE=$(curl -s -X POST \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              "$API/repos/$REPO/releases" \
+              -d '{
+                "tag_name": "'"$TAG"'",
+                "name": "Nightly Release",
+                "prerelease": true,
+                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
+              }')
+            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
+          fi
+
+          echo "[info] Uploading assets..."
+          for FILE in artifacts/*; do
+            FILENAME=$(basename "$FILE")
+            curl -s -X POST \
+              -H "$AUTH" \
+              -F "attachment=@$FILE;filename=$FILENAME" \
+              "$API/repos/$REPO/releases/$RELEASE_ID/assets" > /dev/null
+          done
+
+  cleanup:
+    needs: [build, release]
+    if: always()
+    runs-on: codeberg-tiny
+    steps:
+      - name: Delete build artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ forge.repository }}
+          API: ${{ forge.server_url }}/api/v1
+        run: |
+          AUTH="Authorization: token $GITHUB_TOKEN"
+
+          ARTIFACTS=$(curl -s -H "$AUTH" \
+            "$API/repos/$REPO/actions/artifacts?name=build-windows64")
+
+          for ARTIFACT_ID in $(echo "$ARTIFACTS" | jq -r '.artifacts[].id // empty'); do
+            curl -s -X DELETE -H "$AUTH" \
+              "$API/repos/$REPO/actions/artifacts/$ARTIFACT_ID"
+          done

@@ -4,13 +4,13 @@
 #include "File.h"
 #include <xuiapp.h>
 #include "compression.h"
-#include "..\Minecraft.Client\Minecraft.h"
-#include "..\Minecraft.Client\MinecraftServer.h"
-#include "..\Minecraft.Client\ServerLevel.h"
-#include "..\Minecraft.World\net.minecraft.world.level.h"
-#include "..\Minecraft.World\LevelData.h"
-#include "..\Minecraft.Client\Common\GameRules\LevelGenerationOptions.h"
-#include "..\Minecraft.World\net.minecraft.world.level.chunk.storage.h"
+#include "../Minecraft.Client/Minecraft.h"
+#include "../Minecraft.Client/MinecraftServer.h"
+#include "../Minecraft.Client/ServerLevel.h"
+#include "../Minecraft.World/net.minecraft.world.level.h"
+#include "../Minecraft.World/LevelData.h"
+#include "../Minecraft.Client/Common/GameRules/LevelGenerationOptions.h"
+#include "../Minecraft.World/net.minecraft.world.level.chunk.storage.h"
 
 
 #ifdef _XBOX
@@ -200,11 +200,17 @@ ConsoleSaveFileOriginal::ConsoleSaveFileOriginal(const wstring &fileName, LPVOID
 
 		header.ReadHeader( pvSaveMem, plat );
 
+		if (bLevelGenBaseSave)
+		{
+			header.AddFile(L"region_format_16");
+		}
 	}
 	else
 	{
 		// Clear the first 8 bytes that reference the header
 		header.WriteHeader( pvSaveMem );
+
+		header.AddFile(L"region_format_16");
 	}
 }
 

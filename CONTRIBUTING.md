@@ -1,60 +1,50 @@
 # Scope of Project
-At the moment, this project's scope is generally limited outside of adding new content to the game (blocks, mobs, items). We are currently prioritizing stability, quality of life, and platform support over these things.
+At the moment, this project's scope is focused on adding gameplay content to the game (blocks, mobs, items, mechanics) following the original release order of Minecraft: Legacy Console Edition Title Updates, **starting from TU19** (Xbox 360 Edition, December 18, 2014) and moving forward from there.
+
+All content from Title Updates prior to TU25 is considered already present in the base game. We do not reimplement or revisit pre-TU25 content unless it is buggy or broken.
 
 ## Parity
-We are attempting to keep our version of LCE as close to visual and experience parity with the original console experience of LCE as possible. This means that we will not be accepting changes that...
-- Backport things from Java Edition that did not ever exist in LCE
-- Swap out LCE visuals for Java Edition or Bedrock Edition style visuals
-- Change LCE defaults in favor of different defaults if it changes the experience
-  - For example, increasing mob spawn limits without increasing the area mobs can spawn within, aka increasing mob density past what was the original console experience
-- Redesign UI components different than LCE
-- Break controller support, or otherwise do not support play with a controller
-- Add custom texture packs or DLC that never existed in LCE
-- Add any gameplay content (block, item, mob) that has no existing point of reference in any official LCE build
+We are implementing LCE content as it existed at the time of each Title Update, in the order they were originally released. This means we will not be accepting changes that...
+- Add blocks, items, mobs, or mechanics from a Title Update that has not yet been reached in our current milestone order
+  - For example, submitting content from TU27 while we are still targeting TU25
+- Backport things from Java Edition or Bedrock Edition that did not exist in LCE at the relevant milestone
+- Add placeholder or stub implementations of content that are non-functional or misleading
+  - For example, a mob with no AI, drops, or behavior, or a block with no crafting recipe or broken interactions
+- Implement content in a way that is visually or behaviorally inconsistent with how it functioned in the original LCE build at that milestone
+- Add any gameplay content (block, item, mob) that has no existing point of reference in any official LCE Title Update
 
 However, we would accept changes that...
-- Fix legitimately buggy or inconsistent behavior in LCE that causes unexpected outcomes
-  - For example, mobs clipping outside of walls, clipping through the world, broken mechanics
-- Add features to better support multi-platform use of LCE, such as video and control settings
-  - These menus need to respect the visual style of LCE, though.
-- Replace existing UI systems with SWF-free rendering techniques that are as visually and functionally identical as possible
+- Faithfully implement content from the current target milestone in a complete, correct, and stable state
+- Fix legitimately buggy or inconsistent behavior in already-implemented content that causes unexpected outcomes
+  - For example, mobs clipping outside of walls, broken crafting recipes, or mechanics behaving inconsistently with the original
+- Adding minimal, non-invasive Quality of Life features that support playability without straying from the core LCE experience
 - Improve the quality of assets (such as sounds) while preserving their contents
   - For example, upgrading the quality of all music in-game while preserving any unique cuts / versions, or faithfully remaking those unique cuts / versions with higher quality assets
-- Backport things like modern skin rendering
-- Change the code from using non-stitched textures to individually named texture PNGs and stitching at runtime
-- Adding menus to better support custom dedicated servers with their own fixed IPs
-- Add support for things like Steamworks Networking and other P2P networking and auth strategies
-- Improve Keyboard and Mouse control support
-- Add minimal, non-invasive Quality of Life features that don't otherwise compromise the LCE experience
-  - For example, adjusting certain crafting recipes or change item behaviors like non-stackable doors 
-
+- Improve platform support, stability, or performance in ways that are transparent to the player and preserve the original look and feel
 
 ## Current Goals
-- Being a robust Desktop version of LCE
-- Having proper controller support across all types, brands on Desktop or Desktop-like platforms (Steam Deck)
-- Improving stability as much as possible
-- Fixing as many bugs as possible
-- Enabling Desktop multiplayer options
-  - LAN P2P Multiplayer
-  - Splitscreen Multiplayer
-  - WAN Servers (IP:Port connectivity)
-  - Platform-based P2P Connectivity
-    - Steam Networking
-    - GameDate?
-    - Maybe more?
-- Refining rendering settings, renderer options, as well as reaching rendering parity with true LCE
-- Having workable multi-platform compilation for ARM, Consoles, Linux
-- Being a good base for further expansion and modding of LCE, such as backports and "modpacks".
+- Implementing all title updates LCE had.
+
+## Definition of "Complete" Content
+A feature is not ready to merge until it meets a reasonable standard of completeness. This includes, at minimum:
+- Correct world generation presence or spawn behavior (where applicable)
+- Proper crafting recipe(s) or acquisition method(s)
+- Correct inventory and tooltip representation
+- Correct drops on destruction or death
+- Functional interactions with other content present at the same milestone
+- No crashes, soft-locks, or game-breaking bugs introduced by the feature
+
+If a feature cannot be implemented fully yet, it should not be implemented at all until it can be.
 
 # Scope of PRs
-All Pull Requests should fully document the changes they include in their file changes. They should also be limited to one general topic and not touch all over the codebase unless its justifiable. 
+All Pull Requests should fully document the changes they include in their file changes. They should also be limited to one general topic and not touch all over the codebase unless its justifiable.
 
-For example, we would not accept a PR that reworks UI, multiplayer code, and furnace ticking even if its a "fixup" PR as its too difficult to review a ton of code changes that are all irrelevant from each other. However, a PR focused on adding a bunch of commands or fixes several crashes that are otherwise irrelevant to each other would be accepted. 
+For example, we would not accept a PR that implements new blocks alongside unrelated mob AI fixes and an audio system rework, as its too difficult to review a ton of code changes that are all irrelevant from each other. However, a PR that implements a new block along with its crafting recipes, world rendering, and inventory icons would be accepted as it is one cohesive topic.
 
 If your PR includes any undocumented changes it will be closed.
 
 # Use of AI and LLMs
-We currently do not accept any new code into the project that was written largely, entirely, or even noticably by an LLM. All contributions should be made by humans that understand the codebase.
+We currently do not accept any new code into the project that was written largely, entirely, or even noticeably by an LLM. All contributions should be made by humans that understand the codebase.
 
 # Pull Request Template
 We request that all PRs made for this repo use our PR template to the fullest extent possible. Completely wiping it out to write minimal information will likely get your PR closed.

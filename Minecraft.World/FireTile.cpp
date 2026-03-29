@@ -5,12 +5,12 @@
 #include "net.minecraft.world.level.tile.h"
 #include "FireTile.h"
 #include "SoundTypes.h"
-#include "..\Minecraft.Client\MinecraftServer.h"
-#include "..\Minecraft.Client\PlayerList.h"
+#include "../Minecraft.Client/MinecraftServer.h"
+#include "../Minecraft.Client/PlayerList.h"
 
 // AP - added for Vita to set Alpha Cut out
 #include "IntBuffer.h"
-#include "..\Minecraft.Client\Tesselator.h"
+#include "../Minecraft.Client/Tesselator.h"
 
 
 const wstring FireTile::TEXTURE_FIRST = L"fire_0";
@@ -45,6 +45,8 @@ void FireTile::init()
 	setFlammable(Tile::stairs_birchwood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::stairs_sprucewood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::stairs_junglewood_Id, FLAME_HARD, BURN_MEDIUM);
+	setFlammable(Tile::stairs_acaciawood_Id, FLAME_HARD, BURN_MEDIUM);
+	setFlammable(Tile::stairs_darkwood_Id, FLAME_HARD, BURN_MEDIUM);
 	setFlammable(Tile::treeTrunk_Id, FLAME_HARD, BURN_HARD);
 	setFlammable(Tile::leaves_Id, FLAME_EASY, BURN_EASY);
 	setFlammable(Tile::bookshelf_Id, FLAME_EASY, BURN_MEDIUM);

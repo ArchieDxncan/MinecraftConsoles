@@ -7,11 +7,11 @@ using namespace std;
 #include "SavedData.h"
 #include "Definitions.h"
 #include "ParticleTypes.h"
-#include "biome.h"
+#include "Biome.h"
 #include "C4JThread.h"
 
 #ifdef __PSVITA__
-#include "..\Minecraft.Client\PSVita\PSVitaExtras\CustomSet.h"
+#include "../Minecraft.Client/PSVita/PSVitaExtras/CustomSet.h"
 #endif
 
 // 4J Stu - This value should be big enough that we don't get any crashes causes by memory overwrites,
@@ -64,7 +64,7 @@ public:
 
 public:
 	static const int MAX_XBOX_BOATS = 60;										// Max number of boats
-	static const int MAX_CONSOLE_MINECARTS = 60;
+	static const int MAX_CONSOLE_MINECARTS = 250;
 	static const int MAX_DISPENSABLE_FIREBALLS = 300;
 	static const int MAX_DISPENSABLE_PROJECTILES = 400;
 

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ColourTable.h"
-#include "..\..\..\Minecraft.World\StringHelpers.h"
+#include "../../../Minecraft.World/StringHelpers.h"
 
 unordered_map<wstring,eMinecraftColour> ColourTable::s_colourNamesMap;
 
@@ -35,6 +35,8 @@ const wchar_t *ColourTable::ColourTableElements[eMinecraftColour_COUNT] =
 	L"Foliage_ExtremeHillsEdge",
 	L"Foliage_Jungle",
 	L"Foliage_JungleHills",
+	L"Foliage_Savanna",
+	L"Foliage_RoofedForest",
 	
 	L"Grass_Common",
 	L"Grass_Ocean",
@@ -60,6 +62,8 @@ const wchar_t *ColourTable::ColourTableElements[eMinecraftColour_COUNT] =
 	L"Grass_ExtremeHillsEdge",
 	L"Grass_Jungle",
 	L"Grass_JungleHills",
+	L"Grass_Savanna",
+	L"Grass_RoofedForest",
 
 	L"Water_Ocean",
 	L"Water_Plains",
@@ -256,6 +260,12 @@ const wchar_t *ColourTable::ColourTableElements[eMinecraftColour_COUNT] =
 	L"Mob_Witch_Colour2",
 	L"Mob_Horse_Colour1",
 	L"Mob_Horse_Colour2",
+	L"Mob_Rabbit_Colour1",
+	L"Mob_Rabbit_Colour2",
+	L"Mob_Endermite_Colour1",
+	L"Mob_Endermite_Colour2",
+
+
 
 	L"Armour_Default_Leather_Colour",
 	L"Under_Water_Clear_Colour",

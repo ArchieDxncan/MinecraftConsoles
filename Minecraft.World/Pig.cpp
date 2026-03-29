@@ -14,7 +14,7 @@
 #include "net.minecraft.world.entity.player.h"
 #include "net.minecraft.world.entity.global.h"
 #include "Pig.h"
-#include "..\Minecraft.Client\Textures.h"
+#include "../Minecraft.Client/Textures.h"
 #include "MobCategory.h"
 
 
@@ -45,6 +45,11 @@ Pig::Pig(Level *level) : Animal( level )
 bool Pig::useNewAi()
 {
 	return true;
+}
+
+bool Pig::removeWhenFarAway()
+{
+	return Animal::removeWhenFarAway() && !hasSaddle();
 }
 
 void Pig::registerAttributes()

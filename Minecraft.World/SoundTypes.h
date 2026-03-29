@@ -213,6 +213,12 @@ enum eSOUND_TYPE
 
 	eSoundType_FIRE_NEWIGNITE,
 
+	eSoundType_MOB_RABBIT_IDLE,
+	eSoundType_MOB_RABBIT_HURT,
+	eSoundType_MOB_RABBIT_DEATH,
+	eSoundType_MOB_RABBIT_HOP,
+	
+
 	eSoundType_MAX
 };
 
