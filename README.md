@@ -24,14 +24,15 @@ Huge thanks to the following projects:
 - [Patoke/LCERenewed](https://github.com/Patoke/LCERenewed) - for some of the patches that required deep decompilation
 - [smartcmd/MinecraftConsoles](https://github.com/smartcmd/MinecraftConsoles) - for creating such a great repo
 
-## Build & Run
+# Build & Run
 
+## Windows
 1. Install [Visual Studio 2022](https://aka.ms/vs/17/release/vs_community.exe) or [newer](https://visualstudio.microsoft.com/downloads/).
 2. Clone the repository.
 3. Open the project folder from Visual Studio.
 4. Set the build configuration to **Windows64 - Debug** (Release is also ok but missing some debug features), then build and run.
 
-### GNU/Linux
+## GNU/Linux
 
 We provide both a generic build script and a Nix flake.
 
