@@ -12,7 +12,7 @@ This project aims to backport the newer title updates back to the Minecraft: Leg
 
 - Port Title Update 31 (76.12% complete)
 
-See our our [Contributor's Guide](./CONTRIBUTING.md) for more information on the goals of this project.
+See our [Contributor's Guide](./CONTRIBUTING.md) for more information on the goals of this project.
 
 # Download
 Users can download our [Nightly Build](https://codeberg.org/piebot/LegacyEvolved/releases)! Simply download the `.zip` file and extract it!
