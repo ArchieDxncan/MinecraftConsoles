@@ -204,6 +204,7 @@ Tile *Tile::cobbleWall = nullptr;
 Tile *Tile::flowerPot = nullptr;
 Tile *Tile::carrots = nullptr;
 Tile *Tile::potatoes = nullptr;
+Tile *Tile::beetroots = nullptr;
 Tile *Tile::anvil = nullptr;
 Tile *Tile::chest_trap = nullptr;
 Tile *Tile::weightedPlate_light = nullptr;
@@ -489,6 +490,7 @@ void Tile::staticCtor()
 
 	Tile::carrots =			(new CarrotTile(141))					->setIconName(L"carrots")->setDescriptionId(IDS_TILE_CARROTS)->setUseDescriptionId(IDS_DESC_CARROTS)->disableMipmap();
 	Tile::potatoes =		(new PotatoTile(142))					->setIconName(L"potatoes")->setDescriptionId(IDS_TILE_POTATOES)->setUseDescriptionId(IDS_DESC_POTATO)->disableMipmap();
+	Tile::beetroots =		(new BeetrootTile(beetroots_Id))		->setIconName(L"beetroots")->setDescriptionId(IDS_TILE_BEETROOTS)->setUseDescriptionId(IDS_DESC_BEETROOTS)->disableMipmap();
 	Tile::button_wood =		(new WoodButtonTile(143))			->setBaseItemTypeAndMaterial(Item::eBaseItemType_button,	Item::eMaterial_wood)->setDestroyTime(0.5f)->setSoundType(Tile::SOUND_WOOD)->setIconName(L"button")->setDescriptionId(IDS_TILE_BUTTON)->sendTileData()->setUseDescriptionId(IDS_DESC_BUTTON);
 	Tile::skull =			(new SkullTile(144))					->setDestroyTime(1.0f)->setSoundType(SOUND_STONE)->setIconName(L"skull")->setDescriptionId(IDS_TILE_SKULL)->setUseDescriptionId(IDS_DESC_SKULL);
 	Tile::anvil =			(new AnvilTile(145))					->setBaseItemTypeAndMaterial(Item::eBaseItemType_device, Item::eMaterial_iron)->setDestroyTime(5.0f)->setSoundType(SOUND_ANVIL)->setExplodeable(2000)->setIconName(L"anvil")->sendTileData()->setDescriptionId(IDS_TILE_ANVIL)->setUseDescriptionId(IDS_DESC_ANVIL);
@@ -1338,7 +1340,15 @@ void Tile::playerDestroy(Level *level, shared_ptr<Player> player, int x, int y, 
 	}
 	else if (id == Tile::carrots_Id)
 	{
-		if (Tile::potatoes->getResource(data, nullptr, 0) > 0)
+		if (Tile::carrots->getResource(data, nullptr, 0) > 0)
+			player->awardStat(
+			GenericStats::blocksMined(id),
+			GenericStats::param_blocksMined(id,data,1)
+			);
+	}
+	else if (id == Tile::beetroots_Id)
+	{
+		if (Tile::beetroots->getResource(data, nullptr, 0) > 0)
 			player->awardStat(
 			GenericStats::blocksMined(id),
 			GenericStats::param_blocksMined(id,data,1)
@@ -1826,6 +1836,7 @@ const int Tile::cobbleWall_Id;
 const int Tile::flowerPot_Id;
 const int Tile::carrots_Id;
 const int Tile::potatoes_Id;
+const int Tile::beetroots_Id;
 const int Tile::anvil_Id;
 const int Tile::button_wood_Id;
 const int Tile::skull_Id;
