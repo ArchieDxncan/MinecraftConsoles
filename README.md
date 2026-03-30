@@ -1,21 +1,53 @@
 ![Legacy Edition Banner](.github/banner.png)
+
 # Minecraft: Legacy Console Edition
-This is my own fork, this will be used for testing out my own features, adding code from other projects and merging commits from the main repo that are yet to be merged.
 
-# Info
-Please refer to the other projects for build instructions, etc as they will not be provided here.
+This repository is my personal fork of the Minecraft: Legacy Console Edition source.  
+It is primarily used for:
 
-Included Projects:
-https://github.com/smartcmd/MinecraftConsoles
-This project is based on source code of Minecraft Legacy Console Edition v1.6.0560.0 (TU19) with some fixes and improvements applied. 
+- Testing new features.
+- Integrating code from other projects.
+- Merging upstream commits that have not yet been officially merged.
 
-https://codeberg.org/piebot/LegacyEvolved
-This project aims to backport the newer title updates back to the Minecraft: Legacy Console Edition Source Code Leak (which is based on TU19).
+---
 
-Merged Pull Requests:
-https://github.com/smartcmd/MinecraftConsoles/pull/1429
-https://github.com/smartcmd/MinecraftConsoles/pull/1065
-https://github.com/smartcmd/MinecraftConsoles/pull/1350
+## 📌 Information
 
-What I've added:
-(TU43) Beetroot, Beetroot Seeds & Beetroot Soup
+Build instructions and setup are **not included here**.  
+Please refer to the original projects listed below for documentation.
+
+---
+
+## 📦 Included Projects
+
+### 🔹 MinecraftConsoles  
+https://github.com/smartcmd/MinecraftConsoles  
+
+Based on **Minecraft Legacy Console Edition v1.6.0560.0 (TU19)**, with various fixes and improvements.
+
+---
+
+### 🔹 LegacyEvolved  
+https://codeberg.org/piebot/LegacyEvolved  
+
+A project focused on **backporting newer title updates** to the leaked TU19-based source code.
+
+---
+
+## 🔀 Merged Pull Requests
+
+The following pull requests have been merged into this fork:
+
+- https://github.com/smartcmd/MinecraftConsoles/pull/1429  
+- https://github.com/smartcmd/MinecraftConsoles/pull/1065  
+- https://github.com/smartcmd/MinecraftConsoles/pull/1350  
+
+---
+
+## ✨ Additions
+
+The following features have been added:
+
+- (TU43) Beetroot, Beetroot Seeds, Beetroot Soup
+
+---
