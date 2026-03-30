@@ -120,7 +120,7 @@ int HumanoidMobRenderer::prepareArmor(shared_ptr<LivingEntity> _mob, int layer, 
 			setArmor(armor);
 			armor->attackTime = model->attackTime;
 			armor->riding = model->riding;
-			armor->young = model->young;
+			armor->young = mob->isBaby();
 
 			float brightness = SharedConstants::TEXTURE_LIGHTING ? 1 : mob->getBrightness(a);
 			if (armorItem->getMaterial() == ArmorItem::ArmorMaterial::CLOTH)

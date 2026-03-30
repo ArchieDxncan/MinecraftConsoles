@@ -97,6 +97,16 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	if (armor != nullptr) armor->riding = resModel->riding;
 	resModel->young = mob->isBaby();
 	if (armor != nullptr) armor->young = resModel->young;
+	// Player uses multiple HumanoidModel instances (32/64, slim); only resModel was updated above.
+	// Keep the others in sync so no instance keeps Model()'s stale young flag for one frame.
+	if (player != nullptr)
+	{
+		const bool baby = resModel->young;
+		model->young = baby;
+		if (modelSlim) modelSlim->young = baby;
+		if (newModel) newModel->young = baby;
+		if (newModelSlim) newModelSlim->young = baby;
+	}
 
 	/*try*/
 	{

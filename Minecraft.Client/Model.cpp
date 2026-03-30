@@ -6,7 +6,8 @@
 Model::Model() 
 { 
 	riding = false; 
-	young=true; 
+	// Default adult; baby/child scale is driven by LivingEntityRenderer from mob->isBaby().
+	young = false;
 	texWidth=64; 
 	texHeight=32;
 }	
