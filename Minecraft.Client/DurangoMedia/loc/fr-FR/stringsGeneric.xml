@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_TIPS_GAMETIP_NEWDLC">
 		<value>Un nouveau contenu téléchargeable est disponible ! Pour y accéder, utilisez le bouton Magasin Minecraft dans le menu principal.</value>
 	</data>	
@@ -7870,4 +7870,29 @@ Tous les coffres du Néant d'un monde sont liés. Les objets placés dans un cof
   <data name="IDS_PROGRESS_NEW_WORLD_SEED">
     <value>Recherche de graines pour le générateur de monde</value>
   </data>
+
+	<data name="IDS_TILE_BEETROOTS">
+		<value>Beetroots</value>
+	</data>
+	<data name="IDS_DESC_BEETROOTS">
+		<value>Beetroots grow from beetroot seeds on hydrated farmland.</value>
+	</data>
+	<data name="IDS_ITEM_BEETROOT_SEEDS">
+		<value>Beetroot Seeds</value>
+	</data>
+	<data name="IDS_DESC_BEETROOT_SEEDS">
+		<value>Can be planted in farmland to grow beetroot.</value>
+	</data>
+	<data name="IDS_BEETROOT">
+		<value>Beetroot</value>
+	</data>
+	<data name="IDS_DESC_BEETROOT">
+		<value>Restores hunger when eaten. Can be crafted into beetroot soup or red dye.</value>
+	</data>
+	<data name="IDS_ITEM_BEETROOT_SOUP">
+		<value>Beetroot Soup</value>
+	</data>
+	<data name="IDS_DESC_BEETROOT_SOUP">
+		<value>Restores hunger when eaten. You keep the bowl when the soup is finished.</value>
+	</data>
 </root>

@@ -41,4 +41,6 @@ public:
 
 	//@Override
     virtual void registerIcons(IconRegister *iconRegister);
+
+	virtual wstring getHoverName(shared_ptr<ItemInstance> itemInstance);
 };

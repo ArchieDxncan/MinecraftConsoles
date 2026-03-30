@@ -219,3 +219,13 @@ void TileItem::registerIcons(IconRegister *iconRegister)
 		itemIcon = iconRegister->registerIcon(iconName);
 	}
 }
+
+wstring TileItem::getHoverName(shared_ptr<ItemInstance> itemInstance)
+{
+	LPCWSTR s = app.GetString(getDescriptionId(itemInstance));
+	if (s && s[0])
+		return s;
+	if (tileId == Tile::beetroots_Id + 256)
+		return L"Beetroots";
+	return s ? wstring(s) : L"";
+}

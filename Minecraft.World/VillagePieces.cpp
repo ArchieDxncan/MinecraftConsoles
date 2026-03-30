@@ -1761,7 +1761,7 @@ VillagePieces::Farmland::Farmland(StartPiece *startPiece, int genDepth, Random *
 
 int VillagePieces::Farmland::selectCrops(Random *random)
 {
-	switch (random->nextInt(5))
+	switch (random->nextInt(6))
 	{
 	default:
 		return Tile::wheat_Id;
@@ -1769,6 +1769,8 @@ int VillagePieces::Farmland::selectCrops(Random *random)
 		return Tile::carrots_Id;
 	case 1:
 		return Tile::potatoes_Id;
+	case 2:
+		return Tile::beetroots_Id;
 	}
 }
 
@@ -1887,7 +1889,7 @@ void VillagePieces::DoubleFarmland::readAdditonalSaveData(CompoundTag *tag)
 
 int VillagePieces::DoubleFarmland::selectCrops(Random *random)
 {
-	switch (random->nextInt(5))
+	switch (random->nextInt(6))
 	{
 	default:
 		return Tile::wheat_Id;
@@ -1895,6 +1897,8 @@ int VillagePieces::DoubleFarmland::selectCrops(Random *random)
 		return Tile::carrots_Id;
 	case 1:
 		return Tile::potatoes_Id;
+	case 2:
+		return Tile::beetroots_Id;
 	}
 }
 

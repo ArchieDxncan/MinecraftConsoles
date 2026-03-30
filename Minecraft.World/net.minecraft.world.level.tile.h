@@ -15,6 +15,7 @@
 #include "CactusTile.h"
 #include "CakeTile.h"
 #include "CarrotTile.h"
+#include "BeetrootTile.h"
 #include "CauldronTile.h"
 #include "ChestTile.h"
 #include "ClayTile.h"

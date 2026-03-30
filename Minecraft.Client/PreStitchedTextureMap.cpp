@@ -536,9 +536,9 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(11,	15,	L"dyePowder_white")
 
 		ADD_ICON(12,	0,	L"bootsCloth_overlay")
-		//ADD_ICON(12,	1,	L"unused")
-		//ADD_ICON(12,	2,	L"unused")
-		//ADD_ICON(12,	3,	L"unused")
+		ADD_ICON(12,	1,	L"beetroot_seeds")
+		ADD_ICON(12,	2,	L"beetroot")
+		ADD_ICON(12,	3,	L"beetroot_soup")
 		ADD_ICON(12,	4,	L"muttonCooked")
 		ADD_ICON(12,	5,	L"rabbitCooked")
 		ADD_ICON(12,	6,	L"salmonRaw")
@@ -1051,6 +1051,11 @@ void PreStitchedTextureMap::loadUVs()
 		ADD_ICON(23, 12, L"packed_ice");
 		ADD_ICON(23, 14, L"inverted_daylight_detector");
 		ADD_ICON(23, 15, L"iron_trapdoor");
+
+		ADD_ICON(24, 5, L"beetroots_stage_0");
+		ADD_ICON(24, 6, L"beetroots_stage_1");
+		ADD_ICON(24, 7, L"beetroots_stage_2");
+		ADD_ICON(24, 8, L"beetroots_stage_3");
 
 		ADD_ICON(24, 0, L"door_acacia_lower");
 		ADD_ICON(24, 1, L"door_birch_lower");
