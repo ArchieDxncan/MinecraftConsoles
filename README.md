@@ -1,4 +1,4 @@
-![Logo](.github/minecraft_title.png)
+![Logo](.gitea/minecraft_title.png)
 # Legacy Evolved
 This project aims to backport the newer title updates back to the Minecraft: Legacy Console Edition Source Code Leak (which is based on TU19).
 
@@ -6,7 +6,7 @@ This project aims to backport the newer title updates back to the Minecraft: Leg
 
 
 # Our roadmap:
-![Roadmap](.github/roadmap.png)
+![Roadmap](.gitea/roadmap.png)
 
 - Port Title Update 25 (98.21% complete)
 
