@@ -2,8 +2,14 @@ name: Nightly Release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '30 23 * * *'  # 11:30 PM UTC
+  push:
+    branches:
+      - 'main'
+    paths-ignore:
+      - '.gitignore'
+      - '*.md'
+      - '.gitea/**'
+      - '!.gitea/workflows/nightly.yml'
 
 permissions:
   contents: write
@@ -14,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: codeberg-medium
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: https://code.forgejo.org/actions/checkout@v4
@@ -49,7 +55,7 @@ jobs:
       - name: Build
         run: |
           chmod +x build-linux.sh
-          INSTALL_PREFIX=$PWD/result BUILD_CI=1 ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
+          INSTALL_PREFIX=$PWD/result BUILD_CI=0 ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release || INSTALL_PREFIX=$PWD/result ./build-linux.sh . Release
 
       - name: Package artifacts
         run: |
@@ -71,7 +77,7 @@ jobs:
 
   release:
     needs: build
-    runs-on: codeberg-small
+    runs-on: ubuntu-24.04
     steps:
       - name: Download build artifacts
         uses: https://code.forgejo.org/actions/download-artifact@v3
@@ -79,70 +85,37 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Publish nightly release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ forge.repository }}
-          API: ${{ forge.server_url }}/api/v1
+      - name: Fix Forgejo env compatibility
         run: |
-          set -euo pipefail
-          TAG="nightly"
-          AUTH="Authorization: token $GITHUB_TOKEN"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "$AUTH" \
-            "$API/repos/$REPO/releases/tags/$TAG")
-          if [[ "$HTTP_STATUS" == "200" ]]; then
-            echo "[info] Updating existing nightly release..."
-            RELEASE=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/tags/$TAG")
-            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
-            ASSETS=$(curl -s -H "$AUTH" "$API/repos/$REPO/releases/$RELEASE_ID/assets")
-            for ASSET_ID in $(echo "$ASSETS" | jq -r '.[].id'); do
-              curl -s -X DELETE -H "$AUTH" \
-                "$API/repos/$REPO/releases/$RELEASE_ID/assets/$ASSET_ID"
-            done
-            curl -s -X PATCH \
-              -H "$AUTH" -H "Content-Type: application/json" \
-              "$API/repos/$REPO/releases/$RELEASE_ID" \
-              -d '{
-                "name": "Nightly Release",
-                "prerelease": true,
-                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
-              }'
-          else
-            echo "[info] Creating new nightly release..."
-            RELEASE=$(curl -s -X POST \
-              -H "$AUTH" -H "Content-Type: application/json" \
-              "$API/repos/$REPO/releases" \
-              -d '{
-                "tag_name": "'"$TAG"'",
-                "name": "Nightly Release",
-                "prerelease": true,
-                "body": "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
-              }')
-            RELEASE_ID=$(echo "$RELEASE" | jq -r '.id')
-          fi
+          echo "FORGEJO_PATH=$GITHUB_PATH" >> $GITHUB_ENV
+          echo "FORGEJO_ENV=$GITHUB_ENV" >> $GITHUB_ENV
 
-          echo "[info] Uploading assets..."
-          for FILE in artifacts/*; do
-            FILENAME=$(basename "$FILE")
-            curl -s -X POST \
-              -H "$AUTH" \
-              -F "attachment=@$FILE;filename=$FILENAME" \
-              "$API/repos/$REPO/releases/$RELEASE_ID/assets" > /dev/null
-          done
+      - name: Publish nightly release
+        uses: https://code.forgejo.org/actions/forgejo-release@v2.11.1
+        with:
+          direction: upload
+          url: ${{ forge.server_url }}
+          repo: ${{ forge.repository }}
+          token: ${{ forge.token }}
+          tag: nightly
+          prerelease: true
+          override: true
+          verbose: true
+          release-dir: artifacts/build-windows64
+          release-notes: "Requires at least Windows 7 and a DirectX 11 compatible GPU.\n\n# 🚨 First time here? 🚨\nDownload `LCEWindows64.zip` and extract it."
 
   cleanup:
     needs: [build, release]
     if: always()
-    runs-on: codeberg-tiny
+    runs-on: ubuntu-24.04
     steps:
       - name: Delete build artifacts
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORGE_TOKEN: ${{ forge.token }}
           REPO: ${{ forge.repository }}
           API: ${{ forge.server_url }}/api/v1
         run: |
-          AUTH="Authorization: token $GITHUB_TOKEN"
+          AUTH="Authorization: token $FORGE_TOKEN"
 
           ARTIFACTS=$(curl -s -H "$AUTH" \
             "$API/repos/$REPO/actions/artifacts?name=build-windows64")
