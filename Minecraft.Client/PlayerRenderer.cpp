@@ -106,9 +106,10 @@ int PlayerRenderer::prepareArmor(shared_ptr<LivingEntity> _player, int layer, fl
             armor->leg1->visible = layer == 2 || layer == 3;
 
             setArmor(armor);
-			if (armor != nullptr) armor->attackTime = model->attackTime;
-			if (armor != nullptr) armor->riding = model->riding;
-			if (armor != nullptr) armor->young = model->young;
+			// Sync from entity, not default model: players use newModel/newModelSlim for the body; model is not updated each frame.
+			if (armor != nullptr) armor->attackTime = getAttackAnim(_player, a);
+			if (armor != nullptr) armor->riding = _player->isRiding();
+			if (armor != nullptr) armor->young = player->isBaby();
 
 			float brightness = SharedConstants::TEXTURE_LIGHTING ? 1 : player->getBrightness(a);
 			if (armorItem->getMaterial() == ArmorItem::ArmorMaterial::CLOTH)
@@ -272,6 +273,10 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 			pModelPart->visible=true;
 		}
 	}
+
+	// Armor is rendered on separate HumanoidModel instances; they must match the body's baby/adult scale.
+	armorParts1->young = mob->isBaby();
+	armorParts2->young = mob->isBaby();
 
     LivingEntityRenderer::render(mob, x, yp, z, rot, a);
 
