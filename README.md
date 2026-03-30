@@ -1,6 +1,6 @@
 ![Legacy Edition Banner](.github/banner.png)
-# Minecraft: ArchieDxncan Edition (Legacy Console Edition)
-# This is my own fork, this will be used for testing out my own features, adding code from other projects and merging commits from the main repo that are yet to be merged.
+# Minecraft: Legacy Console Edition
+This is my own fork, this will be used for testing out my own features, adding code from other projects and merging commits from the main repo that are yet to be merged.
 
 # Info
 Please refer to the other projects for build instructions, etc as they will not be provided here.
