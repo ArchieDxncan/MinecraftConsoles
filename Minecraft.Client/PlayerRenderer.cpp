@@ -618,34 +618,30 @@ void PlayerRenderer::renderHand()
 	armorParts1->eating = armorParts2->eating = resModel->eating = resModel->idle = false;
 	resModel->attackTime = 0;
 	resModel->setupAnim(0, 0, 0, 0, 0, 1 / 16.0f, Minecraft::GetInstance()->player);
-	// 4J-PB - does this skin have its arm0 disabled? (Dalek, etc)
-	if((humanoidModel->m_uiAnimOverrideBitmask&(1<<HumanoidModel::eAnim_DisableRenderArm0))==0)
-	{
-		humanoidModel->arm0->render(1 / 16.0f,true);
-	}
 
-
-	//Render custom skin boxes on viewmodel - Botch
+	//Render custom skin boxes on viewmodel - Botch (only when the skin defines extra parts; do not skip main arm below)
 	vector<ModelPart*>* additionalModelParts = Minecraft::GetInstance()->player->GetAdditionalModelParts();
-	if (!additionalModelParts) return; //If there are no custom boxes, return. This fixes bug where the game will crash if you select a skin with no additional boxes.
-	vector<ModelPart*> armchildren = humanoidModel->arm0->children;
-	std::unordered_set<ModelPart*> additionalModelPartSet(additionalModelParts->begin(), additionalModelParts->end());
-	for (const auto& x : armchildren) {
-		if (x) {
-			if (additionalModelPartSet.find(x) != additionalModelPartSet.end()) { //This is to verify box is still actually on current skin - Botch
-				glPushMatrix();
-				//We need to transform to match offset of arm - Botch
-				glTranslatef(-5 * 0.0625f, 2 * 0.0625f, 0);
-				glRotatef(0.1 * (180.0f / PI), 0, 0, 1);
-				x->visible = true;
-				x->render(1.0f / 16.0f, true);
-				x->visible = false;
-				glPopMatrix();
+	if (additionalModelParts)
+	{
+		vector<ModelPart*> armchildren = humanoidModel->arm0->children;
+		std::unordered_set<ModelPart*> additionalModelPartSet(additionalModelParts->begin(), additionalModelParts->end());
+		for (const auto& x : armchildren) {
+			if (x) {
+				if (additionalModelPartSet.find(x) != additionalModelPartSet.end()) { //This is to verify box is still actually on current skin - Botch
+					glPushMatrix();
+					//We need to transform to match offset of arm - Botch
+					glTranslatef(-5 * 0.0625f, 2 * 0.0625f, 0);
+					glRotatef(0.1 * (180.0f / PI), 0, 0, 1);
+					x->visible = true;
+					x->render(1.0f / 16.0f, true);
+					x->visible = false;
+					glPopMatrix();
+				}
 			}
 		}
 	}
 
-	
+	// 4J-PB - does this skin have its arm0 disabled? (Dalek, etc) — single draw using the active skin model (avoids double arm with humanoidModel + resModel)
 	if((resModel->m_uiAnimOverrideBitmask&(1<<HumanoidModel::eAnim_DisableRenderArm0))==0)
 		resModel->arm0->render(1 / 16.0f,true);
 }
