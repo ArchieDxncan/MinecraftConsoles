@@ -150,7 +150,6 @@ void Packet::staticCtor()
 	//map(253, true, false, ServerAuthDataPacket.class);
 	map(254, false, true, false, false, typeid(GetInfoPacket), GetInfoPacket::create); // TODO New for 1.8.2 - Needs sendToAny?
 	map(255, true, true, true, false, typeid(DisconnectPacket), DisconnectPacket::create);
-	map(72, true, true, true, false, typeid(AuthPacket), AuthPacket::create);
 }
 
 IllegalArgumentException::IllegalArgumentException(const wstring& information)
