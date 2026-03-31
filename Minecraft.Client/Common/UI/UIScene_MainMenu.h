@@ -144,13 +144,7 @@ private:
 	void RunHelpAndOptions(int iPad);
 
 	void RunAction(int iPad);
-
-	static void ShowAuthMenu(int iPad, void *pClass);
-	static void ShowAuthAddMenu(int iPad, void *pClass);
-	static int AuthMenuReturned(void *pParam, int iPad, C4JStorage::EMessageResult result);
-	static int AuthAddMenuReturned(void *pParam, int iPad, C4JStorage::EMessageResult result);
-	static int AuthKeyboardReturned(LPVOID lpParam, const bool bRes);
-
+	
 	static void LoadTrial();
 
 #ifdef _XBOX_ONE

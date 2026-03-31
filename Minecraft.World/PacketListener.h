@@ -111,7 +111,6 @@ class KickPlayerPacket;
 class AdditionalModelPartsPacket;
 class XZPacket;
 class GameCommandPacket;
-class AuthPacket;
 
 class PacketListener
 {
@@ -228,6 +227,4 @@ public:
 	virtual void handleKickPlayer(shared_ptr<KickPlayerPacket> packet);
 	virtual void handleXZ(shared_ptr<XZPacket> packet);
 	virtual void handleGameCommand(shared_ptr<GameCommandPacket> packet);
-
-	virtual void handleAuth(const shared_ptr<AuthPacket> &packet);
 };
