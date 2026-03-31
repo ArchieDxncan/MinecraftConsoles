@@ -58,14 +58,14 @@ enum eSOUND_TYPE
 	eSoundType_MOB_CAT_PURREOW,
 	eSoundType_MOB_CAT_MEOW,
 	eSoundType_MOB_CAT_HIT,
-//	eSoundType_MOB_IRONGOLEM_THROW,
-//	eSoundType_MOB_IRONGOLEM_HIT,
-//	eSoundType_MOB_IRONGOLEM_DEATH,
-//	eSoundType_MOB_IRONGOLEM_WALK,
+	//	eSoundType_MOB_IRONGOLEM_THROW,
+	//	eSoundType_MOB_IRONGOLEM_HIT,
+	//	eSoundType_MOB_IRONGOLEM_DEATH,
+	//	eSoundType_MOB_IRONGOLEM_WALK,
 	eSoundType_RANDOM_BOW,
 	eSoundType_RANDOM_BOW_HIT,
 	eSoundType_RANDOM_EXPLODE,
-	eSoundType_RANDOM_FIZZ,	
+	eSoundType_RANDOM_FIZZ,
 	eSoundType_RANDOM_POP,
 	eSoundType_RANDOM_FUSE,
 	eSoundType_RANDOM_DRINK,
@@ -217,7 +217,13 @@ enum eSOUND_TYPE
 	eSoundType_MOB_RABBIT_HURT,
 	eSoundType_MOB_RABBIT_DEATH,
 	eSoundType_MOB_RABBIT_HOP,
-	
+
+		eSoundType_MOB_PHANTOM_BITE,
+eSoundType_MOB_PHANTOM_DEATH,
+eSoundType_MOB_PHANTOM_FLAP,
+eSoundType_MOB_PHANTOM_HURT,
+eSoundType_MOB_PHANTOM_IDLE,
+eSoundType_MOB_PHANTOM_SWOOP,
 
 	eSoundType_MAX
 };

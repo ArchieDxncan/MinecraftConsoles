@@ -82,6 +82,7 @@
 #include "BatRenderer.h"
 #include "CaveSpiderRenderer.h"
 #include "RabbitRenderer.h"
+#include "PhantomRenderer.h"
 #include "ArmorStandRenderer.h"
 #include "EndermiteRenderer.h"
 #include "MobRenderer.h"
@@ -136,6 +137,7 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 	renderers[eTYPE_WITHERBOSS] = new WitherBossRenderer();
 
 	renderers[eTYPE_RABBIT] = new RabbitRenderer();
+	renderers[eTYPE_PHANTOM] = new PhantomRenderer();
 
 	renderers[eTYPE_ENTITY] = new DefaultRenderer();
 	renderers[eTYPE_PAINTING] = new PaintingRenderer();        

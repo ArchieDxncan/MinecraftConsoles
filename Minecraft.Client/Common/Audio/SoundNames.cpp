@@ -229,7 +229,13 @@ const WCHAR *ConsoleSoundEngine::wchSoundNames[eSoundType_MAX]=
 	L"mob.rabbit.bunnymurder",
 	L"mob.rabbit.hop",
 
-
+	
+	L"mob.phantom.bite",    // eSoundType_MOB_PHANTOM_BITE
+	L"mob.phantom.death",   // eSoundType_MOB_PHANTOM_DEATH
+	L"mob.phantom.flap",    // eSoundType_MOB_PHANTOM_FLAP
+	L"mob.phantom.hurt",    // eSoundType_MOB_PHANTOM_HURT
+	L"mob.phantom.idle",    // eSoundType_MOB_PHANTOM_IDLE
+	L"mob.phantom.swoop",   // eSoundType_MOB_PHANTOM_SWOOP
 
 };
 

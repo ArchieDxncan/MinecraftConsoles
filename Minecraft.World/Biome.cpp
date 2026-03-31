@@ -148,9 +148,9 @@ Biome::Biome(int id) : id(id)
     biomes[id] = this;
     decorator = createDecorator();
 
-    // -- FIX FIORI ED ERBA GLOBALI --
-    decorator->flowerCount = 2; // Valore base di fiori (esclusi biomi speciali che ne sovrascrivono il numero)
-    decorator->grassCount = 1;  // Valore base di erba alta
+    
+    decorator->flowerCount = 2; 
+    decorator->grassCount = 1;  
 
     friendlies.push_back(new MobSpawnerData(eTYPE_SHEEP, 12, 4, 4));
     friendlies.push_back(new MobSpawnerData(eTYPE_PIG, 10, 4, 4));
@@ -164,6 +164,7 @@ Biome::Biome(int id) : id(id)
     enemies.push_back(new MobSpawnerData(eTYPE_SLIME, 10, 4, 4));
     enemies.push_back(new MobSpawnerData(eTYPE_ENDERMAN, 1, 1, 4));
     enemies.push_back(new MobSpawnerData(eTYPE_WITCH, 1, 1, 1));
+    enemies.push_back(new MobSpawnerData(eTYPE_PHANTOM, 5, 1, 2));
 
     waterFriendlies.push_back(new MobSpawnerData(eTYPE_SQUID, 10, 4, 4));
     ambientFriendlies.push_back(new MobSpawnerData(eTYPE_BAT, 10, 8, 8));
