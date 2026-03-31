@@ -491,3 +491,8 @@ void PacketListener::handleGameCommand(shared_ptr<GameCommandPacket> packet)
 {
 	onUnhandledPacket( (shared_ptr<Packet> ) packet);
 }
+
+void PacketListener::handleAuth(const shared_ptr<AuthPacket> &packet)
+{
+	onUnhandledPacket( (shared_ptr<Packet> ) packet);
+}

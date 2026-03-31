@@ -2948,7 +2948,7 @@ C4JStorage::EMessageResult UIController::RequestMessageBox(UINT uiTitle, UINT ui
 														   int( *Func)(LPVOID,int,const C4JStorage::EMessageResult),LPVOID lpParam, WCHAR *pwchFormatString,DWORD dwFocusButton, bool bIsError)
 
 {
-	MessageBoxInfo param;
+	MessageBoxInfo param = {};
 	param.uiTitle = uiTitle;
 	param.uiText = uiText;
 	param.uiOptionA = uiOptionA;

@@ -10,6 +10,7 @@ class ConnectScreen : public Screen
 private:
 	ClientConnection *connection;
     bool aborted;
+	bool preLoginSent;
 public:
 	ConnectScreen(Minecraft *minecraft, const wstring& ip, int port);
     virtual void tick();

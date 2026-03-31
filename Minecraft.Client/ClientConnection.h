@@ -6,6 +6,7 @@ class MultiPlayerLevel;
 class SavedDataStorage;
 class Socket;
 class MultiplayerLocalPlayer;
+class HandshakeManager;
 
 class ClientConnection : public PacketListener
 {
@@ -179,4 +180,10 @@ private:
 	static const int MAX_ENTITY_LINK_DEFERRAL_INTERVAL = 1000;
 
 	void checkDeferredEntityLinkPackets(int newEntityId);
+
+public:
+	HandshakeManager *handshakeManager;
+	bool authComplete;
+	void beginAuth();
+	virtual void handleAuth(const shared_ptr<AuthPacket> &packet);
 };
