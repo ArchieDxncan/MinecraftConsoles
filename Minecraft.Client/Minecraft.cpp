@@ -334,12 +334,12 @@ void Minecraft::init()
 	#ifdef _UWP
 	extern char g_LocalStatePath[512];
 	workingDirectory = File(convStringToWstring(std::string(g_LocalStatePath)));
-	#else
-	workingDirectory = File(L"");//getWorkingDirectory();
-	#endif
 	workingDirectory.mkdirs();
 	File savesDir(workingDirectory, L"saves");
 	savesDir.mkdirs();
+	#else
+	workingDirectory = File(L"");//getWorkingDirectory();
+	#endif
 	levelSource = new McRegionLevelStorageSource(File(workingDirectory, L"saves"));
 	//        levelSource = new MemoryLevelStorageSource();
 	options = new Options(this, workingDirectory);

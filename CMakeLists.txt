@@ -73,6 +73,13 @@ set(MINECRAFT_SHARED_DEFINES
 # Add platform-specific defines
 list(APPEND MINECRAFT_SHARED_DEFINES ${PLATFORM_DEFINES})
 
+if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/UwpBuild.cmake")
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+  set_property(TARGET GenerateBuildVer PROPERTY FOLDER "Build")
+  return()
+endif()
+
 # ---
 # Sources
 # ---

@@ -70,6 +70,21 @@
         "PLATFORM_DEFINES": "_XBOX",
         "PLATFORM_NAME": "Xbox"
       }
+    },
+    {
+      "name": "uwp-x64",
+      "displayName": "UWP x64 (VS2022)",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "architecture": {
+        "strategy": "set",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "WindowsStore",
+        "CMAKE_SYSTEM_VERSION": "10.0.22621.0",
+        "PLATFORM_DEFINES": "_WINDOWS64"
+      }
     }
   ],
   "buildPresets": [
@@ -89,6 +104,9 @@
     { "name": "psvita-release",    "displayName": "PSVita - Release",    "configurePreset": "psvita",    "configuration": "Release" },
 
     { "name": "xbox360-debug",     "displayName": "Xbox 360 - Debug",    "configurePreset": "xbox360",   "configuration": "Debug" },
-    { "name": "xbox360-release",   "displayName": "Xbox 360 - Release",  "configurePreset": "xbox360",   "configuration": "Release" }
+    { "name": "xbox360-release",   "displayName": "Xbox 360 - Release",  "configurePreset": "xbox360",   "configuration": "Release" },
+
+    { "name": "uwp-x64-debug",     "displayName": "UWP x64 - Debug",     "configurePreset": "uwp-x64",   "configuration": "Debug" },
+    { "name": "uwp-x64-release",   "displayName": "UWP x64 - Release",   "configurePreset": "uwp-x64",   "configuration": "Release" }
   ]
 }
