@@ -259,7 +259,7 @@ void UIControl_PlayerSkinPreview::render(EntityRenderer *renderer, double x, dou
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);
 
-	HumanoidModel *model;
+	HumanoidModel *model = static_cast<HumanoidModel *>(renderer->getModel());
 	Textures *textures = Minecraft::GetInstance()->textures;
 	int skinId = textures->loadMemTexture(m_customTextureUrl, m_backupTexture) - 37;
 
@@ -267,14 +267,14 @@ void UIControl_PlayerSkinPreview::render(EntityRenderer *renderer, double x, dou
 	{
 		if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 64)
 			model = static_cast<HumanoidModel *>(renderer->getNewModelSlim());
-		else if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 32)
+		else
 			model = static_cast<HumanoidModel *>(renderer->getModelSlim());
 	}
 	else
 	{
 		if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 64)
 			model = static_cast<HumanoidModel *>(renderer->getNewModel());
-		else  if (textures->getHeight(m_customTextureUrl, m_backupTexture) == 32)
+		else
 			model = static_cast<HumanoidModel *>(renderer->getModel());
 	}
 

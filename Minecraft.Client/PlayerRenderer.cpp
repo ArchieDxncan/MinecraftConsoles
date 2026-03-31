@@ -165,7 +165,7 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 
 	// 4J - dynamic cast required because we aren't using templates/generics in our version
 	shared_ptr<Player> mob = dynamic_pointer_cast<Player>(_mob);
-	HumanoidModel *resModel;
+	HumanoidModel *resModel = static_cast<HumanoidModel *>(model);
 
 	if(mob == nullptr) return;
 	if(mob->hasInvisiblePrivilege()) return;
@@ -180,19 +180,19 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);
-			else if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModel);
-			else if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModel);
 		}
 	}
 	else
-		resModel = humanoidModel;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	/*if (mob != nullptr && newHumanoidModelSlim != nullptr && (mob->getCustomSkin() >= 10 && mob->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
 	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 2 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
@@ -303,7 +303,7 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 
 	// 4J - dynamic cast required because we aren't using templates/generics in our version
 	shared_ptr<Player> mob = dynamic_pointer_cast<Player>(_mob);
-	HumanoidModel *resModel;
+	HumanoidModel *resModel = static_cast<HumanoidModel *>(model);
 
 	if (mob != nullptr)
 	{
@@ -315,19 +315,19 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);
-			else if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModel);
-			else if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModel);
 		}
 	}
 	else
-		resModel = humanoidModel;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	/*if (mob != nullptr && newHumanoidModelSlim != nullptr && (mob->getCustomSkin() >= 10 && mob->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
 	else if (mob != nullptr && newHumanoidModel != nullptr && (mob->getCustomSkin() >= 2 && mob->getCustomSkin() <= 9)) resModel = newHumanoidModel;
@@ -586,7 +586,7 @@ void PlayerRenderer::scale(shared_ptr<LivingEntity> player, float a)
 void PlayerRenderer::renderHand()
 {
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(Minecraft::GetInstance()->player);
-	HumanoidModel *resModel;
+	HumanoidModel *resModel = static_cast<HumanoidModel *>(model);
 
 	if (player != nullptr)
 	{
@@ -598,19 +598,19 @@ void PlayerRenderer::renderHand()
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModel);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(humanoidModel);
 		}
 	}
 	else
-		resModel = humanoidModel;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	/*if (player != nullptr && newHumanoidModelSlim != nullptr && (player->getCustomSkin() >= 10 && player->getCustomSkin() <= 18)) resModel = newHumanoidModelSlim;
 	else if (player != nullptr && newHumanoidModel != nullptr && (player->getCustomSkin() >= 2 && player->getCustomSkin() <= 9)) resModel = newHumanoidModel;
@@ -623,32 +623,30 @@ void PlayerRenderer::renderHand()
 	armorParts1->eating = armorParts2->eating = resModel->eating = resModel->idle = false;
 	resModel->attackTime = 0;
 	resModel->setupAnim(0, 0, 0, 0, 0, 1 / 16.0f, Minecraft::GetInstance()->player);
+	
+	// 4J-PB - does this skin have its arm0 disabled? (Dalek, etc)
+	if((resModel->m_uiAnimOverrideBitmask&(1<<HumanoidModel::eAnim_DisableRenderArm0))==0)
+		resModel->arm0->render(1 / 16.0f,true);
 
-	//Render custom skin boxes on viewmodel - Botch (only when the skin defines extra parts; do not skip main arm below)
+	//Render custom skin boxes on viewmodel - Botch
 	vector<ModelPart*>* additionalModelParts = Minecraft::GetInstance()->player->GetAdditionalModelParts();
-	if (additionalModelParts)
-	{
-		vector<ModelPart*> armchildren = humanoidModel->arm0->children;
-		std::unordered_set<ModelPart*> additionalModelPartSet(additionalModelParts->begin(), additionalModelParts->end());
-		for (const auto& x : armchildren) {
-			if (x) {
-				if (additionalModelPartSet.find(x) != additionalModelPartSet.end()) { //This is to verify box is still actually on current skin - Botch
-					glPushMatrix();
-					//We need to transform to match offset of arm - Botch
-					glTranslatef(-5 * 0.0625f, 2 * 0.0625f, 0);
-					glRotatef(0.1 * (180.0f / PI), 0, 0, 1);
-					x->visible = true;
-					x->render(1.0f / 16.0f, true);
-					x->visible = false;
-					glPopMatrix();
-				}
+	if (!additionalModelParts) return; //If there are no custom boxes, return. This fixes bug where the game will crash if you select a skin with no additional boxes.
+	vector<ModelPart*> armchildren = resModel->arm0->children;
+	std::unordered_set<ModelPart*> additionalModelPartSet(additionalModelParts->begin(), additionalModelParts->end());
+	for (const auto& x : armchildren) {
+		if (x) {
+			if (additionalModelPartSet.find(x) != additionalModelPartSet.end()) { //This is to verify box is still actually on current skin - Botch
+				glPushMatrix();
+				//We need to transform to match offset of arm - Botch
+				glTranslatef(-5 * 0.0625f, 2 * 0.0625f, 0);
+				glRotatef(0.1 * (180.0f / PI), 0, 0, 1);
+				x->visible = true;
+				x->render(1.0f / 16.0f, true);
+				x->visible = false;
+				glPopMatrix();
 			}
 		}
 	}
-
-	// 4J-PB - does this skin have its arm0 disabled? (Dalek, etc) — single draw using the active skin model (avoids double arm with humanoidModel + resModel)
-	if((resModel->m_uiAnimOverrideBitmask&(1<<HumanoidModel::eAnim_DisableRenderArm0))==0)
-		resModel->arm0->render(1 / 16.0f,true);
 }
 
 void PlayerRenderer::setupPosition(shared_ptr<LivingEntity> _mob, double x, double y, double z)
