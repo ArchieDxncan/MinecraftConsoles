@@ -56,13 +56,12 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 
 	shared_ptr<LivingEntity> mob = dynamic_pointer_cast<LivingEntity>(_mob);
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(_mob);
-	Model *resModel;
+	Model *resModel = static_cast<HumanoidModel *>(model);
 
 	if (mob == nullptr)
 	{
 		return;
 	}
-	app.DebugPrintf("LivingEntityRenderer::render called for type %d\n", _mob->GetType());
 
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);
@@ -70,26 +69,26 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getPlayerDefaultSkin() - 1;
-		int defaultSkin = player->getPlayerDefaultSkin() + 35;
+		int skinId = player->getCustomSkin() - 1;
+		int defaultSkin = player->getCustomSkin() + 35;
 
 		if (slim[skinId] == true)
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(modelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModel);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(model);
 		}
 	}
 	else
-		resModel = model;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	resModel->attackTime = getAttackAnim(mob, a);
 	if (armor != nullptr) armor->attackTime = resModel->attackTime;
@@ -292,31 +291,31 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 void LivingEntityRenderer::renderModel(shared_ptr<LivingEntity> mob, float wp, float ws, float bob, float headRotMinusBodyRot, float headRotx, float scale)
 {
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(mob);
-	Model *resModel;
+	Model *resModel = static_cast<HumanoidModel *>(model);
 
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getPlayerDefaultSkin() - 1;
-		int defaultSkin = player->getPlayerDefaultSkin() + 35;
+		int skinId = player->getCustomSkin() - 1;
+		int defaultSkin = player->getCustomSkin() + 35;
 
 		if (slim[skinId] == true)
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(modelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModel);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(model);
 		}
 	}
 	else
-		resModel = model;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	bindTexture(mob);
 	if (!mob->isInvisible())
@@ -390,31 +389,31 @@ void LivingEntityRenderer::additionalRendering(shared_ptr<LivingEntity> mob, flo
 void LivingEntityRenderer::renderArrows(shared_ptr<LivingEntity> mob, float a)
 {
 	shared_ptr<Player> player = dynamic_pointer_cast<Player>(mob);
-	Model *resModel;
+	Model *resModel = static_cast<HumanoidModel *>(model);
 
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getPlayerDefaultSkin() - 1;
-		int defaultSkin = player->getPlayerDefaultSkin() + 35;
+		int skinId = player->getCustomSkin() - 1;
+		int defaultSkin = player->getCustomSkin() + 35;
 
 		if (slim[skinId] == true)
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(modelSlim);
 		}
 		else
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModel);
-			else if (textures->getHeight(player->customTextureUrl, defaultSkin) == 32)
+			else
 				resModel = static_cast<HumanoidModel *>(model);
 		}
 	}
 	else
-		resModel = model;
+		resModel = static_cast<HumanoidModel *>(model);
 
 	int arrowCount = mob->getArrowCount();
 
@@ -427,7 +426,8 @@ void LivingEntityRenderer::renderArrows(shared_ptr<LivingEntity> mob, float a)
 		{
 			glPushMatrix();
 
-			ModelPart *modelPart = resModel->getRandomModelPart(random);
+			ModelPart *modelPart;
+			modelPart = resModel->getRandomModelPart(random);
 
 			Cube *cube = modelPart->cubes[random.nextInt(modelPart->cubes.size())];
 			modelPart->translateTo(1 / 16.0f);

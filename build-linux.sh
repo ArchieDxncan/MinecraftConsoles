@@ -114,9 +114,12 @@ do_cmake_configure() {
 }
 
 do_build() {
-    info "Building with $(nproc) cores..."
-    cores=$([ "$BUILD_CI" = "1" ] && echo 3 || nproc)
-    cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" -j "$cores"
+    cores="$(nproc)"
+    if [[ "${BUILD_CI:-0}" == "1" ]]; then
+        cores=3
+    fi
+    info "Building with ${cores} cores..."
+    cmake --build "${BUILD_DIR}" --config "${BUILD_TYPE}" -j "${cores}"
     success "Build complete"
 }
 
