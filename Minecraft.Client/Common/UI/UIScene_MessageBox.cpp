@@ -23,28 +23,29 @@ UIScene_MessageBox::UIScene_MessageBox(int iPad, void *initData, UILayer *parent
 	int buttonIndex = 0;
 	if(param->uiOptionC > 3)
 	{
-		m_buttonButtons[eControl_Button0].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+		m_buttonButtons[eControl_Button0].init(param->rawOptions ? param->rawOptions[buttonIndex] : app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
 		++buttonIndex;
 	}
 	if(param->uiOptionC > 2)
 	{
-		m_buttonButtons[eControl_Button1].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+		m_buttonButtons[eControl_Button1].init(param->rawOptions ? param->rawOptions[buttonIndex] : app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
 		++buttonIndex;
 	}
 	if(param->uiOptionC > 1)
 	{
-	m_buttonButtons[eControl_Button2].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+	m_buttonButtons[eControl_Button2].init(param->rawOptions ? param->rawOptions[buttonIndex] : app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
 		++buttonIndex;
 	}
-	m_buttonButtons[eControl_Button3].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+	m_buttonButtons[eControl_Button3].init(param->rawOptions ? param->rawOptions[buttonIndex] : app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
 
-	m_labelTitle.init(app.GetString(param->uiTitle));
-	m_labelContent.init(app.GetString(param->uiText));
+	m_labelTitle.init(param->rawTitle ? param->rawTitle : app.GetString(param->uiTitle));
+	m_labelContent.init(param->rawText ? param->rawText : app.GetString(param->uiText));
 
 	out = IggyPlayerCallMethodRS ( getMovie() , &result, IggyPlayerRootPath( getMovie() ), m_funcAutoResize , 0 , nullptr );
 
 	m_Func = param->Func;
 	m_lpParam = param->lpParam;
+	m_keepOpen = false;
 
 	parentLayer->addComponent(iPad,eUIComponent_MenuBackground);
 
@@ -99,7 +100,7 @@ void UIScene_MessageBox::handleInput(int iPad, int key, bool repeat, bool presse
 	case ACTION_MENU_CANCEL:
 		if(pressed)
 		{
-			navigateBack();
+			if(!m_keepOpen) navigateBack();
 			if(m_Func) m_Func(m_lpParam, iPad, C4JStorage::EMessage_Cancelled);
 		}
 		break;
@@ -136,8 +137,13 @@ void UIScene_MessageBox::handlePress(F64 controlId, F64 childId)
 		break;
 	}
 
-	navigateBack();
+	if(!m_keepOpen) navigateBack();
 	if(m_Func) m_Func(m_lpParam, m_iPad, result);
+}
+
+void UIScene_MessageBox::updateContent(const wchar_t *text)
+{
+	m_labelContent.init(text);
 }
 
 bool UIScene_MessageBox::hasFocus(int iPad)

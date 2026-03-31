@@ -1,9 +1,10 @@
 #include "stdafx.h"
-#include "../../../Minecraft.World/Mth.h"
-#include "../../../Minecraft.World/StringHelpers.h"
-#include "../../../Minecraft.World/Random.h"
-#include "../../User.h"
-#include "../../MinecraftServer.h"
+#include "..\..\..\Minecraft.World\Mth.h"
+#include "..\..\..\Minecraft.World\StringHelpers.h"
+#include "..\..\..\Minecraft.World\Random.h"
+#include "..\..\User.h"
+#include "..\..\MinecraftServer.h"
+#include "..\..\AuthScreen.h"
 #include "UI.h"
 #include "UIScene_MainMenu.h"
 #ifdef __ORBIS__
@@ -46,12 +47,12 @@ UIScene_MainMenu::UIScene_MainMenu(int iPad, void *initData, UILayer *parentLaye
 	if(ProfileManager.IsFullVersion())
 	{
 		m_bTrialVersion=false;
-		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].init(IDS_DOWNLOADABLECONTENT,eControl_UnlockOrDLC);
+		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].init(L"Auth",eControl_UnlockOrDLC);
 	}
 	else
 	{
 		m_bTrialVersion=true;
-		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].init(IDS_UNLOCK_FULL_GAME,eControl_UnlockOrDLC);
+		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].init(L"Auth",eControl_UnlockOrDLC);
 	}
 
 #ifndef _DURANGO
@@ -181,8 +182,8 @@ void UIScene_MainMenu::handleGainFocus(bool navBack)
 		
 	if(navBack && ProfileManager.IsFullVersion())
 	{
-		// Replace the Unlock Full Game with Downloadable Content
-		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].setLabel(IDS_DOWNLOADABLECONTENT);
+		// once again replacing the shop with auth. not a bad thing.
+		m_buttons[static_cast<int>(eControl_UnlockOrDLC)].setLabel(L"Auth");
 	}
 
 #if TO_BE_IMPLEMENTED
@@ -357,7 +358,7 @@ void UIScene_MainMenu::handlePress(F64 controlId, F64 childId)
 		ui.PlayUISFX(eSFX_Press);
 
 		m_eAction=eAction_RunUnlockOrDLC;
-		signInReturnedFunc = &UIScene_MainMenu::UnlockFullGame_SignInReturned;
+		RunAction(primaryPad);
 		break;
 	case eControl_Exit:
 		//CD - Added for audio
@@ -438,8 +439,11 @@ void UIScene_MainMenu::RunAction(int iPad)
 		RunHelpAndOptions(iPad);
 		break;
 	case eAction_RunUnlockOrDLC:
-		RunUnlockOrDLC(iPad);
+	{
+		AuthProfileManager::load();
+		ShowAuthMenu(iPad, this);
 		break;
+	}
 #ifdef _DURANGO
 	case eAction_RunXboxHelp:
 		// 4J: Launch the dummy xbox help application.
@@ -448,6 +452,161 @@ void UIScene_MainMenu::RunAction(int iPad)
 		break;
 #endif
 	}
+}
+
+static int s_authPad = 0;
+
+static const wchar_t *BuildAuthProfileText()
+{
+	static wstring text;
+	const auto &profiles = AuthProfileManager::getProfiles();
+	int sel = AuthProfileManager::getSelectedIndex();
+	if (profiles.empty())
+	{
+		text = L"No profiles - press Add to create one";
+	}
+	else
+	{
+		text.clear();
+		for (int i = 0; i < static_cast<int>(profiles.size()); i++)
+		{
+			const auto &p = profiles[i];
+			const wchar_t *type = (p.type == AuthProfile::MICROSOFT) ? L"[MS]"
+				: (p.type == AuthProfile::ELYBY) ? L"[Ely]" : L"[Off]";
+			if (i > 0) text += L"\n";
+			text += (i == sel) ? L"> " : L"  ";
+			text += wstring(type) + L" " + p.username;
+		}
+	}
+	return text.c_str();
+}
+
+void UIScene_MainMenu::ShowAuthMenu(int iPad, void *pClass)
+{
+	s_authPad = iPad;
+
+	static const wchar_t *authOptions[] = { L"Next", L"Use", L"Add", L"Back" };
+	MessageBoxInfo param = {};
+	param.uiOptionC = 4;
+	param.dwPad = iPad;
+	param.Func = &UIScene_MainMenu::AuthMenuReturned;
+	param.lpParam = pClass;
+	param.rawTitle = L"Authentication";
+	param.rawText = BuildAuthProfileText();
+	param.rawOptions = authOptions;
+	ui.NavigateToScene(iPad, eUIScene_MessageBox, &param, eUILayer_Alert, eUIGroup_Fullscreen);
+	UIScene *scene = ui.FindScene(eUIScene_MessageBox);
+	if (scene)
+		static_cast<UIScene_MessageBox *>(scene)->setKeepOpen(true);
+}
+
+void UIScene_MainMenu::ShowAuthAddMenu(int iPad, void *pClass)
+{
+	static const wchar_t *addOptions[] = { L"Microsoft Auth", L"Ely.by Auth", L"Add Offline User", L"Back" };
+	MessageBoxInfo param = {};
+	param.uiOptionC = 4;
+	param.dwPad = iPad;
+	param.Func = &UIScene_MainMenu::AuthAddMenuReturned;
+	param.lpParam = pClass;
+	param.rawTitle = L"Add Profile";
+	param.rawText = L"Select an auth type";
+	param.rawOptions = addOptions;
+	ui.NavigateToScene(iPad, eUIScene_MessageBox, &param, eUILayer_Alert, eUIGroup_Fullscreen);
+}
+
+int UIScene_MainMenu::AuthMenuReturned(LPVOID lpParam, int iPad, const C4JStorage::EMessageResult result)
+{
+	const auto &profiles = AuthProfileManager::getProfiles();
+	switch (result)
+	{
+	case C4JStorage::EMessage_ResultAccept:
+	{
+		if (!profiles.empty())
+		{
+			int next = (AuthProfileManager::getSelectedIndex() + 1) % static_cast<int>(profiles.size());
+			AuthProfileManager::setSelectedIndex(next);
+		}
+		if (auto *scene = ui.FindScene(eUIScene_MessageBox))
+			static_cast<UIScene_MessageBox *>(scene)->updateContent(BuildAuthProfileText());
+		return 0;
+	}
+	case C4JStorage::EMessage_ResultDecline:
+	{
+		ui.NavigateBack(iPad);
+		AuthProfileManager::applySelectedProfile();
+		break;
+	}
+	case C4JStorage::EMessage_ResultThirdOption:
+	{
+		ui.NavigateBack(iPad);
+		ShowAuthAddMenu(iPad, lpParam);
+		break;
+	}
+	default:
+	{
+		ui.NavigateBack(iPad);
+		break;
+	}
+	}
+	return 0;
+}
+
+int UIScene_MainMenu::AuthAddMenuReturned(LPVOID lpParam, int iPad, const C4JStorage::EMessageResult result)
+{
+	switch (result)
+	{
+	case C4JStorage::EMessage_ResultAccept:
+		AuthProfileManager::addProfile(AuthProfile::MICROSOFT, L"Player");
+		ShowAuthMenu(iPad, lpParam);
+		break;
+	case C4JStorage::EMessage_ResultDecline:
+		AuthProfileManager::addProfile(AuthProfile::ELYBY, L"Player");
+		ShowAuthMenu(iPad, lpParam);
+		break;
+	case C4JStorage::EMessage_ResultThirdOption:
+	{
+#ifdef _WINDOWS64
+		UIKeyboardInitData kbData;
+		kbData.title = L"Enter Username";
+		kbData.defaultText = L"Player";
+		kbData.maxChars = 16;
+		kbData.callback = &UIScene_MainMenu::AuthKeyboardReturned;
+		kbData.lpParam = lpParam;
+		kbData.pcMode = g_KBMInput.IsKBMActive();
+		ui.NavigateToScene(iPad, eUIScene_Keyboard, &kbData);
+#else
+		InputManager.RequestKeyboard(L"Enter Username", L"Player", (DWORD)0, 16, &UIScene_MainMenu::AuthKeyboardReturned, lpParam, C_4JInput::EKeyboardMode_Default);
+#endif
+		break;
+	}
+	default:
+		ShowAuthMenu(iPad, lpParam);
+		break;
+	}
+	return 0;
+}
+
+int UIScene_MainMenu::AuthKeyboardReturned(LPVOID lpParam, const bool bRes)
+{
+	if (bRes)
+	{
+		uint16_t ui16Text[128];
+		ZeroMemory(ui16Text, 128 * sizeof(uint16_t));
+#ifdef _WINDOWS64
+		Win64_GetKeyboardText(ui16Text, 128);
+#else
+		InputManager.GetText(ui16Text);
+#endif
+		if (ui16Text[0] != 0)
+		{
+			wchar_t wName[128] = {};
+			for (int k = 0; k < 127 && ui16Text[k]; k++)
+				wName[k] = static_cast<wchar_t>(ui16Text[k]);
+			AuthProfileManager::addProfile(AuthProfile::OFFLINE, wName);
+		}
+	}
+	ShowAuthMenu(s_authPad, lpParam);
+	return 0;
 }
 
 void UIScene_MainMenu::customDraw(IggyCustomDrawCallbackRegion *region)
@@ -1946,7 +2105,7 @@ void UIScene_MainMenu::tick()
 		if(ProfileManager.IsFullVersion())
 		{
 			m_bTrialVersion=false;
-			m_buttons[(int)eControl_UnlockOrDLC].init(app.GetString(IDS_DOWNLOADABLECONTENT),eControl_UnlockOrDLC);
+			m_buttons[(int)eControl_UnlockOrDLC].init(L"Auth",eControl_UnlockOrDLC);
 		}
 	}
 #endif

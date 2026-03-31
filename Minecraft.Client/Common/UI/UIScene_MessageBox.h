@@ -18,6 +18,7 @@ private:
 	int( *m_Func)(LPVOID,int,const C4JStorage::EMessageResult);
 	LPVOID m_lpParam;
 	int m_buttonCount;
+	bool m_keepOpen;
 
 	UIControl_Button m_buttonButtons[eControl_COUNT];
 	UIControl_Label m_labelTitle, m_labelContent;
@@ -57,4 +58,8 @@ public:
 
 protected:
 	void handlePress(F64 controlId, F64 childId);
+
+public:
+	void updateContent(const wchar_t *text);
+	void setKeepOpen(bool keep) { m_keepOpen = keep; }
 };
