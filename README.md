@@ -6,8 +6,8 @@ This repository is my personal fork of the Minecraft: Legacy Console Edition sou
 It is primarily used for:
 
 - Testing new features.
-- Integrating code from other projects.
-- Merging upstream commits that have not yet been officially merged.
+- Integrating and adapting code from other projects.
+- Merging upstream pull requests that have not yet been officially merged.
 
 ---
 
@@ -56,5 +56,6 @@ The following pull requests have been merged into this fork:
 The following features have been added by me:
 
 - (TU43) Beetroot, Beetroot Seeds, Beetroot Soup
+- Adapted/Continued hugozz26's implementation of UWP support.
 
 ---
