@@ -1,4 +1,4 @@
-![Legacy Edition Banner](.gitea/banner.png)
+![Legacy Edition Banner](.github/banner.png)
 
 # Minecraft: Legacy Console Edition
 
