@@ -83,6 +83,7 @@
       "cacheVariables": {
         "CMAKE_SYSTEM_NAME": "WindowsStore",
         "CMAKE_SYSTEM_VERSION": "10.0.22621.0",
+        "CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION": "10.0.22621.0",
         "PLATFORM_DEFINES": "_WINDOWS64"
       }
     }

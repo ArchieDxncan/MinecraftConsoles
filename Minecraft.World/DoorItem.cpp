@@ -24,7 +24,7 @@ bool DoorItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> playe
 	if (face != Facing::UP) return false;
 	y++;
 
-	Tile *tile;
+	Tile *tile = nullptr;
 
 	if (doorType == L"doorWood")        tile = Tile::door_wood;
 	else if (doorType == L"doorIron")      tile = Tile::door_iron;
@@ -34,6 +34,7 @@ bool DoorItem::useOn(shared_ptr<ItemInstance> instance, shared_ptr<Player> playe
 	else if (doorType == L"doorAcacia")    tile = Tile::door_acacia;
 	else if (doorType == L"doorDark")    tile = Tile::door_dark;
 
+	if (!tile) return false;
 	if (!player->mayUseItemAt(x, y, z, face, instance) || !player->mayUseItemAt(x, y + 1, z, face, instance)) return false;
 	if (!tile->mayPlace(level, x, y, z)) return false;
 

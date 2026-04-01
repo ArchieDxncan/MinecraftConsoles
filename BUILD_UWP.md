@@ -134,9 +134,9 @@ MinecraftConsoles-PC/
 
 > **Why CoreApplication::Run() and not Win32 HWND?**
 > Xbox One does not support `windows.fullTrustApplication` (Desktop Bridge). The app
-> must use the proper UWP activation model: `IFrameworkView` + `CoreWindow`. The
-> `EntryPoint` in the manifest is `MinecraftLCE.App`, which maps to the C++/CX ref class
-> `MinecraftLCE::App` implementing `IFrameworkView`. Win32 HWND APIs (`CreateWindowExW`,
+> must use the proper UWP activation model: `IFrameworkViewSource` + `IFrameworkView` + `CoreWindow`. The
+> `EntryPoint` in the manifest is `MinecraftLCE.AppSource`, which maps to the C++/CX ref class
+> `MinecraftLCE::AppSource` implementing `IFrameworkViewSource` (`CreateView()` returns `MinecraftLCE::App`, which implements `IFrameworkView`). Win32 HWND APIs (`CreateWindowExW`,
 > `RegisterClassExW`, etc.) do not exist on Xbox OneOS.
 
 ### Problem 2: Implicit UNICODE
@@ -291,18 +291,18 @@ The manifest at `appx_layout\AppxManifest.xml` needs adjustments:
     Version="1.6.0.0"
     ProcessorArchitecture="x64" />
 
-<!-- Application: EntryPoint MUST be the WinRT class name (NOT windows.fullTrustApplication) -->
-<!-- This maps to namespace MinecraftLCE, class App in UWP_App.cpp/h -->
+<!-- Application: EntryPoint MUST be the IFrameworkViewSource class (NOT windows.fullTrustApplication) -->
+<!-- This maps to namespace MinecraftLCE, class AppSource in UWP_App.cpp/h -->
 <Application Id="App"
     Executable="MinecraftLCE.exe"
-    EntryPoint="MinecraftLCE.App">
+    EntryPoint="MinecraftLCE.AppSource">
 ```
 
 > ⚠️ The `Publisher` in the manifest **MUST** be identical to the certificate Subject!
 >
 > ⚠️ **Xbox compatibility**: `EntryPoint` must be a WinRT activatable class, NOT `windows.fullTrustApplication`.
 > Xbox One does not support Desktop Bridge / fullTrust apps. The app uses `CoreApplication::Run()`
-> with `IFrameworkView`, so the entry point must be `MinecraftLCE.App`.
+> with `IFrameworkViewSource` (`AppSource`) and `IFrameworkView` (`App`), so the entry point must be `MinecraftLCE.AppSource` — **not** `MinecraftLCE.App` (that class is the view, not the activatable entry).
 
 ### 3. Create a self-signed certificate
 
@@ -391,15 +391,19 @@ Invoke-WebRequest `
 
 ### App opens and closes immediately
 
-**Likely cause**: `EntryPoint` in the manifest is not `windows.fullTrustApplication`.
+**Do not** switch the manifest to `windows.fullTrustApplication` — that is for **Desktop Bridge** (PC full-trust) packages. **Xbox One Dev Mode** expects a normal UWP WinRT entry (`EntryPoint="MinecraftLCE.AppSource"`), matching `MinecraftLCE::AppSource` in `UWP_App.h` (the `IFrameworkViewSource` that creates the `App` view).
 
-```xml
-<!-- ❌ WRONG -->
-<Application EntryPoint="MinecraftLCE.App">
+If the process exits right away, check **`LocalState\mc_debug.log`** (see below), verify the **.appx** contains all assets next to the exe, and that you are not hitting a load-time **fatal** (missing `.arc`, failed Iggy init, etc.). A wrong `EntryPoint` for this project usually prevents a clean launch on Xbox rather than “fixing” an immediate exit.
 
-<!-- ✅ CORRECT -->
-<Application EntryPoint="windows.fullTrustApplication">
-```
+### Black / empty screen on Xbox (or tiny `.appx`)
+
+The package must include **game data** next to `MinecraftLCE.exe`: **`Windows64Media`** (including **`MediaWindows64.arc`**), **`Common`**, **`music`**, **`Windows64`** (DLLs), plus **`iggy_w64.dll`**, **`mss64.dll`**, **`D3DCompiler_47.dll`**. If you only pack the exe and manifest, the app can “run” but render nothing. After a full **Release** build, use **`scripts/package-full-uwp.ps1`** (it validates layout). A healthy package is **hundreds of MB**, not ~8 MB.
+
+### PC: crash on launch after signing
+
+1. **`Publisher` in `Package.appxmanifest` must match your PFX subject** (e.g. `CN=ArchieDxncan` vs your own cert — they must be identical).  
+2. Trust the signing cert (**Trusted People** / **Root** as needed).  
+3. Read **`%LOCALAPPDATA%\Packages\<PackageFamily>\LocalState\mc_debug.log`** for the last lines before exit.
 
 ### `ERROR_PATH_NOT_FOUND` (error 3) in CreateFile
 

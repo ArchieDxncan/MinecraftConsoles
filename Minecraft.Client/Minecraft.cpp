@@ -332,8 +332,9 @@ void Minecraft::init()
 	// glClearColor(0.2f, 0.2f, 0.2f, 1);
 
 	#ifdef _UWP
-	extern char g_LocalStatePath[512];
-	workingDirectory = File(convStringToWstring(std::string(g_LocalStatePath)));
+	// Prefer wide path from WinRT (avoids ACP loss for non-ASCII package paths)
+	extern wchar_t g_LocalStatePathW[512];
+	workingDirectory = File(std::wstring(g_LocalStatePathW));
 	workingDirectory.mkdirs();
 	File savesDir(workingDirectory, L"saves");
 	savesDir.mkdirs();

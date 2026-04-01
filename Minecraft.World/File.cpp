@@ -37,10 +37,14 @@ File::File( const wstring& pathname ) //: parent( nullptr )
 		m_abstractPathName = pathname;
 
 #ifdef _WINDOWS64
+#ifndef _UWP
 	string path = wstringtochararray(m_abstractPathName);
 	string finalPath = StorageManager.GetMountedPath(path.c_str());
 	if(finalPath.size() == 0) finalPath = path;
 	m_abstractPathName = convStringToWstring(finalPath);
+#endif
+	// UWP: keep absolute LocalState / package paths as-is; 4J GetMountedPath can remap incorrectly
+	// for the sandbox and break saves, options, and DLC path resolution.
 #elif defined(_DURANGO)
 	wstring finalPath = StorageManager.GetMountedPath(m_abstractPathName.c_str());
 	if(finalPath.size() == 0) finalPath = m_abstractPathName;

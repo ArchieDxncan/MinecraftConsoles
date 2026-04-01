@@ -1,5 +1,4 @@
 set(_MINECRAFT_WORLD_COMMON_ROOT
-  "${CMAKE_CURRENT_SOURCE_DIR}/EntityDiagram.cd"
 )
 source_group("" FILES ${_MINECRAFT_WORLD_COMMON_ROOT})
 

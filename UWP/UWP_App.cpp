@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <fstream>
 #include <cstdarg>
+#include <thread>
 // NOTE: <collection.h> removed — it causes ABI::Windows::UI::Color redefinition
 //       when mixed with game headers. Not actually needed.
 
@@ -100,6 +101,8 @@ static LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
 #include "Common/PostProcesser.h"
 #include "Windows64/Network/WinsockNetLayer.h"
 #include "Common/UI/UI.h"
+#include "Windows64Media/strings.h"
+#include "Windows64/4JLibs/inc/4J_Storage.h"
 
 // Minecraft.World types used in InitialiseMinecraftRuntime_UWP / GameTick
 #include "OldChunkStorage.h"
@@ -126,6 +129,33 @@ extern Renderer InternalRenderManager;
 // Global package root path — used by BufferedImage, FileInputStream, etc.
 char g_PackageRootPath[512] = {};
 char g_LocalStatePath[512] = {};
+wchar_t g_LocalStatePathW[512] = {};
+
+static void LogPackagedRelativeFileStatus(const char* relativePath)
+{
+    char full[768];
+    if (g_PackageRootPath[0] == '\0')
+    {
+        LogMsg("UWP: packaged file check: %s — (g_PackageRootPath empty)\n", relativePath);
+        return;
+    }
+    _snprintf_s(full, sizeof(full), _TRUNCATE, "%s\\%s", g_PackageRootPath, relativePath);
+    DWORD attr = GetFileAttributesA(full);
+    if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY))
+        LogMsg("UWP: packaged file check: %s -> present\n", full);
+    else
+        LogMsg("UWP: packaged file check: %s -> MISSING (err=%lu)\n", full, GetLastError());
+}
+
+static bool IsPackagedRelativeFilePresent(const char* relativePath)
+{
+    char full[768];
+    if (g_PackageRootPath[0] == '\0')
+        return false;
+    _snprintf_s(full, sizeof(full), _TRUNCATE, "%s\\%s", g_PackageRootPath, relativePath);
+    DWORD attr = GetFileAttributesA(full);
+    return (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
+}
 
 HINSTANCE               hMyInst = nullptr;
 char                    chGlobalText[256] = {};
@@ -190,55 +220,82 @@ void ClearGlobalText()
 }
 
 // ============================================================================
-// XBOX GAMERTAG FETCHER
+// DISPLAY NAME / GAMERTAG FETCHER (UWP)
 // ============================================================================
-// Uses Windows.System.User to get the current Xbox user's display name
-// and copies it into g_Win64Username / g_Win64UsernameW so the game
-// shows the real gamertag.
+// Windows::System::User + KnownUserProperties::DisplayName (worker thread + blocking .get()).
+// Does not use the Windows.Xbox Extension SDK (avoids VS "Could not find SDK Windows.Xbox" on PC-only setups).
+// Must finish before Minecraft::main() so ProfileManager / IQNet / user->name see the real name.
 // ============================================================================
-static void FetchXboxGamertag()
+static void ApplyGamertagString(Platform::String^ name)
 {
-    // NOTE: Must use fully-qualified Windows::System::User to avoid
-    //       conflict with the game's own User.h class.
+    if (name == nullptr || name->Length() <= 0)
+        return;
+    int len = name->Length();
+    if (len > 16) len = 16;
+    wcsncpy_s(g_Win64UsernameW, 17, name->Data(), len);
+    g_Win64UsernameW[len] = L'\0';
+    WideCharToMultiByte(CP_ACP, 0, g_Win64UsernameW, -1,
+                        g_Win64Username, 17, nullptr, nullptr);
+    g_Win64Username[16] = '\0';
+    wcscpy_s(IQNet::m_player[0].m_gamertag, 32, g_Win64UsernameW);
+    // If Minecraft already constructed, keep User in sync (ProfileManager stub reads g_Win64Username*)
+    Minecraft* mc = Minecraft::GetInstance();
+    if (mc && mc->user)
+        mc->user->name.assign(g_Win64UsernameW);
+}
+
+static void FetchXboxGamertagBlocking()
+{
     using namespace concurrency;
 
+    // WinRT user (PC UWP / Xbox): block on a worker thread — .get() must not run on UI thread
     try
     {
-        // C++/CX IAsyncOperation^ doesn't have .get() —
-        // must wrap in concurrency::create_task() first.
-        auto users = create_task(
-            Windows::System::User::FindAllAsync()).get();
-        if (users->Size > 0)
-        {
-            auto user = users->GetAt(0);
-
-            auto prop = create_task(
-                user->GetPropertyAsync(
-                    Windows::System::KnownUserProperties::DisplayName)).get();
-
-            if (prop != nullptr)
+        std::exception_ptr err;
+        std::thread worker([&err] {
+            try
             {
+                auto users = create_task(Windows::System::User::FindAllAsync()).get();
+                if (users->Size == 0)
+                    return;
+                Windows::System::User^ u = users->GetAt(0);
+                Platform::Object^ prop =
+                    create_task(u->GetPropertyAsync(Windows::System::KnownUserProperties::DisplayName)).get();
+                if (prop == nullptr)
+                    return;
                 Platform::String^ displayName = safe_cast<Platform::String^>(prop);
-                if (displayName->Length() > 0)
-                {
-                    // Copy to wide buffer (max 16 chars)
-                    int len = displayName->Length();
-                    if (len > 16) len = 16;
-                    wcsncpy_s(g_Win64UsernameW, 17, displayName->Data(), len);
-                    g_Win64UsernameW[len] = L'\0';
-
-                    // Copy to ANSI buffer
-                    WideCharToMultiByte(CP_ACP, 0, g_Win64UsernameW, -1,
-                                        g_Win64Username, 17, nullptr, nullptr);
-                    g_Win64Username[16] = '\0';
-                }
+                if (displayName != nullptr && displayName->Length() > 0)
+                    ApplyGamertagString(displayName);
+            }
+            catch (...)
+            {
+                err = std::current_exception();
+            }
+        });
+        worker.join();
+        if (err)
+        {
+            try
+            {
+                std::rethrow_exception(err);
+            }
+            catch (const std::exception& ex)
+            {
+                LogMsg("UWP: System::User gamertag thread exception: %s\n", ex.what());
+            }
+            catch (...)
+            {
+                LogMsg("UWP: System::User gamertag thread failed (unknown exception)\n");
             }
         }
+        else if (g_Win64Username[0] != '\0' && strcmp(g_Win64Username, "XboxPlayer") != 0)
+        {
+            LogMsg("UWP: Gamertag from Windows::System::User::DisplayName\n");
+        }
     }
-    catch (Platform::Exception^)
+    catch (...)
     {
-        OutputDebugStringA("UWP: Could not fetch Xbox gamertag, using default.\n");
-        LogMsg("UWP: Could not fetch Xbox gamertag, using default.\n");
+        LogMsg("UWP: System::User gamertag path failed (unexpected)\n");
     }
 }
 
@@ -439,6 +496,22 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
         &CConsoleMinecraftApp::DefaultOptionsCallback, (LPVOID)&app);
     LogMsg("UWP: ProfileManager OK\n");
 
+    // Align 4J Storage with LocalState (Init + TMS root) so GetMountedPath / profile / DLC paths match Minecraft::workingDirectory
+    {
+        static const char kUwpTitleStorageGroup[] = "A9C80F8E-5EAE-4883-89E6-0C456CADE89B";
+        const int kMinSaveBytes = 1000000 * 51;
+        StorageManager.Init(
+            PROFILE_VERSION_10,
+            app.GetString(IDS_DEFAULT_SAVENAME),
+            "savegame.dat",
+            kMinSaveBytes,
+            &CConsoleMinecraftApp::DisplaySavingMessage,
+            (LPVOID)&app,
+            kUwpTitleStorageGroup);
+        StorageManager.StoreTMSPathName();
+        LogMsg("UWP: StorageManager.Init OK (LocalState-backed)\n");
+    }
+
     LogMsg("UWP: Calling g_NetworkManager.Initialise()...\n");
     g_NetworkManager.Initialise();
     LogMsg("UWP: NetworkManager OK\n");
@@ -536,6 +609,8 @@ void App::Initialize(CoreApplicationView^ applicationView)
         strncpy(g_LocalStatePath, localStatePathA, 511);
         g_LocalStatePath[511] = '\0';
 
+        wcsncpy_s(g_LocalStatePathW, _countof(g_LocalStatePathW), localStatePath->Data(), _TRUNCATE);
+
         SetCurrentDirectoryA(installPathA);
         LogMsg("UWP: CWD set to package install path\n");
     }
@@ -572,11 +647,18 @@ void App::SetWindow(CoreWindow^ window)
             this, &App::OnWindowClosed);
 
     // ---- Intercept the B-button "Back" navigation so Xbox doesn't quit ----
-    auto navMgr = Windows::UI::Core::SystemNavigationManager::GetForCurrentView();
-    navMgr->BackRequested +=
-        ref new EventHandler<Windows::UI::Core::BackRequestedEventArgs^>(
-            this, &App::OnBackRequested);
-    LogMsg("UWP: BackRequested handler registered (B button won't quit)\n");
+    try
+    {
+        auto navMgr = Windows::UI::Core::SystemNavigationManager::GetForCurrentView();
+        navMgr->BackRequested +=
+            ref new EventHandler<Windows::UI::Core::BackRequestedEventArgs^>(
+                this, &App::OnBackRequested);
+        LogMsg("UWP: BackRequested handler registered (B button won't quit)\n");
+    }
+    catch (Platform::Exception^ e)
+    {
+        LogMsg("UWP: SystemNavigationManager not available (ignored): hr=0x%08X\n", e->HResult);
+    }
 
     LogMsg("UWP: SetWindow() DONE\n");
 }
@@ -588,28 +670,69 @@ void App::Load(Platform::String^ /*entryPoint*/)
 {
     LogMsg("UWP: Load() START\n");
 
-    // ---- Pre-load Miles Sound System DLL ----
+    // ---- Pre-load Iggy + Miles from the package (implicit load can fail on UWP) ----
+    {
+        HMODULE hIggy = LoadPackagedLibrary(L"iggy_w64.dll", 0);
+        if (hIggy) {
+            LogMsg("UWP: iggy_w64.dll pre-loaded OK, handle=%p\n", hIggy);
+        } else {
+            LogMsg("UWP: *** iggy_w64.dll preload FAILED, err=%lu ***\n", GetLastError());
+            hIggy = LoadLibraryW(L"iggy_w64.dll");
+            if (hIggy) LogMsg("UWP: iggy_w64.dll LoadLibraryW fallback OK\n");
+        }
+    }
     // On UWP, implicit DLL loading can fail silently for DLLs bundled in the
     // app package.  Force-load mss64.dll early so the sound engine finds it.
+    // Error 126 = module not found OR a dependency of that DLL failed to load.
     {
-        HMODULE hMss = LoadPackagedLibrary(L"mss64.dll", 0);
-        if (hMss) {
-            LogMsg("UWP: mss64.dll pre-loaded OK, handle=%p\n", hMss);
-        } else {
-            DWORD err = GetLastError();
-            LogMsg("UWP: *** mss64.dll pre-load FAILED, err=%lu (0x%08X) ***\n", err, err);
-            // Also try regular LoadLibraryW as fallback
+        LogPackagedRelativeFileStatus("mss64.dll");
+        LogPackagedRelativeFileStatus("Windows64\\mss64.dll");
+
+        HMODULE hMss = nullptr;
+        const wchar_t* packagedPaths[] = {
+            L"mss64.dll",
+            L"Windows64\\mss64.dll",
+        };
+        for (const wchar_t* rel : packagedPaths)
+        {
+            hMss = LoadPackagedLibrary(rel, 0);
+            if (hMss)
+            {
+                LogMsg("UWP: mss64.dll pre-loaded OK via %ls, handle=%p\n", rel, hMss);
+                break;
+            }
+            LogMsg("UWP: LoadPackagedLibrary(%ls) err=%lu\n", rel, GetLastError());
+        }
+        if (!hMss)
+        {
             hMss = LoadLibraryW(L"mss64.dll");
             if (hMss)
                 LogMsg("UWP: mss64.dll LoadLibraryW fallback OK, handle=%p\n", hMss);
             else
-                LogMsg("UWP: mss64.dll LoadLibraryW also failed, err=%lu\n", GetLastError());
+            {
+                DWORD err = GetLastError();
+                LogMsg("UWP: mss64.dll LoadLibraryW also failed, err=%lu\n", err);
+                const bool any =
+                    IsPackagedRelativeFilePresent("mss64.dll") ||
+                    IsPackagedRelativeFilePresent("Windows64\\mss64.dll");
+                if (any)
+                {
+                    LogMsg("UWP: mss64.dll is present in the package but failed to load (126). "
+                           "Usually a missing dependency DLL — on PC run: dumpbin /dependents mss64.dll. "
+                           "Desktop Win32 Miles often imports APIs not available to UWP on Xbox.\n");
+                }
+                else
+                {
+                    LogMsg("UWP: mss64.dll is not in the package. Copy it next to MinecraftLCE.exe (see "
+                           "scripts/package-full-uwp.ps1); CMake redist64 only copies iggy_w64.dll.\n");
+                }
+            }
         }
     }
 
-    // Fetch the Xbox gamertag BEFORE creating any game objects
-    LogMsg("UWP: Calling FetchXboxGamertag...\n");
-    FetchXboxGamertag();
+    // Resolve gamertag BEFORE any game init (blocking — async previously never beat Minecraft::main)
+    LogMsg("UWP: Calling FetchXboxGamertagBlocking...\n");
+    FetchXboxGamertagBlocking();
     LogMsg("UWP: Gamertag = %s\n", g_Win64Username);
 
     // Create D3D11 device + CoreWindow swap chain
@@ -698,6 +821,11 @@ void App::GameTick()
         // Verbose logging for first 10 frames after game starts (world loaded)
         bool verbose = s_gameStartedInTick && (s_gameTickCount - s_gameStartedFrame) < 10;
 
+        // Opaque sky-toned clear avoids lime/black flashes while chunks compile (UWP/Xbox compositor is sensitive to alpha=0 defaults)
+        {
+            static const float kUwpClearRGBA[4] = { 0.35f, 0.55f, 0.85f, 1.0f };
+            RenderManager.SetClearColour(kUwpClearRGBA);
+        }
         RenderManager.StartFrame();
 
         app.UpdateTime();

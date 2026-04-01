@@ -26,8 +26,8 @@ using namespace Windows::Foundation;
 class Minecraft;
 
 // ============================================================================
-// Namespace must match the AppxManifest EntryPoint "MinecraftLCE.App"
-// In C++/CX, a dot-separated EntryPoint maps to Namespace::Class.
+// EntryPoint must name the IFrameworkViewSource class (see Package.appxmanifest).
+// CreateView() returns the IFrameworkView (App).
 // ============================================================================
 namespace MinecraftLCE
 {
