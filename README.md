@@ -1,4 +1,4 @@
-![Legacy Edition Banner](.github/banner.png)
+![Legacy Edition Banner](.gitea/banner.png)
 
 # Minecraft: Legacy Console Edition
 
@@ -31,6 +31,13 @@ Based on **Minecraft Legacy Console Edition v1.6.0560.0 (TU19)**, with various f
 https://codeberg.org/piebot/LegacyEvolved  
 
 A project focused on **backporting newer title updates** to the leaked TU19-based source code.
+
+---
+
+### 🔹 MinecraftLCE-Xbox  
+https://github.com/hugozz26/MinecraftLCE-Xbox
+
+A fork of smartcmd/MinecraftConsoles with a full UWP adaptation for Xbox One.
 
 ---
 
