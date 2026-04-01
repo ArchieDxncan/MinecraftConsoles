@@ -34,6 +34,13 @@ A project focused on **backporting newer title updates** to the leaked TU19-base
 
 ---
 
+### 🔹 MinecraftLCE-Xbox  
+https://github.com/hugozz26/MinecraftLCE-Xbox
+
+A fork of smartcmd/MinecraftConsoles with a full UWP adaptation for Xbox One.
+
+---
+
 ## 🔀 Merged Pull Requests
 
 The following pull requests have been merged into this fork:
