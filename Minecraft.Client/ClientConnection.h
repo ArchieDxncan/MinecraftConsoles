@@ -179,4 +179,19 @@ private:
 	static const int MAX_ENTITY_LINK_DEFERRAL_INTERVAL = 1000;
 
 	void checkDeferredEntityLinkPackets(int newEntityId);
+
+	// 4J: SetEquippedItem packets can arrive before AddPlayer/AddMob during join.
+	class DeferredSetEquippedItemPacket
+	{
+	public:
+		DWORD m_recievedTick;
+		shared_ptr<SetEquippedItemPacket> m_packet;
+
+		DeferredSetEquippedItemPacket(shared_ptr<SetEquippedItemPacket> packet);
+	};
+
+	vector<DeferredSetEquippedItemPacket> deferredSetEquippedItemPackets;
+	static const int MAX_SET_EQUIPPED_ITEM_DEFERRAL_INTERVAL = 1000;
+
+	void checkDeferredSetEquippedItemPackets(int newEntityId);
 };

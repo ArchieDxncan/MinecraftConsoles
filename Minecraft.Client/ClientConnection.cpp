@@ -163,6 +163,7 @@ ClientConnection::ClientConnection(Minecraft *minecraft, Socket *socket, int iUs
 	}
 
 	deferredEntityLinkPackets = vector<DeferredEntityLinkPacket>();
+	deferredSetEquippedItemPackets = vector<DeferredSetEquippedItemPacket>();
 }
 
 bool ClientConnection::isPrimaryConnection() const
@@ -773,6 +774,7 @@ void ClientConnection::handleAddEntity(shared_ptr<AddEntityPacket> packet)
 
 		// 4J: Check our deferred entity link packets
 		checkDeferredEntityLinkPackets(e->entityId);
+		checkDeferredSetEquippedItemPackets(e->entityId);
 	}
 }
 
@@ -1046,6 +1048,7 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 
 	level->putEntity(packet->id, player);
 	m_trackedEntityIds.insert(packet->id);
+	checkDeferredSetEquippedItemPackets(packet->id);
 
 	vector<shared_ptr<SynchedEntityData::DataItem> > *unpackedData = packet->getUnpackedData();
 	if (unpackedData != nullptr)
@@ -2577,6 +2580,7 @@ void ClientConnection::handleAddMob(shared_ptr<AddMobPacket> packet)
 	mob->zd = packet->zd / 8000.0f;
 	level->putEntity(packet->id, mob);
 	m_trackedEntityIds.insert(packet->id);
+	checkDeferredSetEquippedItemPackets(packet->id);
 
 	vector<shared_ptr<SynchedEntityData::DataItem> > *unpackedData = packet->getUnpackedData();
 	if (unpackedData != nullptr)
@@ -3446,6 +3450,11 @@ void ClientConnection::handleSetEquippedItem(shared_ptr<SetEquippedItemPacket> p
 		// 4J Stu - Brought forward change from 1.3 to fix #64688 - Customer Encountered: TU7: Content: Art: Aura of enchanted item is not displayed for other players in online game
 		entity->setEquippedSlot(packet->slot, packet->getItem() );
 	}
+	else
+	{
+		// Entity has not been created yet (common during join), defer briefly.
+		deferredSetEquippedItemPackets.push_back(DeferredSetEquippedItemPacket(packet));
+	}
 }
 
 void ClientConnection::handleContainerClose(shared_ptr<ContainerClosePacket> packet)
@@ -4181,6 +4190,48 @@ void ClientConnection::checkDeferredEntityLinkPackets(int newEntityId)
 }
 
 ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<SetEntityLinkPacket> packet)
+{
+	m_recievedTick = GetTickCount();
+	m_packet = packet;
+}
+
+void ClientConnection::checkDeferredSetEquippedItemPackets(int newEntityId)
+{
+	if (deferredSetEquippedItemPackets.empty()) return;
+
+	for (size_t i = 0; i < deferredSetEquippedItemPackets.size(); i++)
+	{
+		DeferredSetEquippedItemPacket* deferred = &deferredSetEquippedItemPackets[i];
+		bool remove = false;
+
+		int tickInterval = GetTickCount() - deferred->m_recievedTick;
+		if (tickInterval < MAX_SET_EQUIPPED_ITEM_DEFERRAL_INTERVAL)
+		{
+			if (deferred->m_packet->entity == newEntityId)
+			{
+				shared_ptr<Entity> entity = getEntity(newEntityId);
+				if (entity != nullptr)
+				{
+					entity->setEquippedSlot(deferred->m_packet->slot, deferred->m_packet->getItem());
+					remove = true;
+				}
+			}
+		}
+		else
+		{
+			// Drop stale deferred packets.
+			remove = true;
+		}
+
+		if (remove)
+		{
+			deferredSetEquippedItemPackets.erase(deferredSetEquippedItemPackets.begin() + i);
+			i--;
+		}
+	}
+}
+
+ClientConnection::DeferredSetEquippedItemPacket::DeferredSetEquippedItemPacket(shared_ptr<SetEquippedItemPacket> packet)
 {
 	m_recievedTick = GetTickCount();
 	m_packet = packet;
