@@ -176,6 +176,9 @@ public:
 
 		int				m_idsErrorMessage;			// Iff (not m_hasResults): error message explaining what went wrong.
 
+		// Win64 PlayFab: row identity uses hashed PlayFabId, not ProfileManager XUID — set when building reads.
+		bool			m_isLocalPlayer;
+
 	} ReadScore;
 
 	typedef struct ReadView

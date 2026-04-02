@@ -161,6 +161,11 @@ public:
 	void renderQueueMeter();
 	wstring GatherRTTStats();
 
+#if defined(_WINDOWS64)
+	// IQNet stub calls EndGame() without QNET_SESSION_ENDING; consoles invoke StateChange_AnyToEnding from PlatformNetworkManager.
+	void NotifyStubGameplayEnding(bool bStateWasPlaying);
+#endif
+
 	// GUI debug output
 
 	// Used for debugging output

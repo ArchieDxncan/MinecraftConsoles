@@ -39,7 +39,8 @@ bool LeaderboardManager::ReadStats_Friends(LeaderboardReadListener *listener, in
 	m_readListener = listener;
 	m_difficulty = difficulty;
 	m_statsType = type;
-	
+	m_myXUID = myUID;
+
 	m_eFilterMode = eFM_Friends;
 	return true;
 }
@@ -51,6 +52,7 @@ bool LeaderboardManager::ReadStats_MyScore(LeaderboardReadListener *listener, in
 	m_readListener = listener;
 	m_difficulty = difficulty;
 	m_statsType = type;
+	m_myXUID = myUID;
 	
 	m_readCount = readCount;
 	

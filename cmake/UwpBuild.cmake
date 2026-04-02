@@ -83,6 +83,8 @@ add_executable(MinecraftLCE ${MINECRAFT_CLIENT_SOURCES})
 target_include_directories(MinecraftLCE PRIVATE
   "${CMAKE_BINARY_DIR}/generated/"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client"
+  # nlohmann/json (WindowsLeaderboardManager) — same as Minecraft.Client on Windows64
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Server/vendor"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/Iggy/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Xbox/Sentient/Include"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.World"
@@ -115,6 +117,7 @@ target_link_libraries(MinecraftLCE PRIVATE
   dxgi
   ws2_32
   xinput
+  winhttp
   legacy_stdio_definitions
   WindowsApp.lib
   user32.lib

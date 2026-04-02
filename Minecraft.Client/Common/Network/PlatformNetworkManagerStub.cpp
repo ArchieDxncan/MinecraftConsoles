@@ -9,6 +9,7 @@
 #include "../../Xbox/Network/NetworkPlayerXbox.h"
 #ifdef _WINDOWS64
 #include "../../Windows64/Network/WinsockNetLayer.h"
+#include "../../Windows64/Network/PlayFabLobbyWin64.h"
 #include "../../Windows64/Windows64_Xuid.h"
 #include "../../Minecraft.h"
 #include "../../User.h"
@@ -181,6 +182,7 @@ bool CPlatformNetworkManagerStub::Initialise(CGameNetworkManager *pGameNetworkMa
 	m_bJoinPending = false;
 	m_joinLocalUsersMask = 0;
 	m_joinHostName[0] = 0;
+	m_win64HostPublicSlots = MINECRAFT_NET_MAX_PLAYERS;
 #endif
 	m_pSearchParam = nullptr;
 	m_SessionsUpdatedCallback = nullptr;
@@ -425,6 +427,7 @@ bool CPlatformNetworkManagerStub::LeaveGame(bool bMigrateHost)
 	m_bLeaveGameOnTick = false;
 
 #ifdef _WINDOWS64
+	PlayFabLobbyWin64::OnHostStoppedAdvertising();
 	WinsockNetLayer::StopAdvertising();
 #endif
 
@@ -462,6 +465,9 @@ bool CPlatformNetworkManagerStub::_LeaveGame(bool bMigrateHost, bool bLeaveRoom)
 void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame, bool bIsPrivate, unsigned char publicSlots /*= MINECRAFT_NET_MAX_PLAYERS*/, unsigned char privateSlots /*= 0*/)
 {
 // #ifdef _XBOX
+#ifdef _WINDOWS64
+	m_win64HostPublicSlots = publicSlots;
+#endif
 	// 4J Stu - We probably did this earlier as well, but just to be sure!
 	SetLocalGame( !bOnlineGame );
 	SetPrivateGame( bIsPrivate );
@@ -513,9 +519,12 @@ void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame,
 			const wchar_t* hostName = IQNet::m_player[0].m_gamertag;
 			unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
 			WinsockNetLayer::StartAdvertising(port, hostName, settings, 0, 0, MINECRAFT_NET_VERSION);
+			PlayFabLobbyWin64::OnHostStartedAdvertising(!m_bIsOfflineGame, m_bIsPrivateGame, m_win64HostPublicSlots,
+				port, hostName, settings);
 		}
 		else
 		{
+			PlayFabLobbyWin64::OnHostStoppedAdvertising();
 			WinsockNetLayer::StopAdvertising();
 		}
 	}
@@ -928,6 +937,34 @@ void CPlatformNetworkManagerStub::SearchForGames()
 			}
 		}
 		std::fclose(file);
+	}
+
+	std::vector<PlayFabListedGame> playfabGames;
+	PlayFabLobbyWin64::FindJoinableLobbies(playfabGames);
+	for (const PlayFabListedGame &pg : playfabGames)
+	{
+		FriendSessionInfo *info = new FriendSessionInfo();
+		size_t nameLen = pg.displayName.length();
+		info->displayLabel = new wchar_t[nameLen + 1];
+		wcscpy_s(info->displayLabel, nameLen + 1, pg.displayName.c_str());
+		info->displayLabelLength = static_cast<unsigned char>(nameLen > 255 ? 255 : nameLen);
+		info->displayLabelViewableStartIndex = 0;
+
+		info->data.netVersion = pg.netVersion;
+		info->data.m_uiGameHostSettings = pg.gameHostSettings;
+		info->data.texturePackParentId = 0;
+		info->data.subTexturePackId = 0;
+		info->data.isReadyToJoin = true;
+		info->data.isJoinable = true;
+		strncpy_s(info->data.hostIP, sizeof(info->data.hostIP), pg.hostIP.c_str(), _TRUNCATE);
+		info->data.hostPort = pg.hostPort;
+		wcsncpy_s(info->data.hostName, XUSER_NAME_SIZE, pg.displayName.c_str(), _TRUNCATE);
+		info->data.playerCount = pg.playerCount;
+		info->data.maxPlayers = pg.maxPlayers;
+
+		info->sessionId = pg.sessionId;
+
+		friendsSessions[0].push_back(info);
 	}
 
 	m_searchResultsCount[0] = static_cast<int>(friendsSessions[0].size());

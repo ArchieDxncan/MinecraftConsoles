@@ -2,35 +2,65 @@
 
 #include "Common/Leaderboards/LeaderboardManager.h"
 
+#include <atomic>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
+
 class WindowsLeaderboardManager : public LeaderboardManager
 {
 public:
-	virtual void Tick() {}
+	WindowsLeaderboardManager();
+	virtual ~WindowsLeaderboardManager();
 
-	//Open a session
-	virtual bool OpenSession() { return true; }
+	virtual void Tick();
 
-	//Close a session
-	virtual void CloseSession() {}
+	virtual bool OpenSession();
+	virtual void CloseSession();
+	virtual void DeleteSession();
 
-	//Delete a session
-	virtual void DeleteSession() {}
+	virtual bool WriteStats(unsigned int viewCount, ViewIn views);
 
-	//Write the given stats
-	//This is called synchronously and will not free any memory allocated for views when it is done
+	virtual bool ReadStats_Friends(LeaderboardReadListener *callback, int difficulty, EStatsType type, PlayerUID myUID, unsigned int startIndex, unsigned int readCount);
+	virtual bool ReadStats_MyScore(LeaderboardReadListener *callback, int difficulty, EStatsType type, PlayerUID myUID, unsigned int readCount);
+	virtual bool ReadStats_TopRank(LeaderboardReadListener *callback, int difficulty, EStatsType type, unsigned int startIndex, unsigned int readCount);
 
-	virtual bool WriteStats(unsigned int viewCount, ViewIn views) { return false; }
+	virtual void FlushStats();
+	virtual void CancelOperation();
+	virtual bool isIdle();
 
-	virtual bool ReadStats_Friends(LeaderboardReadListener *callback, int difficulty, EStatsType type, PlayerUID myUID) { return false; }
-	virtual bool ReadStats_MyScore(LeaderboardReadListener *callback, int difficulty, EStatsType type, PlayerUID myUID, unsigned int readCount) { return false; }
-	virtual bool ReadStats_TopRank(LeaderboardReadListener *callback, int difficulty, EStatsType type, unsigned int startIndex, unsigned int readCount) { return false; }
+private:
+	void StartReadJob(EFilterMode filter);
+	void StartWriteJob(std::vector<RegisterScore> scores);
+	void DeliverCompletedWork();
 
-	//Perform a flush of the stats
-	virtual void FlushStats() {}
+	static unsigned int ColumnCountForType(EStatsType type);
 
-	//Cancel the current operation
-	virtual void CancelOperation() {}
+	int m_openSessions;
 
-	//Is the leaderboard manager idle.
-	virtual bool isIdle() { return true; }
+	std::mutex m_queueMutex;
+	std::vector<RegisterScore> m_pendingWrites;
+
+	std::atomic<bool> m_workerBusy;
+	std::atomic<bool> m_cancelRequested;
+	std::thread m_workerThread;
+
+	std::mutex m_deliveryMutex;
+	bool m_hasDelivery;
+	eStatsReturn m_deliveryReturn;
+	ReadScore *m_deliveryScores;
+	unsigned int m_deliveryNumScores;
+	LeaderboardReadListener *m_deliveryListener;
+
+	std::string m_titleId;
+	std::string m_cloudScriptLbColumnsFn;
+	std::string m_sessionTicket;
+	std::string m_playFabId;
+	std::mutex m_authMutex;
+
+	bool PlayFabEnabled() const { return !m_titleId.empty(); }
+	bool EnsureLoggedIn(std::string &err);
+	void TrySyncTitleDisplayName();
+	bool PostPlayFab(const char *path, const std::string &jsonBody, std::string &outResponseUtf8, std::string &err);
 };

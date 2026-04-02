@@ -81,6 +81,7 @@ private:
 	bool			m_bJoinPending;
 	int				m_joinLocalUsersMask;
 	wchar_t			m_joinHostName[32];
+	unsigned char	m_win64HostPublicSlots;
 #endif
 
 	// This is only maintained by the host, and is not valid on client machines

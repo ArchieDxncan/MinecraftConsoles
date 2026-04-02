@@ -32,7 +32,7 @@
 #include "../../Minecraft.Client/StatsCounter.h"
 #include "../ConnectScreen.h"
 //#include "Social/SocialManager.h"
-//#include "Leaderboards/LeaderboardManager.h"
+#include "../Common/Leaderboards/LeaderboardManager.h"
 //#include "XUI/XUI_Scene_Container.h"
 //#include "NetworkManager.h"
 #include "../../Minecraft.Client/Tesselator.h"
@@ -1734,7 +1734,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		g_NetworkManager.DoWork();
 		PIXEndNamedEvent();
 
-		//		LeaderboardManager::Instance()->Tick();
+		LeaderboardManager::Instance()->Tick();
 		// Render game graphics.
 		if(app.GetGameStarted())
 		{

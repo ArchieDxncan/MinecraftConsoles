@@ -1498,10 +1498,24 @@ void CGameNetworkManager::StateChange_AnyToStarting()
 	}
 }
 
+#if defined(_WINDOWS64)
+void CGameNetworkManager::NotifyStubGameplayEnding(bool bStateWasPlaying)
+{
+	StateChange_AnyToEnding(bStateWasPlaying);
+}
+#endif
+
 void CGameNetworkManager::StateChange_AnyToEnding(bool bStateWasPlaying)
 {
-	// Kick off a stats write for players that are signed into LIVE, if this is a local game
-	if( bStateWasPlaying && g_NetworkManager.IsLocalGame() )
+	// Kick off a stats write for players that are signed into LIVE, if this is a local game.
+	// Win64: always flush when leaving gameplay — "online" worlds still use the stub session, and
+	// the pause-menu exit path sets saveStats=false whenever IsInSession() is true.
+#if defined(_WINDOWS64)
+	const bool doStatsLeaderboardSave = bStateWasPlaying;
+#else
+	const bool doStatsLeaderboardSave = bStateWasPlaying && g_NetworkManager.IsLocalGame();
+#endif
+	if (doStatsLeaderboardSave)
 	{
 		for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
 		{

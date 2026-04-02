@@ -22,6 +22,7 @@
 #include "Windows64/Sentient/DynamicConfigurations.h"
 #include "Windows64/Network/WinsockNetLayer.h"
 #include "Windows64/Windows64_Xuid.h"
+#include "Common/Network/GameNetworkManager.h"
 #elif defined __PSVITA__
 #include "PSVita/Sentient/SentientManager.h"
 #include "StatsCounter.h"
@@ -382,6 +383,12 @@ void IQNet::ClientJoinGame()
 }
 void IQNet::EndGame()
 {
+#ifdef _WINDOWS64
+	// Stub QNet skips SESSION_ENDING; consoles call StateChange_AnyToEnding there. Without this,
+	// pause/quit sets saveStats=false while in-session and setLevel never runs forceStatsSave.
+	if (_iQNetStubState == QNET_STATE_GAME_PLAY)
+		g_NetworkManager.NotifyStubGameplayEnding(true);
+#endif
 	_iQNetStubState = QNET_STATE_IDLE;
 	s_isHosting = false;
 	s_playerCount = 1;

@@ -165,6 +165,7 @@ static LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
 #include "Windows64Media/strings.h"
 #include "Windows64/4JLibs/inc/4J_Storage.h"
 #include "Windows64/Windows64_Xuid.h"
+#include "Common/Leaderboards/LeaderboardManager.h"
 
 // Minecraft.World types used in InitialiseMinecraftRuntime_UWP / GameTick
 #include "OldChunkStorage.h"
@@ -844,6 +845,9 @@ void App::GameTick()
         RenderManager.Tick();
 
         g_NetworkManager.DoWork();
+
+        // Same as Windows64_Minecraft main loop: deliver async PlayFab read/write completions to the UI.
+        LeaderboardManager::Instance()->Tick();
 
         // Game logic
         if (app.GetGameStarted())

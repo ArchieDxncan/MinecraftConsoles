@@ -331,6 +331,9 @@ void StatsCounter::saveLeaderboards()
 	if( LeaderboardManager::Instance()->OpenSession() )
 	{
 		writeStats();
+#if defined(_WINDOWS64)
+		LeaderboardManager::Instance()->FlushStats();
+#endif
 		LeaderboardManager::Instance()->CloseSession();
 	}
 	else
@@ -358,7 +361,7 @@ void StatsCounter::writeStats()
 	int viewCount = 0;
 	int iPad = ProfileManager.GetLockedProfile();
 
-#if defined(__PS3__) || defined(__ORBIS__) || defined (__PSVITA__)
+#if defined(__PS3__) || defined(__ORBIS__) || defined (__PSVITA__) || defined(_WINDOWS64)
 	LeaderboardManager::RegisterScore *scores = new LeaderboardManager::RegisterScore[24];
 
 	if( modifiedBoards & LEADERBOARD_KILLS_EASY )

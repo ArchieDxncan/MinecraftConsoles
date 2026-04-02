@@ -515,6 +515,10 @@ bool UIScene_LeaderboardsMenu::OnStatsReadComplete(LeaderboardManager::eStatsRet
 
 	PopulateLeaderboard(retIn);
 
+	// ReadView only borrows the array; WindowsLeaderboardManager deletes it after this callback returns.
+	m_stats.m_queries = nullptr;
+	m_stats.m_numQueries = 0;
+
 	updateTooltips();
 
 	m_isProcessingStatsRead = false;
@@ -736,11 +740,13 @@ void UIScene_LeaderboardsMenu::CopyLeaderboardEntry(LeaderboardManager::ReadScor
 	wstring wstr=convStringToWstring(statsRow->m_uid.getOnlineID());
 	swprintf(leaderboardEntry->m_gamerTag, XUSER_NAME_SIZE, L"%ls",wstr.c_str());
 #else
-	memcpy(leaderboardEntry->m_gamerTag, statsRow->m_name.data(), statsRow->m_name.size() * sizeof(wchar_t));
+	// PlayFab / platform names can be longer than XUSER_NAME_SIZE; memcpy was a buffer overflow.
+	wcsncpy_s(leaderboardEntry->m_gamerTag, XUSER_NAME_SIZE + 1, statsRow->m_name.c_str(), _TRUNCATE);
 #endif
 
 	// Copy the other columns
-	for( unsigned int i=0 ; i<statsRow->m_statsSize ; i++ )
+	const unsigned int kMaxUiColumns = sizeof(leaderboardEntry->m_columns) / sizeof(leaderboardEntry->m_columns[0]);
+	for (unsigned int i = 0; i < statsRow->m_statsSize && i < kMaxUiColumns; i++)
 	{
 		leaderboardEntry->m_columns[i] = statsRow->m_statsData[i];
 		ZeroMemory(leaderboardEntry->m_wcColumns[i],12*sizeof(WCHAR));
@@ -797,7 +803,12 @@ void UIScene_LeaderboardsMenu::CopyLeaderboardEntry(LeaderboardManager::ReadScor
 		}
 	}
 
-#ifdef _DURANGO
+#if defined(_WINDOWS64)
+	leaderboardEntry->m_bPlayer = statsRow->m_isLocalPlayer;
+	leaderboardEntry->m_bOnline = false;
+	leaderboardEntry->m_bFriend = false;
+	leaderboardEntry->m_bRequestedFriend = false;
+#elif defined(_DURANGO)
 	//Is the player
 	PlayerUID myXuid;
 	ProfileManager.GetXUID(ProfileManager.GetPrimaryPad(),&myXuid,true);

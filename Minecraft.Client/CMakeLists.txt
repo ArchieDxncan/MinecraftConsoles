@@ -35,6 +35,7 @@ target_include_directories(Minecraft.Client PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
   "${CMAKE_CURRENT_SOURCE_DIR}/${PLATFORM_NAME}/Iggy/include"
   "${CMAKE_SOURCE_DIR}/include/"
+  $<$<STREQUAL:${PLATFORM_NAME},Windows64>:${CMAKE_SOURCE_DIR}/Minecraft.Server/vendor>
 )
 target_compile_definitions(Minecraft.Client PRIVATE
   ${MINECRAFT_SHARED_DEFINES}
@@ -56,6 +57,7 @@ target_link_libraries(Minecraft.Client PRIVATE
   XInput9_1_0
   wsock32
   legacy_stdio_definitions
+  $<$<STREQUAL:${PLATFORM_NAME},Windows64>:winhttp>
   $<$<CONFIG:Debug>: # Debug 4J libraries
     "${CMAKE_CURRENT_SOURCE_DIR}/${PLATFORM_NAME}/4JLibs/libs/4J_Input_d.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/${PLATFORM_NAME}/4JLibs/libs/4J_Storage_d.lib"
