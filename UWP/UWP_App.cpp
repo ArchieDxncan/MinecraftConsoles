@@ -6,7 +6,7 @@
 // KEY DIFFERENCES vs Win32:
 //   • CoreWindow instead of HWND for the D3D11 swap chain
 //   • IFrameworkView instead of WinMain + message pump
-//   • Xbox gamertag fetched from Windows.System.User API
+//   • Display name from LocalState\username.txt (editable)
 //   • No keyboard/mouse input (controller only on Xbox)
 //   • No XInput9_1_0 — 4J_Input handles gamepad natively
 // ============================================================================
@@ -14,11 +14,9 @@
 #include "stdafx.h"
 #include "UWP_App.h"
 
-#include <ppltasks.h>
 #include <assert.h>
 #include <fstream>
 #include <cstdarg>
-#include <thread>
 // NOTE: <collection.h> removed — it causes ABI::Windows::UI::Color redefinition
 //       when mixed with game headers. Not actually needed.
 
@@ -27,6 +25,9 @@
 // the app crashes even without a debugger attached.
 // ============================================================================
 static std::ofstream g_logFile;
+extern char g_LocalStatePath[512];
+extern char g_Win64Username[17];
+extern wchar_t g_Win64UsernameW[17];
 static void LogInit()
 {
     if (g_logFile.is_open()) return;  // Already initialized
@@ -58,6 +59,66 @@ void LogMsg(const char* fmt, ...)
         g_logFile << buf;
         g_logFile.flush();
     }
+}
+
+static bool BuildLocalStateFilePath(char* outPath, size_t outPathSize, const char* fileName)
+{
+    if (!outPath || outPathSize == 0 || !fileName || fileName[0] == '\0')
+        return false;
+    if (g_LocalStatePath[0] == '\0')
+        return false;
+    if (strcpy_s(outPath, outPathSize, g_LocalStatePath) != 0)
+        return false;
+    size_t n = strlen(outPath);
+    if (n > 0 && outPath[n - 1] != '\\' && outPath[n - 1] != '/')
+    {
+        if (strcat_s(outPath, outPathSize, "\\") != 0)
+            return false;
+    }
+    if (strcat_s(outPath, outPathSize, fileName) != 0)
+        return false;
+    return true;
+}
+
+static void LoadUsernameFromLocalState()
+{
+    char path[MAX_PATH] = {};
+    if (!BuildLocalStateFilePath(path, sizeof(path), "username.txt"))
+        return;
+
+    FILE* f = nullptr;
+    if (fopen_s(&f, path, "r") != 0 || !f)
+        return;
+
+    char buf[128] = {};
+    if (fgets(buf, sizeof(buf), f))
+    {
+        int len = static_cast<int>(strlen(buf));
+        while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r' || buf[len - 1] == ' '))
+            buf[--len] = '\0';
+        if (len > 0)
+        {
+            strncpy_s(g_Win64Username, sizeof(g_Win64Username), buf, _TRUNCATE);
+            MultiByteToWideChar(CP_ACP, 0, g_Win64Username, -1, g_Win64UsernameW, 17);
+            LogMsg("UWP: Loaded username.txt from LocalState: %s\n", g_Win64Username);
+        }
+    }
+    fclose(f);
+}
+
+static void SaveUsernameToLocalState()
+{
+    char path[MAX_PATH] = {};
+    if (!BuildLocalStateFilePath(path, sizeof(path), "username.txt"))
+        return;
+
+    FILE* f = nullptr;
+    if (fopen_s(&f, path, "w") != 0 || !f)
+        return;
+
+    fprintf_s(f, "%s\n", g_Win64Username);
+    fclose(f);
+    LogMsg("UWP: Wrote username.txt to LocalState: %s\n", g_Win64Username);
 }
 
 // Global crash handler — logs SEH exceptions before the process dies
@@ -103,6 +164,7 @@ static LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
 #include "Common/UI/UI.h"
 #include "Windows64Media/strings.h"
 #include "Windows64/4JLibs/inc/4J_Storage.h"
+#include "Windows64/Windows64_Xuid.h"
 
 // Minecraft.World types used in InitialiseMinecraftRuntime_UWP / GameTick
 #include "OldChunkStorage.h"
@@ -169,8 +231,8 @@ int                     g_rScreenWidth  = 1920;
 int                     g_rScreenHeight = 1080;
 float                   g_iAspectRatio  = 1920.0f / 1080.0f;
 
-char                    g_Win64Username[17]  = "XboxPlayer";
-wchar_t                 g_Win64UsernameW[17] = L"XboxPlayer";
+char                    g_Win64Username[17]  = "Player";
+wchar_t                 g_Win64UsernameW[17] = L"Player";
 
 // D3D11 globals that InitialiseMinecraftRuntime() and many game functions use
 HINSTANCE               g_hInst = nullptr;
@@ -217,86 +279,6 @@ void ClearGlobalText()
 {
     memset(chGlobalText, 0, 256);
     memset(ui16GlobalText, 0, 512);
-}
-
-// ============================================================================
-// DISPLAY NAME / GAMERTAG FETCHER (UWP)
-// ============================================================================
-// Windows::System::User + KnownUserProperties::DisplayName (worker thread + blocking .get()).
-// Does not use the Windows.Xbox Extension SDK (avoids VS "Could not find SDK Windows.Xbox" on PC-only setups).
-// Must finish before Minecraft::main() so ProfileManager / IQNet / user->name see the real name.
-// ============================================================================
-static void ApplyGamertagString(Platform::String^ name)
-{
-    if (name == nullptr || name->Length() <= 0)
-        return;
-    int len = name->Length();
-    if (len > 16) len = 16;
-    wcsncpy_s(g_Win64UsernameW, 17, name->Data(), len);
-    g_Win64UsernameW[len] = L'\0';
-    WideCharToMultiByte(CP_ACP, 0, g_Win64UsernameW, -1,
-                        g_Win64Username, 17, nullptr, nullptr);
-    g_Win64Username[16] = '\0';
-    wcscpy_s(IQNet::m_player[0].m_gamertag, 32, g_Win64UsernameW);
-    // If Minecraft already constructed, keep User in sync (ProfileManager stub reads g_Win64Username*)
-    Minecraft* mc = Minecraft::GetInstance();
-    if (mc && mc->user)
-        mc->user->name.assign(g_Win64UsernameW);
-}
-
-static void FetchXboxGamertagBlocking()
-{
-    using namespace concurrency;
-
-    // WinRT user (PC UWP / Xbox): block on a worker thread — .get() must not run on UI thread
-    try
-    {
-        std::exception_ptr err;
-        std::thread worker([&err] {
-            try
-            {
-                auto users = create_task(Windows::System::User::FindAllAsync()).get();
-                if (users->Size == 0)
-                    return;
-                Windows::System::User^ u = users->GetAt(0);
-                Platform::Object^ prop =
-                    create_task(u->GetPropertyAsync(Windows::System::KnownUserProperties::DisplayName)).get();
-                if (prop == nullptr)
-                    return;
-                Platform::String^ displayName = safe_cast<Platform::String^>(prop);
-                if (displayName != nullptr && displayName->Length() > 0)
-                    ApplyGamertagString(displayName);
-            }
-            catch (...)
-            {
-                err = std::current_exception();
-            }
-        });
-        worker.join();
-        if (err)
-        {
-            try
-            {
-                std::rethrow_exception(err);
-            }
-            catch (const std::exception& ex)
-            {
-                LogMsg("UWP: System::User gamertag thread exception: %s\n", ex.what());
-            }
-            catch (...)
-            {
-                LogMsg("UWP: System::User gamertag thread failed (unknown exception)\n");
-            }
-        }
-        else if (g_Win64Username[0] != '\0' && strcmp(g_Win64Username, "XboxPlayer") != 0)
-        {
-            LogMsg("UWP: Gamertag from Windows::System::User::DisplayName\n");
-        }
-    }
-    catch (...)
-    {
-        LogMsg("UWP: System::User gamertag path failed (unexpected)\n");
-    }
 }
 
 // ============================================================================
@@ -495,6 +477,7 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
     ProfileManager.SetDefaultOptionsCallback(
         &CConsoleMinecraftApp::DefaultOptionsCallback, (LPVOID)&app);
     LogMsg("UWP: ProfileManager OK\n");
+    // Note: On UWP, C_4JProfile::GetGamertag() is just g_Win64Username (Extrax64Stubs.cpp) — no separate Xbox source.
 
     // Align 4J Storage with LocalState (Init + TMS root) so GetMountedPath / profile / DLC paths match Minecraft::workingDirectory
     {
@@ -509,7 +492,18 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
             (LPVOID)&app,
             kUwpTitleStorageGroup);
         StorageManager.StoreTMSPathName();
+        // UWP has no platform save-device selector; keep saving explicitly enabled.
+        StorageManager.SetSaveDisabled(false);
+        for (int i = 0; i < XUSER_MAX_COUNT; ++i)
+            StorageManager.SetSaveDeviceSelected(i, true);
+        // UWP: use folder-backed save IO/listing path in the sandboxed app data area.
+        app.SetLoadSavesFromFolderEnabled(true);
+        app.SetWriteSavesToFolderEnabled(true);
         LogMsg("UWP: StorageManager.Init OK (LocalState-backed)\n");
+        LogMsg("UWP: StorageManager saveDisabled=%d\n", StorageManager.GetSaveDisabled() ? 1 : 0);
+        LogMsg("UWP: Folder save mode enabled (load=%d write=%d)\n",
+               app.GetLoadSavesFromFolderEnabled() ? 1 : 0,
+               app.GetWriteSavesToFolderEnabled() ? 1 : 0);
     }
 
     LogMsg("UWP: Calling g_NetworkManager.Initialise()...\n");
@@ -614,6 +608,9 @@ void App::Initialize(CoreApplicationView^ applicationView)
         SetCurrentDirectoryA(installPathA);
         LogMsg("UWP: CWD set to package install path\n");
     }
+
+    // Keep parity with Win64 behavior, but store in writable LocalState.
+    LoadUsernameFromLocalState();
 
     applicationView->Activated +=
         ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(
@@ -730,10 +727,13 @@ void App::Load(Platform::String^ /*entryPoint*/)
         }
     }
 
-    // Resolve gamertag BEFORE any game init (blocking — async previously never beat Minecraft::main)
-    LogMsg("UWP: Calling FetchXboxGamertagBlocking...\n");
-    FetchXboxGamertagBlocking();
-    LogMsg("UWP: Gamertag = %s\n", g_Win64Username);
+    // username.txt: always (re)written on load so the file exists and is editable (default Player).
+    if (g_Win64Username[0] == '\0')
+        strncpy_s(g_Win64Username, sizeof(g_Win64Username), "Player", _TRUNCATE);
+    MultiByteToWideChar(CP_ACP, 0, g_Win64Username, -1, g_Win64UsernameW, 17);
+    g_Win64UsernameW[16] = L'\0';
+    SaveUsernameToLocalState();
+    Win64Xuid::ResolvePersistentXuid();
 
     // Create D3D11 device + CoreWindow swap chain
     LogMsg("UWP: Calling CreateDeviceAndSwapChain...\n");
@@ -834,6 +834,13 @@ void App::GameTick()
         InputManager.Tick();
 
         StorageManager.Tick();
+        // Some UI flows toggle save-disabled when no "device" is selected.
+        // UWP uses LocalState directly, so force-enable if it ever flips on.
+        if (StorageManager.GetSaveDisabled())
+        {
+            LogMsg("UWP: StorageManager saveDisabled was TRUE in tick %d — forcing FALSE\n", s_gameTickCount);
+            StorageManager.SetSaveDisabled(false);
+        }
         RenderManager.Tick();
 
         g_NetworkManager.DoWork();

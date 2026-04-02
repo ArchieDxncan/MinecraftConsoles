@@ -9,6 +9,8 @@
 #include <cstring>
 #include <Windows.h>
 
+extern char g_LocalStatePath[512];
+
 namespace Win64Xuid
 {
 	inline PlayerUID GetLegacyEmbeddedBaseXuid()
@@ -45,6 +47,21 @@ namespace Win64Xuid
 
 		outPath[0] = 0;
 
+		if (::g_LocalStatePath[0] != 0)
+		{
+			if (strcpy_s(outPath, outPathSize, ::g_LocalStatePath) != 0)
+				return false;
+			size_t n = strlen(outPath);
+			if (n > 0 && outPath[n - 1] != '\\' && outPath[n - 1] != '/')
+			{
+				if (strcat_s(outPath, outPathSize, "\\") != 0)
+					return false;
+			}
+			if (strcat_s(outPath, outPathSize, "uid.dat") != 0)
+				return false;
+		}
+		else
+		{
 		char exePath[MAX_PATH] = {};
 		DWORD len = GetModuleFileNameA(NULL, exePath, MAX_PATH);
 		if (len == 0 || len >= MAX_PATH)
@@ -60,6 +77,7 @@ namespace Win64Xuid
 			return false;
 		if (strcat_s(outPath, outPathSize, "uid.dat") != 0)
 			return false;
+		}
 
 		return true;
 	}
@@ -226,7 +244,7 @@ namespace Win64Xuid
 			return s_xuid;
 		}
 
-		// First launch on this client: generate once and persist to uid.dat.
+		// First launch: generate once and persist to uid.dat.
 		s_xuid = GeneratePersistentUid();
 		WriteUid(s_xuid);
 		s_cached = true;

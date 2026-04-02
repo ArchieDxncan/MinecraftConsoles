@@ -331,8 +331,8 @@ void Minecraft::init()
 
 	// glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-	#ifdef _UWP
-	// Prefer wide path from WinRT (avoids ACP loss for non-ASCII package paths)
+	#if defined(_UWP) || defined(_WINDOWS64)
+	// Use LocalState-backed options path on UWP and Windows64.
 	extern wchar_t g_LocalStatePathW[512];
 	workingDirectory = File(std::wstring(g_LocalStatePathW));
 	workingDirectory.mkdirs();

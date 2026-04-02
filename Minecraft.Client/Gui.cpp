@@ -21,6 +21,7 @@
 #include "../Minecraft.World/System.h"
 #include "../Minecraft.World/Language.h"
 #include "EntityRenderDispatcher.h"
+#include "ClientConstants.h"
 #include "../Minecraft.World/Dimension.h"
 #include "../Minecraft.World/net.minecraft.world.entity.boss.enderdragon.h"
 #include "EnderDragonRenderer.h"
@@ -1063,6 +1064,11 @@ void Gui::render(float a, bool mouseFree, int xMouse, int yMouse)
         glTranslatef(static_cast<float>(-debugLeft), static_cast<float>(-debugTop), 0.f);
 
         vector<wstring> lines;
+        if (iPad == 0)
+        {
+            lines.push_back(ClientConstants::VERSION_STRING);
+            lines.push_back(ClientConstants::BRANCH_STRING);
+        }
 
         if (minecraft->options->renderDebug && minecraft->player != nullptr && minecraft->level != nullptr)
         {

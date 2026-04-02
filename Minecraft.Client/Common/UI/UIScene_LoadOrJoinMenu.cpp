@@ -28,6 +28,34 @@
 #ifdef _WINDOWS64
 #include "../../../Minecraft.World/NbtIo.h"
 #include "../../../Minecraft.World/compression.h"
+#include "../../../Minecraft.World/ConsoleSaveFileInputStream.h"
+
+static wstring FormatFolderSaveDisplayName(const wstring& rawName)
+{
+    if (rawName.empty()) return L"Saved World";
+
+    wstring base = rawName;
+    const size_t extPos = base.rfind(L".mcs");
+    if (extPos != wstring::npos && extPos + 4 == base.size())
+    {
+        base = base.substr(0, extPos);
+    }
+
+    // Raw folder mode names often look like: v0560-0.04.02.12.56.07
+    // Show a cleaner label while still being deterministic.
+    const size_t dashPos = base.find(L'-');
+    if (base.size() > 1 && base[0] == L'v' && dashPos != wstring::npos && dashPos + 1 < base.size())
+    {
+        wstring stamp = base.substr(dashPos + 1);
+        for (size_t i = 0; i < stamp.size(); ++i)
+        {
+            if (stamp[i] == L'.') stamp[i] = L':';
+        }
+        return wstring(L"Saved World ") + stamp;
+    }
+
+    return base;
+}
 
 static wstring ReadLevelNameFromSaveFile(const wstring& filePath)
 {
@@ -54,6 +82,95 @@ static wstring ReadLevelNameFromSaveFile(const wstring& filePath)
                 }
             }
             else fclose(fr);
+        }
+    }
+
+    // Per-save sidecar (same basename + ".name.txt"), written by UWP folder-save path.
+    {
+        wstring perSaveSidecar = filePath + L".name.txt";
+        FILE *fr = nullptr;
+        if (_wfopen_s(&fr, perSaveSidecar.c_str(), L"r") == 0 && fr)
+        {
+            char buf[256] = {};
+            if (fgets(buf, sizeof(buf), fr))
+            {
+                int len = static_cast<int>(strlen(buf));
+                while (len > 0 && (buf[len-1] == '\n' || buf[len-1] == '\r' || buf[len-1] == ' '))
+                    buf[--len] = '\0';
+                fclose(fr);
+                if (len > 0)
+                {
+                    wchar_t wbuf[256] = {};
+                    mbstowcs(wbuf, buf, 255);
+                    return wstring(wbuf);
+                }
+            }
+            else fclose(fr);
+        }
+    }
+
+#ifdef _UWP
+    // UWP folder-save filenames are generated as:
+    // v####-<worldName><MM>.<DD>.<HH>.<MM>.<SS>.mcs
+    // Use this deterministic extraction path to avoid heavy parsing in UI tick.
+    wstring fileNameOnly = filePath;
+    if (slashPos != wstring::npos && slashPos + 1 < filePath.size())
+        fileNameOnly = filePath.substr(slashPos + 1);
+
+    // Remove .mcs extension
+    if (fileNameOnly.size() > 4 && fileNameOnly.substr(fileNameOnly.size() - 4) == L".mcs")
+        fileNameOnly = fileNameOnly.substr(0, fileNameOnly.size() - 4);
+
+    // Remove version prefix v####-
+    size_t dashPos = fileNameOnly.find(L'-');
+    if (dashPos != wstring::npos && dashPos + 1 < fileNameOnly.size())
+    {
+        wstring payload = fileNameOnly.substr(dashPos + 1);
+        // Strip trailing timestamp (MM.DD.HH.MM.SS = 14 chars)
+        if (payload.size() > 14)
+        {
+            wstring worldName = payload.substr(0, payload.size() - 14);
+            if (!worldName.empty() && worldName != L"world")
+                return worldName;
+        }
+    }
+    return L"";
+#endif
+
+    // Parse through ConsoleSaveFileOriginal first (matches runtime save reader).
+    {
+        File saveFile(filePath);
+        const int64_t fileSize64 = saveFile.length();
+        if (fileSize64 > 0 && fileSize64 < (256LL * 1024LL * 1024LL))
+        {
+            byteArray saveBytes(static_cast<unsigned int>(fileSize64));
+            FileInputStream fis(saveFile);
+            const int bytesRead = fis.read(saveBytes);
+            fis.close();
+
+            if (bytesRead > 0)
+            {
+                ConsoleSaveFileOriginal parsedSave(L"Temp", saveBytes.data, saveBytes.length, false, SAVE_FILE_PLATFORM_LOCAL);
+                ConsoleSavePath levelDatPath(L"level.dat");
+                if (parsedSave.doesFileExist(levelDatPath))
+                {
+                    ConsoleSaveFileInputStream csis(&parsedSave, levelDatPath);
+                    CompoundTag *root = NbtIo::readCompressed(&csis);
+                    csis.close();
+                    if (root != nullptr)
+                    {
+                        CompoundTag *dataTag = root->getCompound(L"Data");
+                        if (dataTag != nullptr)
+                        {
+                            wstring levelName = dataTag->getString(L"LevelName");
+                            delete root;
+                            if (!levelName.empty() && levelName != L"world")
+                                return levelName;
+                        }
+                        delete root;
+                    }
+                }
+            }
         }
     }
 
@@ -1017,7 +1134,13 @@ void UIScene_LoadOrJoinMenu::GetSaveInfo()
 
     // This will return with the number retrieved in uiSaveC
 
-    if(app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled())
+    if(
+#ifdef _UWP
+        app.GetLoadSavesFromFolderEnabled()
+#else
+        app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled()
+#endif
+      )
     {
 #ifdef __ORBIS__
 		// We need to make sure this is non-null so that we have an idea of free space
@@ -1037,6 +1160,17 @@ void UIScene_LoadOrJoinMenu::GetSaveInfo()
         if( savesDir.exists() )
         {
             m_saves = savesDir.listFiles();
+            // Folder mode can return "."/".." and sidecars. Keep only actual .mcs saves.
+            vector<File*> *filteredSaves = new vector<File*>();
+            for (auto* f : *m_saves)
+            {
+                if (!f) continue;
+                wstring n = f->getName();
+                if (n == L"." || n == L"..") continue;
+                if (n.size() <= 4 || n.substr(n.size() - 4) != L".mcs") continue;
+                filteredSaves->push_back(f);
+            }
+            m_saves = filteredSaves;
             uiSaveC = static_cast<unsigned int>(m_saves->size());
         }
         // add the New Game and Tutorial after the saves list is retrieved, if there are any saves
@@ -1048,14 +1182,21 @@ void UIScene_LoadOrJoinMenu::GetSaveInfo()
 
         for(unsigned int i=0;i<listItems;i++)
         {
-
             wstring wName = m_saves->at(i)->getName();
-            wchar_t *name = new wchar_t[wName.size()+1];
-            for(unsigned int j = 0; j < wName.size(); ++j)
+#ifdef _WINDOWS64
+            // Prefer in-save LevelName when available, otherwise format raw .mcs filename.
+            wstring displayName = ReadLevelNameFromSaveFile(m_saves->at(i)->getPath());
+            if (displayName.empty())
+                displayName = FormatFolderSaveDisplayName(wName);
+#else
+            wstring displayName = wName;
+#endif
+            wchar_t *name = new wchar_t[displayName.size()+1];
+            for(unsigned int j = 0; j < displayName.size(); ++j)
             {
-                name[j] = wName[j];
+                name[j] = displayName[j];
             }
-            name[wName.size()] = 0;
+            name[displayName.size()] = 0;
             m_buttonListSaves.addItem(name,L"");
         }
         m_bSavesDisplayed = true;
@@ -1585,7 +1726,13 @@ void UIScene_LoadOrJoinMenu::handlePress(F64 controlId, F64 childId)
                 {
                     app.SetTutorialMode( false );
 
-                    if(app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled())
+                    if(
+#ifdef _UWP
+                        app.GetLoadSavesFromFolderEnabled()
+#else
+                        app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled()
+#endif
+                      )
                     {
                         LoadSaveFromDisk(m_saves->at(static_cast<int>(childId)-m_iDefaultButtonsC));
                     }
@@ -2269,8 +2416,15 @@ void UIScene_LoadOrJoinMenu::LoadSaveFromDisk(File *saveFile, ESavePlatform save
 
     StorageManager.ResetSaveData();
 
-    // Make our next save default to the name of the level
-    StorageManager.SetSaveTitle(saveFile->getName().c_str());
+    // Keep human-readable save title (not raw .mcs filename) when re-saving this world.
+    wstring saveTitle = ReadLevelNameFromSaveFile(saveFile->getPath());
+    if (saveTitle.empty())
+    {
+        saveTitle = saveFile->getName();
+        if (saveTitle.size() > 4 && saveTitle.substr(saveTitle.size() - 4) == L".mcs")
+            saveTitle = saveTitle.substr(0, saveTitle.size() - 4);
+    }
+    StorageManager.SetSaveTitle(saveTitle.c_str());
 
     int64_t fileSize = saveFile->length();
     FileInputStream fis(*saveFile);
@@ -2290,7 +2444,7 @@ void UIScene_LoadOrJoinMenu::LoadSaveFromDisk(File *saveFile, ESavePlatform save
         maxPlayers = 4;
     }
 
-    app.SetGameHostOption(eGameHostOption_GameType,GameType::CREATIVE->getId() );
+    // Preserve game mode from save data for all folder-loaded worlds.
 
     g_NetworkManager.HostGame(0,isClientSide,isPrivate,maxPlayers,0);
 
@@ -2422,7 +2576,13 @@ int UIScene_LoadOrJoinMenu::DeleteSaveDialogReturned(void *pParam,int iPad,C4JSt
 
     if(result==C4JStorage::EMessage_ResultDecline && validSelection)
     {
-        if(app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled())
+        if(
+#ifdef _UWP
+            app.GetLoadSavesFromFolderEnabled()
+#else
+            app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled()
+#endif
+          )
         {
             pClass->m_bIgnoreInput=false;
         }

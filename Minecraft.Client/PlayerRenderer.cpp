@@ -15,6 +15,12 @@
 #include "../Minecraft.World/StringHelpers.h"
 #include "Skins.h"
 
+static bool isSlimDefaultSkin(int defaultSkinIdZeroBased)
+{
+	auto it = slim.find(defaultSkinIdZeroBased);
+	return it != slim.end() && it->second;
+}
+
 static unsigned int nametagColorForIndex(int index)
 {
 	static const unsigned int s_firstColors[] = {
@@ -176,7 +182,7 @@ void PlayerRenderer::render(shared_ptr<Entity> _mob, double x, double y, double 
 		int skinId = mob->getPlayerDefaultSkin() - 1;
 		int defaultSkin = mob->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);
@@ -311,7 +317,7 @@ void PlayerRenderer::additionalRendering(shared_ptr<LivingEntity> _mob, float a)
 		int skinId = mob->getPlayerDefaultSkin() - 1;
 		int defaultSkin = mob->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(mob->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);
@@ -594,7 +600,7 @@ void PlayerRenderer::renderHand()
 		int skinId = player->getPlayerDefaultSkin() - 1;
 		int defaultSkin = player->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newHumanoidModelSlim);

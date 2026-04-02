@@ -12,6 +12,9 @@
 #include "../Minecraft.Client/Common/GameRules/LevelGenerationOptions.h"
 #include "../Minecraft.World/net.minecraft.world.level.chunk.storage.h"
 
+#ifdef _UWP
+#include <cstdio>
+#endif
 
 #ifdef _XBOX
 #define RESERVE_ALLOCATION  MEM_RESERVE | MEM_LARGE_PAGES
@@ -799,6 +802,12 @@ void ConsoleSaveFileOriginal::Flush(bool autosave, bool updateThumbnail )
 		StorageManager.SaveSaveData( compLength+8,pbThumbnailData,dwThumbnailDataSize,bTextMetadata,iTextMetadataBytes );
 		delete [] pbThumbnailData;
 #ifndef _CONTENT_PACKAGE
+#ifdef _UWP
+		if(app.GetWriteSavesToFolderEnabled())
+		{
+			DebugFlushToFile(compData, compLength+8);
+		}
+#else
 		if( app.DebugSettingsOn())
 		{
 			if(app.GetWriteSavesToFolderEnabled() )
@@ -806,6 +815,7 @@ void ConsoleSaveFileOriginal::Flush(bool autosave, bool updateThumbnail )
 				DebugFlushToFile(compData, compLength+8);
 			}
 		}
+#endif
 #endif
 	}
 	else
@@ -822,6 +832,12 @@ void ConsoleSaveFileOriginal::Flush(bool autosave, bool updateThumbnail )
 		// save the data
 		StorageManager.SaveSaveData( &ConsoleSaveFileOriginal::SaveSaveDataCallback, this );
 #ifndef _CONTENT_PACKAGE
+#ifdef _UWP
+		if(app.GetWriteSavesToFolderEnabled())
+		{
+			DebugFlushToFile(compData, compLength+8);
+		}
+#else
 		if( app.DebugSettingsOn())
 		{
 			if(app.GetWriteSavesToFolderEnabled() )
@@ -829,6 +845,7 @@ void ConsoleSaveFileOriginal::Flush(bool autosave, bool updateThumbnail )
 				DebugFlushToFile(compData, compLength+8);
 			}
 		}
+#endif
 #endif
 		ReleaseSaveAccess();
 	}
@@ -873,15 +890,24 @@ void ConsoleSaveFileOriginal::DebugFlushToFile(void *compressedData /*= nullptr*
 	SYSTEMTIME t;
 	GetSystemTime( &t );
 
-	//14 chars for the digits
-	//11 chars for the separators + suffix
-	//25 chars total
-	wstring cutFileName = m_fileName;
-	if(m_fileName.length() > XCONTENT_MAX_FILENAME_LENGTH - 25)
+	// If this is an existing folder-save filename, keep writing to the same file.
+	// Otherwise create the usual timestamped filename for a new save.
+	if (m_fileName.size() > 4 && m_fileName.substr(m_fileName.size() - 4) == L".mcs")
 	{
-		cutFileName = m_fileName.substr(0, XCONTENT_MAX_FILENAME_LENGTH - 25);
+		swprintf(fileName, XCONTENT_MAX_FILENAME_LENGTH+1, L"\\%ls", m_fileName.c_str());
 	}
-	swprintf(fileName, XCONTENT_MAX_FILENAME_LENGTH+1, L"\\v%04d-%ls%02d.%02d.%02d.%02d.%02d.mcs",VER_PRODUCTBUILD,cutFileName.c_str(), t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+	else
+	{
+		//14 chars for the digits
+		//11 chars for the separators + suffix
+		//25 chars total
+		wstring cutFileName = m_fileName;
+		if(m_fileName.length() > XCONTENT_MAX_FILENAME_LENGTH - 25)
+		{
+			cutFileName = m_fileName.substr(0, XCONTENT_MAX_FILENAME_LENGTH - 25);
+		}
+		swprintf(fileName, XCONTENT_MAX_FILENAME_LENGTH+1, L"\\v%04d-%ls%02d.%02d.%02d.%02d.%02d.mcs",VER_PRODUCTBUILD,cutFileName.c_str(), t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+	}
 
 #ifdef _UNICODE
 	wstring wtemp = targetFileDir.getPath() + wstring(fileName);
@@ -890,7 +916,7 @@ void ConsoleSaveFileOriginal::DebugFlushToFile(void *compressedData /*= nullptr*
 	LPCSTR lpFileName = wstringtofilename( targetFileDir.getPath() + wstring(fileName) );
 #endif
 #ifndef __PSVITA__
-	HANDLE hSaveFile = CreateFile( lpFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS, nullptr);
+	HANDLE hSaveFile = CreateFile( lpFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_FLAG_RANDOM_ACCESS, nullptr);
 #endif
 
 	if(compressedData != nullptr && compressedDataSize > 0)
@@ -915,6 +941,42 @@ void ConsoleSaveFileOriginal::DebugFlushToFile(void *compressedData /*= nullptr*
 	}
 #ifndef __PSVITA__
 	CloseHandle( hSaveFile );
+#endif
+
+#ifdef _UWP
+	// Write per-save sidecar world name for folder-mode listing (first save only).
+	// Do not overwrite an existing .name.txt: on reload, level data can report a generic
+	// name like "world" and would clobber the display name the user saw when creating the save.
+	{
+		wstring sidecarPath = targetFileDir.getPath() + wstring(fileName) + L".name.txt";
+		DWORD sidecarAttr = GetFileAttributesW(sidecarPath.c_str());
+		const bool sidecarExists =
+			sidecarAttr != INVALID_FILE_ATTRIBUTES && !(sidecarAttr & FILE_ATTRIBUTE_DIRECTORY);
+		if (!sidecarExists)
+		{
+			wstring worldName;
+			if (MinecraftServer::getInstance() != nullptr &&
+				MinecraftServer::getInstance()->levels[0] != nullptr &&
+				MinecraftServer::getInstance()->levels[0]->getLevelData() != nullptr)
+			{
+				worldName = MinecraftServer::getInstance()->levels[0]->getLevelData()->getLevelName();
+			}
+			if (worldName.empty())
+				worldName = m_fileName;
+			bool looksLikeFileName = (worldName.find(L".mcs") != wstring::npos);
+			if (!worldName.empty() && worldName != L"." && !looksLikeFileName)
+			{
+				FILE* fw = nullptr;
+				if (_wfopen_s(&fw, sidecarPath.c_str(), L"w") == 0 && fw)
+				{
+					char worldNameA[256] = {};
+					WideCharToMultiByte(CP_ACP, 0, worldName.c_str(), -1, worldNameA, sizeof(worldNameA), nullptr, nullptr);
+					fprintf_s(fw, "%s\n", worldNameA);
+					fclose(fw);
+				}
+			}
+		}
+	}
 #endif
 
 	delete[] fileName;

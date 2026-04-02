@@ -13,6 +13,12 @@
 ResourceLocation LivingEntityRenderer::ENCHANT_GLINT_LOCATION = ResourceLocation(TN__BLUR__MISC_GLINT);
 int LivingEntityRenderer::MAX_ARMOR_LAYERS = 4;
 
+static bool isSlimDefaultSkin(int defaultSkinIdZeroBased)
+{
+	auto it = slim.find(defaultSkinIdZeroBased);
+	return it != slim.end() && it->second;
+}
+
 LivingEntityRenderer::LivingEntityRenderer(Model *model, float shadow, bool slimHands, bool createNewVar)
 {
 	this->model = model;
@@ -69,10 +75,10 @@ void LivingEntityRenderer::render(shared_ptr<Entity> _mob, double x, double y, d
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getCustomSkin() - 1;
-		int defaultSkin = player->getCustomSkin() + 35;
+		int skinId = player->getPlayerDefaultSkin() - 1;
+		int defaultSkin = player->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);
@@ -296,10 +302,10 @@ void LivingEntityRenderer::renderModel(shared_ptr<LivingEntity> mob, float wp, f
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getCustomSkin() - 1;
-		int defaultSkin = player->getCustomSkin() + 35;
+		int skinId = player->getPlayerDefaultSkin() - 1;
+		int defaultSkin = player->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);
@@ -394,10 +400,10 @@ void LivingEntityRenderer::renderArrows(shared_ptr<LivingEntity> mob, float a)
 	if (player != nullptr)
 	{
 		Textures *textures = Minecraft::GetInstance()->textures;
-		int skinId = player->getCustomSkin() - 1;
-		int defaultSkin = player->getCustomSkin() + 35;
+		int skinId = player->getPlayerDefaultSkin() - 1;
+		int defaultSkin = player->getPlayerDefaultSkin() + 35;
 
-		if (slim[skinId] == true)
+		if (isSlimDefaultSkin(skinId))
 		{
 			if (textures->getHeight(player->customTextureUrl, defaultSkin) == 64)
 				resModel = static_cast<HumanoidModel *>(newModelSlim);

@@ -129,6 +129,7 @@ target_link_libraries(MinecraftLCE PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/4JLibs/libs/4J_Render_PC.lib"
   >
 )
+
 foreach(lib IN LISTS IGGY_LIBS)
   target_link_libraries(MinecraftLCE PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/Iggy/lib/${lib}"
@@ -138,8 +139,6 @@ endforeach()
 set_property(TARGET MinecraftLCE PROPERTY VS_APPX_MANIFEST
   "${CMAKE_CURRENT_SOURCE_DIR}/UWP/Package.appxmanifest"
 )
-
-# Gamertag in UWP_App.cpp uses Windows::System::User only (no Windows.Xbox Extension SDK / VS_SDK_REFERENCES).
 
 # Signing: CMake still injects a *second* PropertyGroup with Windows_TemporaryKey.pfx that
 # overrides Globals — see uwp_patch_minecraft_lce_vcxproj_signing() deferred below.

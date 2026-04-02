@@ -2,8 +2,44 @@
 
 #include "File.h"
 #include "FileInputStream.h"
+#include <string>
 
 extern void LogMsg(const char* fmt, ...);
+
+#ifdef _UWP
+extern char g_LocalStatePath[512];
+extern char g_PackageRootPath[512];
+
+static bool IsAbsolutePathA(const char* path)
+{
+	if (!path || !path[0]) return false;
+	return ((path[0] && path[1] == ':') || (path[0] == '\\' && path[1] == '\\'));
+}
+
+static std::string JoinPathA(const char* root, const char* child)
+{
+	if (!root || !root[0]) return std::string(child ? child : "");
+	std::string out(root);
+	if (!out.empty() && out.back() != '\\' && out.back() != '/')
+		out.push_back('\\');
+	out += (child ? child : "");
+	return out;
+}
+
+static std::string BuildUwpPathForRead(const char* rawPath)
+{
+	if (!rawPath) return std::string();
+	if (IsAbsolutePathA(rawPath)) return std::string(rawPath);
+
+	// Prefer packaged files for media/assets, then LocalState for save data.
+	std::string pkgPath = JoinPathA(g_PackageRootPath, rawPath);
+	DWORD pkgAttr = GetFileAttributesA(pkgPath.c_str());
+	if (pkgAttr != INVALID_FILE_ATTRIBUTES && !(pkgAttr & FILE_ATTRIBUTE_DIRECTORY))
+		return pkgPath;
+
+	return JoinPathA(g_LocalStatePath, rawPath);
+}
+#endif
 
 //Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
 //A new FileDescriptor object is created to represent this file connection.
@@ -21,6 +57,12 @@ extern void LogMsg(const char* fmt, ...);
 FileInputStream::FileInputStream(const File &file)
 {
 	const char *pchFilename=wstringtofilename(file.getPath());
+#ifdef _UWP
+	std::string resolvedPath = BuildUwpPathForRead(pchFilename);
+	const char* openPath = resolvedPath.c_str();
+#else
+	const char* openPath = pchFilename;
+#endif
 #ifdef _UNICODE
 	m_fileHandle = CreateFile(
 		file.getPath().c_str(), // file name
@@ -33,7 +75,7 @@ FileInputStream::FileInputStream(const File &file)
 		);
 #else
 	m_fileHandle = CreateFileA(
-		pchFilename, // file name
+		openPath, // file name
 		GENERIC_READ, // access mode
 		FILE_SHARE_READ, // share mode - allow other readers (needed for UWP File::length() calls)
 		nullptr, // Unused
@@ -47,12 +89,12 @@ FileInputStream::FileInputStream(const File &file)
 	{
 		// TODO 4J Stu - Any form of error/exception handling
 		//__debugbreak();
-		LogMsg("FIS: CreateFile FAILED! err=%lu path='%s'\n", GetLastError(), pchFilename);
+		LogMsg("FIS: CreateFile FAILED! err=%lu path='%s' (raw='%s')\n", GetLastError(), openPath, pchFilename);
 		app.FatalLoadError();
 	}
 	else
 	{
-		LogMsg("FIS: CreateFile OK handle=%p path='%s'\n", m_fileHandle, pchFilename);
+		LogMsg("FIS: CreateFile OK handle=%p path='%s' (raw='%s')\n", m_fileHandle, openPath, pchFilename);
 	}
 }
 

@@ -2,12 +2,50 @@
 #include "FileFilter.h"
 #include "McRegionLevelStorageSource.h"
 #include "File.h"
+#include <string>
+#ifdef _UWP
+#include <filesystem>
+#endif
 
 #ifdef __PS3__
 #include <cell/cell_fs.h>
 #endif
 #ifdef __PSVITA__
 #include <fios2.h>
+#endif
+
+#ifdef _UWP
+extern char g_LocalStatePath[512];
+extern char g_PackageRootPath[512];
+
+static bool IsAbsolutePathA(const char* path)
+{
+	if (!path || !path[0]) return false;
+	return ((path[0] && path[1] == ':') || (path[0] == '\\' && path[1] == '\\'));
+}
+
+static std::string JoinPathA(const char* root, const char* child)
+{
+	if (!root || !root[0]) return std::string(child ? child : "");
+	std::string out(root);
+	if (!out.empty() && out.back() != '\\' && out.back() != '/')
+		out.push_back('\\');
+	out += (child ? child : "");
+	return out;
+}
+
+static std::string ResolveUwpPathA(const char* rawPath, bool forWrite)
+{
+	if (!rawPath) return std::string();
+	if (IsAbsolutePathA(rawPath)) return std::string(rawPath);
+	if (forWrite) return JoinPathA(g_LocalStatePath, rawPath);
+
+	std::string pkgPath = JoinPathA(g_PackageRootPath, rawPath);
+	DWORD pkgAttr = GetFileAttributesA(pkgPath.c_str());
+	if (pkgAttr != INVALID_FILE_ATTRIBUTES) return pkgPath;
+
+	return JoinPathA(g_LocalStatePath, rawPath);
+}
 #endif
 
 const wchar_t File::pathSeparator = L'\\';
@@ -123,11 +161,20 @@ bool File::_delete()
 //true if and only if the directory was created; false otherwise
 bool File::mkdir() const
 {
+#ifdef _UWP
+	const char* rawPath = wstringtofilename(getPath());
+	std::string resolved = ResolveUwpPathA(rawPath, true);
+	std::error_code ec;
+	bool created = std::filesystem::create_directory(resolved, ec);
+	if (ec) return false;
+	return created || std::filesystem::exists(resolved);
+#else
 #ifdef _UNICODE
 	return CreateDirectory( getPath().c_str(),  nullptr) != 0;
 
 #else
 	return CreateDirectory( wstringtofilename(getPath()),  nullptr) != 0;
+#endif
 #endif
 }
 
@@ -153,6 +200,14 @@ bool File::mkdir() const
 //
 bool File::mkdirs() const
 {
+#ifdef _UWP
+	const char* rawPath = wstringtofilename(getPath());
+	std::string resolved = ResolveUwpPathA(rawPath, true);
+	std::error_code ec;
+	std::filesystem::create_directories(resolved, ec);
+	if (ec) return false;
+	return std::filesystem::exists(resolved);
+#else
 	std::vector<std::wstring> path = stringSplit( m_abstractPathName, pathSeparator );
 
 	std::wstring pathToHere = L"";
@@ -195,6 +250,7 @@ bool File::mkdirs() const
 	assert( exists() );
 
 	return true;
+#endif
 }
 
 /*
@@ -211,9 +267,12 @@ bool File::exists() const
 {
 	// TODO 4J Stu - Possible we could get an error result from something other than the file not existing?
 #ifdef _UWP
-	// UWP: GetFileAttributes is restricted; use CreateFile to check existence
-	const char* path = wstringtofilename(getPath());
-	HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	// UWP: check both regular file and directory handles.
+	const char* rawPath = wstringtofilename(getPath());
+	std::string resolved = ResolveUwpPathA(rawPath, false);
+	HANDLE h = CreateFileA(resolved.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (h != INVALID_HANDLE_VALUE) { CloseHandle(h); return true; }
+	h = CreateFileA(resolved.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (h != INVALID_HANDLE_VALUE) { CloseHandle(h); return true; }
 	return false;
 #elif defined _UNICODE
@@ -522,8 +581,9 @@ bool File::isDirectory() const
 #ifdef _UWP
 	// UWP: GetFileAttributes may be restricted; use CreateFile with BACKUP_SEMANTICS for directories
 	if (!exists()) return false;
-	const char* path = wstringtofilename(getPath());
-	HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	const char* rawPath = wstringtofilename(getPath());
+	std::string resolved = ResolveUwpPathA(rawPath, false);
+	HANDLE h = CreateFileA(resolved.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 	if (h != INVALID_HANDLE_VALUE) {
 		BY_HANDLE_FILE_INFORMATION info;
 		BOOL ok = GetFileInformationByHandle(h, &info);
@@ -609,8 +669,9 @@ int64_t File::length()
 #else
 #ifdef _UWP
 	// UWP: GetFileAttributesEx is restricted; use CreateFile + GetFileSizeEx
-	const char* path = wstringtofilename(getPath());
-	HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	const char* rawPath = wstringtofilename(getPath());
+	std::string resolved = ResolveUwpPathA(rawPath, false);
+	HANDLE h = CreateFileA(resolved.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (h != INVALID_HANDLE_VALUE)
 	{
 		LARGE_INTEGER liFileSize;

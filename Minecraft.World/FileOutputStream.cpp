@@ -1,6 +1,31 @@
 #include "stdafx.h"
 #include "File.h"
 #include "FileOutputStream.h"
+#include <string>
+
+#ifdef _UWP
+extern char g_LocalStatePath[512];
+extern char g_PackageRootPath[512];
+
+static bool IsAbsolutePathA(const char* path)
+{
+	if (!path || !path[0]) return false;
+	return ((path[0] && path[1] == ':') || (path[0] == '\\' && path[1] == '\\'));
+}
+
+static std::string BuildUwpPathForWrite(const char* rawPath)
+{
+	if (!rawPath) return std::string();
+	if (IsAbsolutePathA(rawPath)) return std::string(rawPath);
+	if (g_LocalStatePath[0] == '\0') return std::string(rawPath);
+
+	std::string full(g_LocalStatePath);
+	if (!full.empty() && full.back() != '\\' && full.back() != '/')
+		full.push_back('\\');
+	full += rawPath;
+	return full;
+}
+#endif
 
 //Creates a file output stream to write to the file represented by the specified File object. A new FileDescriptor object is
 //created to represent this file connection.
@@ -30,6 +55,18 @@ FileOutputStream::FileOutputStream(const File &file) : m_fileHandle( INVALID_HAN
 		nullptr // Unsupported
 		);
 #else
+#ifdef _UWP
+	std::string resolvedPath = BuildUwpPathForWrite(wstringtofilename(file.getPath()));
+	m_fileHandle = CreateFileA(
+		resolvedPath.c_str(), // file name
+		GENERIC_WRITE, // access mode
+		0, // share mode // TODO 4J Stu - Will we need to share file? Probably not but...
+		nullptr, // Unused
+		OPEN_ALWAYS , // how to create
+		FILE_ATTRIBUTE_NORMAL , // file attributes
+		nullptr // Unsupported
+		);
+#else
 	m_fileHandle = CreateFileA(
 		wstringtofilename(file.getPath()) , // file name
 		GENERIC_WRITE, // access mode
@@ -39,6 +76,7 @@ FileOutputStream::FileOutputStream(const File &file) : m_fileHandle( INVALID_HAN
 		FILE_ATTRIBUTE_NORMAL , // file attributes
 		nullptr // Unsupported
 		);
+#endif
 #endif
 
 	if( m_fileHandle == INVALID_HANDLE_VALUE )

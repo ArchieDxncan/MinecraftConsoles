@@ -979,6 +979,12 @@ bool MinecraftServer::loadLevel(LevelStorageSource *storageSource, const wstring
 
 				levels[i]->getLevelData()->setHasBeenInCreative(mapOptions->isFromDLC());
 			}
+
+			if (!levels[i]->isNew)
+			{
+				app.SetGameHostOption(eGameHostOption_CheatsEnabled,
+					levels[i]->getLevelData()->getAllowCommands() ? 1 : 0);
+			}
 		}
 		else levels[i] = new DerivedServerLevel(this, storage, name, dimension, levelSettings, levels[0]);
 		//        levels[i]->addListener(new ServerLevelListener(this, levels[i]));		// 4J - have moved this to the ServerLevel ctor so that it is set up in time for the first chunk to load, which might actually happen there

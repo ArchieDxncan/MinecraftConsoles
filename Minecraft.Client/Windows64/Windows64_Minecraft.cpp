@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <ShlObj.h>
 #include <ShellScalingApi.h>
 #include <shellapi.h>
 #include "GameConfig/Minecraft.spa.h"
@@ -115,6 +116,8 @@ static bool g_bResizeReady = false;
 
 char g_Win64Username[17] = { 0 };
 wchar_t g_Win64UsernameW[17] = { 0 };
+char g_LocalStatePath[512] = { 0 };
+wchar_t g_LocalStatePathW[512] = { 0 };
 
 // Fullscreen toggle state
 static bool g_isFullscreen = false;
@@ -139,13 +142,96 @@ static void CopyWideArgToAnsi(LPCWSTR source, char* dest, size_t destSize)
 	dest[destSize - 1] = 0;
 }
 
-// ---------- Persistent options (options.txt next to exe) ----------
+static void CreateLocalStateDirectories(const wstring& localStateW)
+{
+	if (localStateW.empty())
+		return;
+	size_t pos = localStateW.find_last_of(L'\\');
+	if (pos != wstring::npos && pos > 0)
+		CreateDirectoryW(localStateW.substr(0, pos).c_str(), nullptr);
+	CreateDirectoryW(localStateW.c_str(), nullptr);
+}
+
+static void BuildLocalStatePath()
+{
+	if (g_LocalStatePath[0] != 0) return;
+	wstring localStateW;
+	PWSTR localAppDataW = nullptr;
+	if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppDataW)) && localAppDataW)
+	{
+		localStateW = wstring(localAppDataW) + L"\\MinecraftLCE\\LocalState";
+		CoTaskMemFree(localAppDataW);
+	}
+	else
+	{
+		// Same folder as username.txt / options.txt when KnownFolder fails (e.g. unusual setups).
+		wchar_t envLocal[MAX_PATH] = {};
+		DWORD elen = GetEnvironmentVariableW(L"LOCALAPPDATA", envLocal, MAX_PATH);
+		if (elen > 0 && elen < MAX_PATH)
+			localStateW = wstring(envLocal) + L"\\MinecraftLCE\\LocalState";
+	}
+	if (localStateW.empty())
+		return;
+	wcsncpy_s(g_LocalStatePathW, _countof(g_LocalStatePathW), localStateW.c_str(), _TRUNCATE);
+	WideCharToMultiByte(CP_ACP, 0, g_LocalStatePathW, -1, g_LocalStatePath, (int)sizeof(g_LocalStatePath), nullptr, nullptr);
+	CreateLocalStateDirectories(localStateW);
+}
+
+static bool BuildLocalStateFilePath(char* out, size_t outSize, const char* name)
+{
+	if (!out || outSize == 0 || !name || !name[0]) return false;
+	BuildLocalStatePath();
+	if (!g_LocalStatePath[0]) return false;
+	if (strcpy_s(out, outSize, g_LocalStatePath) != 0) return false;
+	size_t n = strlen(out);
+	if (n > 0 && out[n - 1] != '\\' && out[n - 1] != '/')
+	{
+		if (strcat_s(out, outSize, "\\") != 0) return false;
+	}
+	return strcat_s(out, outSize, name) == 0;
+}
+
+// ---------- Persistent options (options.txt in LocalState) ----------
 static void GetOptionsFilePath(char *out, size_t outSize)
 {
-	GetModuleFileNameA(nullptr, out, static_cast<DWORD>(outSize));
-	char *p = strrchr(out, '\\');
-	if (p) *(p + 1) = '\0';
-	strncat_s(out, outSize, "options.txt", _TRUNCATE);
+	if (!BuildLocalStateFilePath(out, outSize, "options.txt"))
+	{
+		GetModuleFileNameA(nullptr, out, static_cast<DWORD>(outSize));
+		char *p = strrchr(out, '\\');
+		if (p) *(p + 1) = '\0';
+		strncat_s(out, outSize, "options.txt", _TRUNCATE);
+	}
+}
+
+static void LoadUsernameFromLocalState()
+{
+	char path[MAX_PATH] = {};
+	if (!BuildLocalStateFilePath(path, sizeof(path), "username.txt")) return;
+	FILE *f = nullptr;
+	if (fopen_s(&f, path, "r") == 0 && f)
+	{
+		char buf[128] = {};
+		if (fgets(buf, sizeof(buf), f))
+		{
+			int len = static_cast<int>(strlen(buf));
+			while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r' || buf[len - 1] == ' '))
+				buf[--len] = '\0';
+			if (len > 0) strncpy_s(g_Win64Username, sizeof(g_Win64Username), buf, _TRUNCATE);
+		}
+		fclose(f);
+	}
+}
+
+static void SaveUsernameToLocalState()
+{
+	char path[MAX_PATH] = {};
+	if (!BuildLocalStateFilePath(path, sizeof(path), "username.txt")) return;
+	FILE *f = nullptr;
+	if (fopen_s(&f, path, "w") == 0 && f)
+	{
+		fprintf_s(f, "%s\n", g_Win64Username);
+		fclose(f);
+	}
 }
 
 static void SaveFullscreenOption(bool fullscreen)
@@ -1342,6 +1428,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	// Declare DPI awareness so GetSystemMetrics returns physical pixels
+	BuildLocalStatePath();
 	SetProcessDPIAware();
 	// Use the native monitor resolution for the window and swap chain,
 	// but keep g_iScreenWidth/Height at 1920x1080 for logical resolution
@@ -1350,44 +1437,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	g_rScreenWidth = GetSystemMetrics(SM_CXSCREEN);
 	g_rScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	// Load username from username.txt
-    char exePath[MAX_PATH] = {};
-    GetModuleFileNameA(nullptr, exePath, MAX_PATH);
-    char *lastSlash = strrchr(exePath, '\\');
-    if (lastSlash)
-    {
-        *(lastSlash + 1) = '\0';
-    }
-
-    char filePath[MAX_PATH] = {};
-    _snprintf_s(filePath, sizeof(filePath), _TRUNCATE, "%susername.txt", exePath);
-
-    FILE *f = nullptr;
-    if (fopen_s(&f, filePath, "r") == 0 && f)
-    {
-        char buf[128] = {};
-        if (fgets(buf, sizeof(buf), f))
-        {
-            int len = static_cast<int>(strlen(buf));
-            while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r' || buf[len - 1] == ' '))
-            {
-                buf[--len] = '\0';
-            }
-
-            if (len > 0)
-            {
-                strncpy_s(g_Win64Username, sizeof(g_Win64Username), buf, _TRUNCATE);
-            }
-        }
-        fclose(f);
-    }
+	LoadUsernameFromLocalState();
 
 	// Load stuff from launch options, including username
 	const Win64LaunchOptions launchOptions = ParseLaunchOptions();
 	ApplyScreenMode(launchOptions.screenMode);
-
-	// Ensure uid.dat exists from startup (before any multiplayer/login path).
-	Win64Xuid::ResolvePersistentXuid();
 
 	// If no username, let's fall back
 	if (g_Win64Username[0] == 0)
@@ -1395,6 +1449,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
         // Default username will be "Player"
         strncpy_s(g_Win64Username, sizeof(g_Win64Username), "Player", _TRUNCATE);
 	}
+
+	Win64Xuid::ResolvePersistentXuid();
+	SaveUsernameToLocalState();
 
 	MultiByteToWideChar(CP_ACP, 0, g_Win64Username, -1, g_Win64UsernameW, 17);
 
