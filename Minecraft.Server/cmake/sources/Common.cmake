@@ -390,6 +390,8 @@ set(_MINECRAFT_SERVER_COMMON_ROOT
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/QuadrupedModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RabbitModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RabbitRenderer.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/PhantomModel.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/PhantomRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/Rect2i.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RedDustParticle.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../Minecraft.Client/RemotePlayer.cpp"

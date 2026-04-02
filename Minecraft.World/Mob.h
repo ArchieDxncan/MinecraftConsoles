@@ -45,7 +45,7 @@ public:
 protected:
 	int xpReward;
 
-private:
+protected:
 	LookControl *lookControl;
 	MoveControl *moveControl;
 	JumpControl *jumpControl;
