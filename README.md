@@ -48,7 +48,8 @@ The following pull requests have been merged into this fork:
 
 - https://github.com/smartcmd/MinecraftConsoles/pull/1429  
 - https://github.com/smartcmd/MinecraftConsoles/pull/1065  
-- https://github.com/smartcmd/MinecraftConsoles/pull/1350  
+- https://github.com/smartcmd/MinecraftConsoles/pull/1350
+- https://github.com/smartcmd/MinecraftConsoles/pull/1048  
 
 ---
 
