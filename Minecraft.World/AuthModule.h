@@ -4,6 +4,7 @@ using namespace std;
 #include <string>
 #include <vector>
 #include <utility>
+#include <unordered_map>
 
 class AuthModule
 {
@@ -21,27 +22,26 @@ protected:
 	bool extractIdentity(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername);
 };
 
-class ElyByAuthModule : public AuthModule
+class SessionAuthModule : public AuthModule
 {
-protected:
-	wstring endpoint;
+public:
+	struct EndpointPair {
+		wstring authEndpoint;
+		wstring sessionEndpoint;
+	};
+
+private:
+	unordered_map<wstring, EndpointPair> endpoints;
+	wstring activeSessionEndpoint;
+	wstring activeServerId;
 
 public:
-	ElyByAuthModule(const wstring &endpoint = L"https://authserver.ely.by");
+	SessionAuthModule();
 
 	const wchar_t *schemeName() override;
 	vector<wstring> supportedVariations() override;
 	vector<pair<wstring, wstring>> getSettings(const wstring &variation) override;
 	bool onAuthData(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername) override;
-};
-
-class MojangAuthModule : public ElyByAuthModule
-{
-public:
-	MojangAuthModule();
-
-	const wchar_t *schemeName() override;
-	vector<wstring> supportedVariations() override;
 };
 
 class KeypairOfflineAuthModule : public AuthModule

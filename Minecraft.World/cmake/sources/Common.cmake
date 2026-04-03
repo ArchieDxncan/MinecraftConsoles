@@ -320,6 +320,8 @@ set(_MINECRAFT_WORLD_COMMON_NET_MINECRAFT_NETWORK_PACKET
   "${CMAKE_CURRENT_SOURCE_DIR}/GetInfoPacket.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/HandshakeManager.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/HandshakeManager.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/HttpClient.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/HttpClient.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/InteractPacket.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/InteractPacket.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/KeepAlivePacket.cpp"

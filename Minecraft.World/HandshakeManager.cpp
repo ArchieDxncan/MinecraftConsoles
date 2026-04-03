@@ -79,7 +79,8 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 		wstring uid, username;
 		if (!activeModule->onAuthData(packet->fields, uid, username))
 			return fail();
-
+		finalUid = uid;
+		finalUsername = username;
 		state = HandshakeState::AUTH_DATA_EXCHANGED;
 		return nullptr;
 	}
@@ -93,11 +94,9 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 			else if (k == L"username") username = v;
 		}
 
-		if (!activeModule->validate(uid, username))
+		if (uid != finalUid || username != finalUsername)
 			return fail();
 
-		finalUid = uid;
-		finalUsername = username;
 		state = HandshakeState::IDENTITY_ASSIGNED;
 		return makePacket(AuthStage::ASSIGN_IDENTITY, {
 			{L"uid", finalUid},

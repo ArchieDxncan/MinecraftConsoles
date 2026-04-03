@@ -4139,8 +4139,7 @@ ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<
 void ClientConnection::beginAuth()
 {
 	handshakeManager = new HandshakeManager(false);
-	handshakeManager->registerModule(new MojangAuthModule());
-	handshakeManager->registerModule(new ElyByAuthModule());
+	handshakeManager->registerModule(new SessionAuthModule());
 	handshakeManager->registerModule(new KeypairOfflineAuthModule());
 	handshakeManager->registerModule(new OfflineAuthModule());
 
