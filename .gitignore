@@ -432,12 +432,6 @@ build_pc/
 !x64/**/iggy_w64.dll
 !x64/**/mss64.dll
 !x64/**/redist64/
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Lib/
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Lib/x64/
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Lib/x64/Party.lib
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Redist/
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Redist/x64/
-!Minecraft.Client/Windows64/ThirdParty/PlayFabParty/Redist/x64/Party.dll
 
 # Local saves
 Minecraft.Client/Saves/
