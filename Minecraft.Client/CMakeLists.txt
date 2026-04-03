@@ -10,26 +10,8 @@ include("${CMAKE_SOURCE_DIR}/cmake/CommonSources.cmake")
 
 include("${CMAKE_SOURCE_DIR}/cmake/Utils.cmake")
 
-# Same layout as GDK: .../PlayFab.Party.Cpp/{Include,Lib/x64,Redist/x64}.
-# GitHub-hosted runners do not install the Microsoft GDK, so auto-detect fails unless you set this
-# (cache or env) to a copy of the extension tree (e.g. extracted from a private artifact or self-hosted GDK).
-set(MINECRAFT_PLAYFAB_PARTY_CPP_ROOT "" CACHE PATH
-  "Path to PlayFab.Party.Cpp root (overrides GDK search; needed for CI without GDK)")
-
 set(_PARTY_EXT_BASE "")
-if(MINECRAFT_PLAYFAB_PARTY_CPP_ROOT AND EXISTS "${MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}")
-  set(_PARTY_EXT_BASE "${MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}")
-elseif(DEFINED ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT} AND NOT "$ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}" STREQUAL "")
-  file(TO_CMAKE_PATH "$ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}" _PARTY_EXT_BASE)
-endif()
-
-# Repo-bundled SDK (same tree as GDK's PlayFab.Party.Cpp). Lowest priority before GDK: cache/env wins.
-set(_PARTY_BUNDLE_ROOT "${CMAKE_SOURCE_DIR}/Minecraft.Client/Windows64/ThirdParty/PlayFabParty")
-if(_PARTY_EXT_BASE STREQUAL "" AND EXISTS "${_PARTY_BUNDLE_ROOT}/Include/Party.h")
-  set(_PARTY_EXT_BASE "${_PARTY_BUNDLE_ROOT}")
-endif()
-
-if(_PARTY_EXT_BASE STREQUAL "" AND DEFINED ENV{GameDKLatest} AND NOT "$ENV{GameDKLatest}" STREQUAL "")
+if(DEFINED ENV{GameDKLatest} AND NOT "$ENV{GameDKLatest}" STREQUAL "")
   set(_PARTY_GDK_BASE "$ENV{GameDKLatest}")
   if(EXISTS "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
     set(_PARTY_EXT_BASE "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
@@ -53,13 +35,6 @@ set(_PARTY_DLL "${_PARTY_EXT_BASE}/Redist/x64/Party.dll")
 set(_PARTY_AVAILABLE FALSE)
 if(EXISTS "${_PARTY_INCLUDE_DIR}/Party.h" AND EXISTS "${_PARTY_LIB}" AND EXISTS "${_PARTY_DLL}")
   set(_PARTY_AVAILABLE TRUE)
-endif()
-if(PLATFORM_NAME STREQUAL "Windows64")
-  if(_PARTY_AVAILABLE)
-    message(STATUS "PlayFab Party SDK: yes (${_PARTY_EXT_BASE})")
-  else()
-    message(STATUS "PlayFab Party SDK: not found — Party.lib/Party.dll copy disabled. Populate Windows64/ThirdParty/PlayFabParty, install GDK, or set MINECRAFT_PLAYFAB_PARTY_CPP_ROOT.")
-  endif()
 endif()
 
 # Combine all source files into a single variable for the target

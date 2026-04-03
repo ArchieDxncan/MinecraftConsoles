@@ -39,15 +39,10 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    # GitHub-hosted runners do not include the Microsoft GDK, so PlayFab Party is not found unless you
-    # point CMake at a copy of GRDK/ExtensionLibraries/PlayFab.Party.Cpp (same Include/Lib/Redist layout).
-    # Set repository variable MINECRAFT_PLAYFAB_PARTY_CPP_ROOT to that path on self-hosted runners, or add
-    # a prior step that downloads/extracts the extension, then set the env for this job.
     - name: Run CMake
       uses: lukka/run-cmake@v10
       env:
         VCPKG_ROOT: "" # Disable vcpkg for CI builds
-        MINECRAFT_PLAYFAB_PARTY_CPP_ROOT: ${{ vars.MINECRAFT_PLAYFAB_PARTY_CPP_ROOT }}
       with:
         configurePreset: ${{ env.MATRIX_PLATFORM }}
         buildPreset: ${{ env.MATRIX_PLATFORM }}-release

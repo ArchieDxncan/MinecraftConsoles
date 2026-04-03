@@ -67,8 +67,6 @@
 // - Compile-time gate for Party transport code paths.
 // - SDK availability is separate so code can compile cleanly when Party SDK is not linked.
 // - Runtime gate keeps rollout controllable without code changes.
-// - CI/GitHub builds: bundle the SDK under Minecraft.Client/Windows64/ThirdParty/PlayFabParty (see README.txt
-//   there), or set MINECRAFT_PLAYFAB_PARTY_CPP_ROOT / install GDK, or Party.dll will not be copied next to the exe.
 #ifndef MINECRAFT_PLAYFAB_PARTY_ENABLED
 #define MINECRAFT_PLAYFAB_PARTY_ENABLED 1
 #endif
