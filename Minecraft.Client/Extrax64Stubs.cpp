@@ -199,9 +199,14 @@ void IQNetPlayer::SendData(IQNetPlayer * player, const void* pvData, DWORD dwDat
 	{
 		if (!WinsockNetLayer::IsHosting() && !m_isRemote)
 		{
+#ifdef _WINDOWS64
+			// Routes through WinsockNetLayer::SendToSmallId so PlayFab Party (no TCP socket) works for clients.
+			(void)WinsockNetLayer::SendToSmallId(WinsockNetLayer::GetHostSmallId(), pvData, static_cast<int>(dwDataSize));
+#else
 			SOCKET sock = WinsockNetLayer::GetLocalSocket(m_smallId);
 			if (sock != INVALID_SOCKET)
 				WinsockNetLayer::SendOnSocket(sock, pvData, dwDataSize);
+#endif
 		}
 		else
 		{

@@ -6,6 +6,8 @@
 #ifdef _WINDOWS64
 
 #include "WinsockNetLayer.h"
+#include "PlayFabPartyTransport.h"
+#include "../Leaderboards/PlayFabConfig.h"
 #include "../../Common/Network/PlatformNetworkManagerStub.h"
 #include "../../../Minecraft.World/Socket.h"
 #if defined(MINECRAFT_SERVER_BUILD)
@@ -17,6 +19,7 @@
 #include "../4JLibs/inc/4J_Profile.h"
 
 #include <string>
+#include <cstring>
 
 static bool RecvExact(SOCKET sock, BYTE* buf, int len);
 #if defined(MINECRAFT_SERVER_BUILD)
@@ -69,6 +72,7 @@ HANDLE WinsockNetLayer::s_splitScreenRecvThread[XUSER_MAX_COUNT] = {nullptr, nul
 
 // async stuff
 HANDLE WinsockNetLayer::s_joinThread = nullptr;
+WinsockNetLayer::eTransportMode WinsockNetLayer::s_joinTransportMode = WinsockNetLayer::eTransportMode_Tcp;
 volatile WinsockNetLayer::eJoinState WinsockNetLayer::s_joinState = WinsockNetLayer::eJoinState_Idle;
 volatile int WinsockNetLayer::s_joinAttempt = 0;
 volatile bool WinsockNetLayer::s_joinCancel = false;
@@ -76,6 +80,9 @@ char WinsockNetLayer::s_joinIP[256] = {};
 int WinsockNetLayer::s_joinPort = 0;
 BYTE WinsockNetLayer::s_joinAssignedSmallId = 0;
 DisconnectPacket::eDisconnectReason WinsockNetLayer::s_joinRejectReason = DisconnectPacket::eDisconnect_Quitting;
+
+static char s_joinPartySerialized[512];
+static char s_joinPartyInvitation[256];
 
 bool g_Win64MultiplayerHost = false;
 bool g_Win64MultiplayerJoin = false;
@@ -85,6 +92,26 @@ bool g_Win64DedicatedServer = false;
 int g_Win64DedicatedServerPort = WIN64_NET_DEFAULT_PORT;
 char g_Win64DedicatedServerBindIP[256] = "";
 bool g_Win64DedicatedServerLanAdvertise = true;
+
+bool WinsockNetLayer::IsPlayFabPartyRuntimeEnabled()
+{
+	return PlayFabPartyTransport::IsRuntimeEnabled();
+}
+
+bool WinsockNetLayer::IsPlayFabPartyAvailable()
+{
+	return PlayFabPartyTransport::IsAvailable();
+}
+
+void WinsockNetLayer::SetJoinPartyExtras(const char *serializedNetworkDescriptor, const char *invitationId)
+{
+	memset(s_joinPartySerialized, 0, sizeof(s_joinPartySerialized));
+	memset(s_joinPartyInvitation, 0, sizeof(s_joinPartyInvitation));
+	if (serializedNetworkDescriptor != nullptr && serializedNetworkDescriptor[0] != 0)
+		strncpy_s(s_joinPartySerialized, sizeof(s_joinPartySerialized), serializedNetworkDescriptor, _TRUNCATE);
+	if (invitationId != nullptr && invitationId[0] != 0)
+		strncpy_s(s_joinPartyInvitation, sizeof(s_joinPartyInvitation), invitationId, _TRUNCATE);
+}
 
 bool WinsockNetLayer::Initialize()
 {
@@ -132,6 +159,7 @@ void WinsockNetLayer::Shutdown()
 		s_joinThread = nullptr;
 	}
 	s_joinState = eJoinState_Idle;
+	s_joinTransportMode = eTransportMode_Tcp;
 
 	s_active = false;
 	s_connected = false;
@@ -443,7 +471,22 @@ bool WinsockNetLayer::JoinGame(const char* ip, int port)
 
 bool WinsockNetLayer::BeginJoinGame(const char* ip, int port)
 {
+	return BeginJoinGameEx(ip, port, eTransportMode_Tcp);
+}
+
+bool WinsockNetLayer::BeginJoinGameEx(const char* ip, int port, eTransportMode mode)
+{
 	if (!s_initialized && !Initialize()) return false;
+	if (mode == eTransportMode_PlayFabParty && !IsPlayFabPartyAvailable())
+	{
+		app.DebugPrintf("[Party] BeginJoinGameEx requested but Party transport is unavailable; falling back required.\n");
+		return false;
+	}
+	if (mode == eTransportMode_PlayFabParty && !PlayFabPartyTransport::BeginJoinSession(ip, port))
+	{
+		app.DebugPrintf("[Party] Party BeginJoinSession rejected start; falling back required.\n");
+		return false;
+	}
 
 	// if there isnt any cleanup it sometime caused issues. Oops
 	CancelJoinGame();
@@ -478,6 +521,7 @@ bool WinsockNetLayer::BeginJoinGame(const char* ip, int port)
 	s_joinCancel = false;
 	s_joinAssignedSmallId = 0;
 	s_joinRejectReason = DisconnectPacket::eDisconnect_Quitting;
+	s_joinTransportMode = mode;
 	s_joinState = eJoinState_Connecting;
 
 	s_joinThread = CreateThread(nullptr, 0, JoinThreadProc, nullptr, 0, nullptr);
@@ -491,6 +535,43 @@ bool WinsockNetLayer::BeginJoinGame(const char* ip, int port)
 
 DWORD WINAPI WinsockNetLayer::JoinThreadProc(LPVOID param)
 {
+	(void)param;
+	// Party handshake logs in and refreshes entity token internally; do not require cached credentials here
+	// (e.g. join list from PlayFab already ran EnsureAuth, but other paths may not have).
+	if (s_joinTransportMode == eTransportMode_PlayFabParty)
+	{
+		if (s_joinPartySerialized[0] == 0)
+		{
+			app.DebugPrintf("[Party] join: missing serialized Party network descriptor; continuing with TCP only\n");
+		}
+		else if (!PlayFabPartyTransport::JoinRunPartyHandshake(s_joinPartySerialized,
+					 s_joinPartyInvitation[0] != 0 ? s_joinPartyInvitation : nullptr, nullptr, nullptr, nullptr))
+		{
+			app.DebugPrintf("[Party] join: Party setup failed; continuing with TCP only\n");
+		}
+		else
+		{
+			unsigned char partySid = 0;
+			const PlayFabPartyTransport::PartyJoinAssignWait wr =
+				PlayFabPartyTransport::WaitForPartyJoinSmallIdAssignment(&partySid, 60000);
+			if (wr == PlayFabPartyTransport::PartyJoinAssignWait::Rejected)
+			{
+				app.DebugPrintf("[Party] join: rejected by host over Party\n");
+				s_joinState = eJoinState_Rejected;
+				return 0;
+			}
+			if (wr == PlayFabPartyTransport::PartyJoinAssignWait::Success)
+			{
+				s_hostConnectionSocket = INVALID_SOCKET;
+				s_joinAssignedSmallId = partySid;
+				s_joinState = eJoinState_Success;
+				app.DebugPrintf("[Party] join: smallId=%u via Party (no TCP)\n", (unsigned)partySid);
+				return 0;
+			}
+			app.DebugPrintf("[Party] join: Party smallId assign timed out; continuing with TCP only\n");
+		}
+	}
+
 	struct addrinfo hints = {};
 	struct addrinfo* result = nullptr;
 
@@ -618,8 +699,10 @@ void WinsockNetLayer::CancelJoinGame()
 			closesocket(s_hostConnectionSocket);
 			s_hostConnectionSocket = INVALID_SOCKET;
 		}
+		PlayFabPartyTransport::ShutdownPartyClientTransport();
 		s_joinState = eJoinState_Cancelled;
 	}
+	s_joinTransportMode = eTransportMode_Tcp;
 }
 
 bool WinsockNetLayer::FinalizeJoin()
@@ -632,12 +715,19 @@ bool WinsockNetLayer::FinalizeJoin()
 	strncpy_s(g_Win64MultiplayerIP, sizeof(g_Win64MultiplayerIP), s_joinIP, _TRUNCATE);
 	g_Win64MultiplayerPort = s_joinPort;
 
-	app.DebugPrintf("connected to %s:%d, assigned smallId=%d\n", s_joinIP, s_joinPort, s_localSmallId);
-
 	s_active = true;
 	s_connected = true;
 
-	s_clientRecvThread = CreateThread(nullptr, 0, ClientRecvThreadProc, nullptr, 0, nullptr);
+	if (PlayFabPartyTransport::IsPartyGameTransportActive())
+	{
+		app.DebugPrintf("connected via PlayFab Party (smallId=%d)\n", (int)s_localSmallId);
+		s_clientRecvThread = nullptr;
+	}
+	else
+	{
+		app.DebugPrintf("connected to %s:%d, assigned smallId=%d\n", s_joinIP, s_joinPort, s_localSmallId);
+		s_clientRecvThread = CreateThread(nullptr, 0, ClientRecvThreadProc, nullptr, 0, nullptr);
+	}
 
 	if (s_joinThread != nullptr)
 	{
@@ -705,11 +795,16 @@ bool WinsockNetLayer::SendToSmallId(BYTE targetSmallId, const void* data, int da
 	if (s_isHost)
 	{
 		SOCKET sock = GetSocketForSmallId(targetSmallId);
-		if (sock == INVALID_SOCKET) return false;
-		return SendOnSocket(sock, data, dataSize);
+		if (sock != INVALID_SOCKET)
+			return SendOnSocket(sock, data, dataSize);
+		if (PlayFabPartyTransport::SendPartyGameDataToClient(targetSmallId, data, dataSize))
+			return true;
+		return false;
 	}
 	else
 	{
+		if (PlayFabPartyTransport::IsPartyGameTransportActive())
+			return PlayFabPartyTransport::SendPartyGameDataToHost(data, dataSize);
 		return SendOnSocket(s_hostConnectionSocket, data, dataSize);
 	}
 }
@@ -1054,6 +1149,62 @@ bool WinsockNetLayer::PopDisconnectedSmallId(BYTE* outSmallId)
 	}
 	LeaveCriticalSection(&s_disconnectLock);
 	return found;
+}
+
+bool WinsockNetLayer::TryAllocateRemoteJoinSmallId(BYTE *outSmallId)
+{
+	if (outSmallId == nullptr)
+		return false;
+
+	EnterCriticalSection(&s_freeSmallIdLock);
+	BYTE assignedSmallId = 0;
+	if (!s_freeSmallIds.empty())
+	{
+		assignedSmallId = s_freeSmallIds.back();
+		s_freeSmallIds.pop_back();
+	}
+	else if (s_nextSmallId < (unsigned int)MINECRAFT_NET_MAX_PLAYERS)
+	{
+		assignedSmallId = (BYTE)s_nextSmallId++;
+	}
+	else
+	{
+		LeaveCriticalSection(&s_freeSmallIdLock);
+		return false;
+	}
+	LeaveCriticalSection(&s_freeSmallIdLock);
+
+	*outSmallId = assignedSmallId;
+	return true;
+}
+
+void WinsockNetLayer::CompletePartyRemotePlayerSetup(BYTE assignedSmallId)
+{
+	extern void Win64_SetupRemoteQNetPlayer(IQNetPlayer *player, BYTE smallId, bool isHost, bool isLocal);
+
+	EnterCriticalSection(&s_smallIdToSocketLock);
+	s_smallIdToSocket[assignedSmallId] = INVALID_SOCKET;
+	LeaveCriticalSection(&s_smallIdToSocketLock);
+
+	IQNetPlayer *qnetPlayer = &IQNet::m_player[assignedSmallId];
+	Win64_SetupRemoteQNetPlayer(qnetPlayer, assignedSmallId, false, false);
+
+	extern CPlatformNetworkManagerStub *g_pPlatformNetworkManager;
+	if (g_pPlatformNetworkManager != nullptr)
+		g_pPlatformNetworkManager->NotifyPlayerJoined(qnetPlayer);
+}
+
+void WinsockNetLayer::NotifyPartyRemoteDisconnected(BYTE smallId)
+{
+	EnterCriticalSection(&s_disconnectLock);
+	s_disconnectedSmallIds.push_back(smallId);
+	LeaveCriticalSection(&s_disconnectLock);
+	ClearSocketForSmallId(smallId);
+}
+
+void WinsockNetLayer::SetPartyJoinRejectReason(DisconnectPacket::eDisconnectReason reason)
+{
+	s_joinRejectReason = reason;
 }
 
 void WinsockNetLayer::PushFreeSmallId(BYTE smallId)

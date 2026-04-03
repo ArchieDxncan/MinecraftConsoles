@@ -17,6 +17,33 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 set(_MC_ROOT "${CMAKE_SOURCE_DIR}")
 set(_SAVED_CURRENT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+set(_PARTY_EXT_BASE "")
+if(DEFINED ENV{GameDKLatest} AND NOT "$ENV{GameDKLatest}" STREQUAL "")
+  set(_PARTY_GDK_BASE "$ENV{GameDKLatest}")
+  if(EXISTS "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
+    set(_PARTY_EXT_BASE "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
+  endif()
+endif()
+
+if(_PARTY_EXT_BASE STREQUAL "" AND EXISTS "C:/Program Files (x86)/Microsoft GDK")
+  file(GLOB _PARTY_GDK_DIRS LIST_DIRECTORIES true "C:/Program Files (x86)/Microsoft GDK/[0-9]*")
+  list(SORT _PARTY_GDK_DIRS COMPARE NATURAL ORDER DESCENDING)
+  foreach(_gdk_dir IN LISTS _PARTY_GDK_DIRS)
+    if(EXISTS "${_gdk_dir}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
+      set(_PARTY_EXT_BASE "${_gdk_dir}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
+      break()
+    endif()
+  endforeach()
+endif()
+
+set(_PARTY_INCLUDE_DIR "${_PARTY_EXT_BASE}/Include")
+set(_PARTY_LIB "${_PARTY_EXT_BASE}/Lib/x64/Party.lib")
+set(_PARTY_DLL "${_PARTY_EXT_BASE}/Redist/x64/Party.dll")
+set(_PARTY_AVAILABLE FALSE)
+if(EXISTS "${_PARTY_INCLUDE_DIR}/Party.h" AND EXISTS "${_PARTY_LIB}" AND EXISTS "${_PARTY_DLL}")
+  set(_PARTY_AVAILABLE TRUE)
+endif()
+
 # The source-list files use CMAKE_CURRENT_SOURCE_DIR for relative entries.
 # Set it to each module root before including those lists.
 set(CMAKE_CURRENT_SOURCE_DIR "${_MC_ROOT}/Minecraft.World")
@@ -91,11 +118,13 @@ target_include_directories(MinecraftLCE PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.World/x64headers"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/"
   "${CMAKE_CURRENT_SOURCE_DIR}/UWP"
+  $<$<BOOL:${_PARTY_AVAILABLE}>:${_PARTY_INCLUDE_DIR}>
 )
 target_compile_definitions(MinecraftLCE PRIVATE
   ${MINECRAFT_SHARED_DEFINES}
   _UWP
   _WINDOWS64
+  MINECRAFT_PLAYFAB_PARTY_SDK_AVAILABLE=$<IF:$<BOOL:${_PARTY_AVAILABLE}>,1,0>
 )
 target_precompile_headers(MinecraftLCE PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:stdafx.h>")
 set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/compat_shims.cpp" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
@@ -131,6 +160,7 @@ target_link_libraries(MinecraftLCE PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/4JLibs/libs/4J_Storage.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/4JLibs/libs/4J_Render_PC.lib"
   >
+  $<$<BOOL:${_PARTY_AVAILABLE}>:${_PARTY_LIB}>
 )
 
 foreach(lib IN LISTS IGGY_LIBS)
@@ -138,6 +168,14 @@ foreach(lib IN LISTS IGGY_LIBS)
     "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/Iggy/lib/${lib}"
   )
 endforeach()
+
+if(_PARTY_AVAILABLE)
+  add_custom_command(TARGET MinecraftLCE POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_PARTY_DLL}" "$<TARGET_FILE_DIR:MinecraftLCE>/Party.dll"
+    COMMENT "Copying PlayFab Party runtime (Party.dll)"
+    VERBATIM
+  )
+endif()
 
 set_property(TARGET MinecraftLCE PROPERTY VS_APPX_MANIFEST
   "${CMAKE_CURRENT_SOURCE_DIR}/UWP/Package.appxmanifest"
@@ -227,4 +265,5 @@ set_property(TARGET MinecraftLCE PROPERTY VS_DEPLOYMENT_CONTENT
   "$<TARGET_FILE_DIR:MinecraftLCE>/Windows64"
   "$<TARGET_FILE_DIR:MinecraftLCE>/iggy_w64.dll"
   "$<TARGET_FILE_DIR:MinecraftLCE>/mss64.dll"
+  $<$<BOOL:${_PARTY_AVAILABLE}>:$<TARGET_FILE_DIR:MinecraftLCE>/Party.dll>
 )

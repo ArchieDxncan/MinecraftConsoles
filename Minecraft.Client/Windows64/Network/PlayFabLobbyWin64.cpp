@@ -3,12 +3,15 @@
 #ifdef _WINDOWS64
 
 #include "PlayFabLobbyWin64.h"
+#include "WinsockNetLayer.h"
+#include "PlayFabPartyTransport.h"
 #include "../Leaderboards/PlayFabConfig.h"
 #include "../Windows64_Xuid.h"
 
 #include "Common/Consoles_App.h"
 #include "Common/Network/PlatformNetworkManagerInterface.h"
 #include "../../Minecraft.h"
+#include "../../User.h"
 #include "../4JLibs/inc/4J_Profile.h"
 
 #include <nlohmann/json.hpp>
@@ -481,10 +484,29 @@ namespace
 		}
 		return def;
 	}
+
+	bool GetEntityCredentialsForParty(std::string *outEntityId, std::string *outEntityType, std::string *outEntityToken)
+	{
+		std::lock_guard<std::mutex> lock(g_mu);
+		if (g_entityId.empty() || g_entityToken.empty())
+			return false;
+		if (outEntityId)
+			*outEntityId = g_entityId;
+		if (outEntityType)
+			*outEntityType = g_entityType.empty() ? std::string("title_player_account") : g_entityType;
+		if (outEntityToken)
+			*outEntityToken = g_entityToken;
+		return true;
+	}
 }
 
 namespace PlayFabLobbyWin64
 {
+	bool GetPlayFabEntityCredentials(std::string *outEntityId, std::string *outEntityType, std::string *outEntityToken)
+	{
+		return GetEntityCredentialsForParty(outEntityId, outEntityType, outEntityToken);
+	}
+
 	bool IsEnabled()
 	{
 #if MINECRAFT_PLAYFAB_LOBBY_ENABLED
@@ -508,6 +530,26 @@ namespace PlayFabLobbyWin64
 			return false;
 		}
 		return true;
+	}
+
+	// LoginWithCustomID returns EntityTokenResponse under data.EntityToken when Entity API is enabled.
+	// Party validates against that chain; a standalone /Authentication/GetEntityToken with {} can yield a
+	// token Party rejects on some titles.
+	static bool TryEntityTokenFromLoginData(const nlohmann::json &data, std::string &outTok, std::string &outId,
+		std::string &outType)
+	{
+		if (!data.contains("EntityToken") || !data["EntityToken"].is_object())
+			return false;
+		const auto &etObj = data["EntityToken"];
+		if (!etObj.contains("EntityToken") || !etObj.contains("Entity"))
+			return false;
+		const auto &ent = etObj["Entity"];
+		if (!ent.is_object() || !ent.contains("Id") || !ent.contains("Type"))
+			return false;
+		outTok = etObj["EntityToken"].get<std::string>();
+		outId = ent["Id"].get<std::string>();
+		outType = ent["Type"].get<std::string>();
+		return !outTok.empty() && !outId.empty() && !outType.empty();
 	}
 
 	static bool EnsureAuth(std::string &err)
@@ -548,6 +590,15 @@ namespace PlayFabLobbyWin64
 		}
 		g_sessionTicket = data["SessionTicket"].get<std::string>();
 
+		std::string tok, id, type;
+		if (TryEntityTokenFromLoginData(data, tok, id, type))
+		{
+			g_entityToken = std::move(tok);
+			g_entityId = std::move(id);
+			g_entityType = std::move(type);
+			return true;
+		}
+
 		nlohmann::json etRoot;
 		std::string rawEt;
 		std::string authHdr = "X-Authorization: " + g_sessionTicket + "\r\n";
@@ -570,6 +621,120 @@ namespace PlayFabLobbyWin64
 		const nlohmann::json &ent = ed["Entity"];
 		g_entityId = ent["Id"].get<std::string>();
 		g_entityType = ent["Type"].get<std::string>();
+		return true;
+	}
+
+	static bool RefreshEntityTokenFromPlayFab(std::string &err)
+	{
+		const std::string titleId = MINECRAFT_PLAYFAB_TITLE_ID;
+		PlayerUID uid = Win64Xuid::ResolvePersistentXuid();
+		char customId[32];
+		sprintf_s(customId, "%016llX", (unsigned long long)uid);
+
+		nlohmann::json loginBody;
+		loginBody["TitleId"] = titleId;
+		loginBody["CustomId"] = customId;
+		loginBody["CreateAccount"] = true;
+
+		std::string rawLogin;
+		if (!PostTitle("/Client/LoginWithCustomID", "", loginBody.dump(), rawLogin, err))
+			return false;
+
+		nlohmann::json lr;
+		if (!PlayFabOk(rawLogin, lr, err))
+			return false;
+		if (!lr.contains("data"))
+		{
+			err = "Login missing data";
+			return false;
+		}
+		const nlohmann::json &data = lr["data"];
+		if (!data.contains("SessionTicket"))
+		{
+			err = "Login missing SessionTicket";
+			return false;
+		}
+		std::string newSession = data["SessionTicket"].get<std::string>();
+
+		std::string newTok;
+		std::string newId;
+		std::string newType;
+		bool fromLogin = false;
+
+		if (TryEntityTokenFromLoginData(data, newTok, newId, newType))
+		{
+			fromLogin = true;
+		}
+		else
+		{
+			std::string entityIdReq;
+			std::string entityTypeReq;
+			{
+				std::lock_guard<std::mutex> lock(g_mu);
+				entityIdReq = g_entityId;
+				entityTypeReq = g_entityType;
+			}
+
+			nlohmann::json body = nlohmann::json::object();
+			std::string bodyStr = "{}";
+			if (!entityIdReq.empty())
+			{
+				body["Entity"]["Id"] = entityIdReq;
+				body["Entity"]["Type"] = entityTypeReq.empty() ? "title_player_account" : entityTypeReq;
+				bodyStr = body.dump();
+			}
+
+			nlohmann::json etRoot;
+			std::string rawEt;
+			std::string authHdr = "X-Authorization: " + newSession + "\r\n";
+			if (!PostTitle("/Authentication/GetEntityToken", authHdr, bodyStr, rawEt, err))
+				return false;
+			if (!PlayFabOk(rawEt, etRoot, err))
+				return false;
+			if (!etRoot.contains("data"))
+			{
+				err = "GetEntityToken missing data";
+				return false;
+			}
+			const nlohmann::json &ed = etRoot["data"];
+			if (!ed.contains("EntityToken") || !ed.contains("Entity"))
+			{
+				err = "GetEntityToken missing EntityToken/Entity";
+				return false;
+			}
+			newTok = ed["EntityToken"].get<std::string>();
+			const nlohmann::json &ent = ed["Entity"];
+			newId = ent["Id"].get<std::string>();
+			newType = ent["Type"].get<std::string>();
+		}
+
+		const size_t idLenForLog = newId.size();
+		const std::string typeForLog = newType;
+
+		{
+			std::lock_guard<std::mutex> lock(g_mu);
+			g_titleId = MINECRAFT_PLAYFAB_TITLE_ID;
+			g_sessionTicket = std::move(newSession);
+			g_entityToken = std::move(newTok);
+			g_entityId = std::move(newId);
+			g_entityType = std::move(newType);
+		}
+		app.DebugPrintf("[PlayFabLobby] GetEntityToken entity Type=%s IdLen=%zu\n", typeForLog.c_str(), idLenForLog);
+		if (fromLogin)
+			app.DebugPrintf("[PlayFabLobby] Entity token from LoginWithCustomID response (refresh)\n");
+		else
+			app.DebugPrintf("[PlayFabLobby] Entity token refreshed via GetEntityToken API\n");
+		return true;
+	}
+
+	bool RefreshPlayFabEntityToken()
+	{
+		std::string err;
+		if (!RefreshEntityTokenFromPlayFab(err))
+		{
+			app.DebugPrintf("[PlayFabLobby] RefreshPlayFabEntityToken: %s\n", err.c_str());
+			return false;
+		}
 		return true;
 	}
 
@@ -671,7 +836,9 @@ namespace PlayFabLobbyWin64
 
 		char announceHost[256] = {};
 		int tunnelPublicPort = 0;
-		if (!ReadPlayFabAnnounceOverride(announceHost, sizeof(announceHost), &tunnelPublicPort))
+		const bool usedJoinHostOverride =
+			ReadPlayFabAnnounceOverride(announceHost, sizeof(announceHost), &tunnelPublicPort);
+		if (!usedJoinHostOverride)
 			PickLanIPv4(announceHost, sizeof(announceHost));
 		if (announceHost[0] == 0)
 		{
@@ -679,6 +846,8 @@ namespace PlayFabLobbyWin64
 			return;
 		}
 		const int lobbyAnnouncePort = (tunnelPublicPort > 0) ? tunnelPublicPort : gamePort;
+		if (WinsockNetLayer::IsPlayFabPartyAvailable())
+			PlayFabPartyTransport::StartHostSession(announceHost, lobbyAnnouncePort);
 
 		std::string hostUtf8;
 		{
@@ -735,6 +904,31 @@ namespace PlayFabLobbyWin64
 		search["number_key2"] = (double)lobbyAnnouncePort;
 		search["string_key3"] = hostUtf8;
 		search["number_key3"] = (double)gameHostSettings;
+		// Transport: Party when SDK + HostCreateNetwork succeeded (serialized descriptor in string_key5).
+		bool partyPublishedToLobby = false;
+		{
+			std::string partySerialized;
+			std::string partyInvite;
+			bool partyHostOk = false;
+			if (WinsockNetLayer::IsPlayFabPartyAvailable())
+			{
+				if (PlayFabPartyTransport::HostCreateNetworkForLobby(&partySerialized, &partyInvite))
+					partyHostOk = !partySerialized.empty();
+			}
+			if (partyHostOk)
+			{
+				partyPublishedToLobby = true;
+				search["string_key4"] = "PFPARTY_V1";
+				search["number_key4"] = 1.0;
+				search["string_key5"] = std::move(partySerialized);
+				search["string_key6"] = std::move(partyInvite);
+			}
+			else
+			{
+				search["string_key4"] = "TCP_V1";
+				search["number_key4"] = 1.0;
+			}
+		}
 
 		nlohmann::json body;
 		body["MaxPlayers"] = maxPl;
@@ -766,15 +960,32 @@ namespace PlayFabLobbyWin64
 			return;
 		}
 		std::string newLobbyId = resp["data"]["LobbyId"].get<std::string>();
+		app.DebugPrintf(
+			"[PlayFabLobby] created lobby %s — SearchData TCP endpoint %s:%d (source=%s); %s\n",
+			newLobbyId.c_str(), announceHost, lobbyAnnouncePort,
+			usedJoinHostOverride ? "LocalState\\playfab_join_host.txt" : "auto-picked LAN IPv4 (no override file)",
+			partyPublishedToLobby
+				? "Party descriptor+invite in string_key5/6 (PFPARTY_V1); join still dials this TCP address after Party auth"
+				: "TCP only (string_key4=TCP_V1)");
+		// RFC1918 scores: 192.168=100, 10.x=90, 172.16–31=85 in ScoreLanIpv4String.
+		if (!usedJoinHostOverride && ScoreLanIpv4String(announceHost) >= 85)
+		{
+			app.DebugPrintf(
+				"[PlayFabLobby] note: that TCP endpoint is a private LAN address; friends on the internet normally "
+				"cannot reach it. Set WAN or tunnel host:port in LocalState\\playfab_join_host.txt (see "
+				"PlayFabConfig.h).\n");
+		}
 		{
 			std::lock_guard<std::mutex> lock(g_mu);
 			g_activeLobbyId = std::move(newLobbyId);
 		}
-		app.DebugPrintf("[PlayFabLobby] created lobby (announce %s:%d)\n", announceHost, lobbyAnnouncePort);
 	}
 
 	void OnHostStoppedAdvertising()
 	{
+		if (WinsockNetLayer::IsPlayFabPartyRuntimeEnabled())
+			PlayFabPartyTransport::StopHostSession();
+
 		if (!IsEnabled())
 			return;
 
@@ -947,6 +1158,10 @@ namespace PlayFabLobbyWin64
 			std::string nameU8 = JsonString(sd, "string_key3");
 			if (nameU8.empty())
 				nameU8 = "Online game";
+			std::string transportTag = JsonString(sd, "string_key4");
+			int transportVersion = (int)JsonNumber(sd, "number_key4", 0);
+			std::string partyDesc = JsonString(sd, "string_key5");
+			std::string partyInv = JsonString(sd, "string_key6");
 
 			PlayFabListedGame g;
 			g.displayName = Utf8ToWide(nameU8);
@@ -954,6 +1169,10 @@ namespace PlayFabLobbyWin64
 			g.hostPort = port;
 			g.netVersion = (unsigned short)MINECRAFT_NET_VERSION;
 			g.gameHostSettings = (unsigned int)JsonNumber(sd, "number_key3", 0);
+			g.partySerializedNetworkDescriptor = partyDesc;
+			g.partyInvitationId = partyInv;
+			g.supportsParty = (transportTag == "PFPARTY_V1" && !partyDesc.empty());
+			g.partyTransportVersion = transportVersion;
 			{
 				int cp = IntFromSummary(lob, "CurrentPlayers", "currentPlayers", -1);
 				if (cp >= 0)

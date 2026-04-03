@@ -10,6 +10,8 @@
 #ifdef _WINDOWS64
 #include "../../Windows64/Network/WinsockNetLayer.h"
 #include "../../Windows64/Network/PlayFabLobbyWin64.h"
+#include "../../Windows64/Network/PlayFabPartyTransport.h"
+#include "../../Windows64/Leaderboards/PlayFabConfig.h"
 #include "../../Windows64/Windows64_Xuid.h"
 #include "../../Minecraft.h"
 #include "../../User.h"
@@ -182,6 +184,10 @@ bool CPlatformNetworkManagerStub::Initialise(CGameNetworkManager *pGameNetworkMa
 	m_bJoinPending = false;
 	m_joinLocalUsersMask = 0;
 	m_joinHostName[0] = 0;
+	m_joinHostIp[0] = 0;
+	m_joinHostPort = 0;
+	m_joinStartTick = 0;
+	m_joinPartyFallbackAttempted = false;
 	m_win64HostPublicSlots = MINECRAFT_NET_MAX_PLAYERS;
 	m_win64PendingLanPlayFabAdvertise = false;
 #endif
@@ -229,6 +235,9 @@ void CPlatformNetworkManagerStub::DoWork()
 {
 #ifdef _WINDOWS64
 	extern QNET_STATE _iQNetStubState;
+
+	if (WinsockNetLayer::IsPlayFabPartyRuntimeEnabled() && WinsockNetLayer::IsPlayFabPartyAvailable())
+		PlayFabPartyTransport::PumpNetworking();
 
 	// Host: do not broadcast LAN/PlayFab until AcceptThread will accept TCP (GAME_PLAY + level started).
 	if (m_win64PendingLanPlayFabAdvertise && m_pIQNet->IsHost() && _iQNetStubState == QNET_STATE_GAME_PLAY && app.GetGameStarted()
@@ -325,6 +334,26 @@ void CPlatformNetworkManagerStub::DoWork()
 
 	if (m_bJoinPending)
 	{
+		if (!m_joinPartyFallbackAttempted &&
+			WinsockNetLayer::GetJoinTransportMode() == WinsockNetLayer::eTransportMode_PlayFabParty &&
+			WinsockNetLayer::GetJoinState() == WinsockNetLayer::eJoinState_Connecting &&
+			m_joinStartTick != 0)
+		{
+			const DWORD elapsed = GetTickCount() - m_joinStartTick;
+			if (elapsed >= (DWORD)MINECRAFT_PLAYFAB_PARTY_CONNECT_TIMEOUT_MS)
+			{
+				app.DebugPrintf("[Party] connect timed out after %u ms, retrying via TCP fallback.\n", (unsigned)elapsed);
+				WinsockNetLayer::CancelJoinGame();
+				m_joinPartyFallbackAttempted = true;
+				m_joinStartTick = GetTickCount();
+				if (!WinsockNetLayer::BeginJoinGame(m_joinHostIp, m_joinHostPort))
+				{
+					app.DebugPrintf("[Party] TCP fallback begin failed for %s:%d\n", m_joinHostIp, m_joinHostPort);
+					m_bJoinPending = false;
+				}
+			}
+		}
+
 		WinsockNetLayer::eJoinState state = WinsockNetLayer::GetJoinState();
 		if (state == WinsockNetLayer::eJoinState_Success)
 		{
@@ -346,12 +375,14 @@ void CPlatformNetworkManagerStub::DoWork()
 
 			m_pGameNetworkManager->StateChange_AnyToStarting();
 			m_bJoinPending = false;
+			m_joinStartTick = 0;
 		}
 		else if (state == WinsockNetLayer::eJoinState_Failed ||
 				 state == WinsockNetLayer::eJoinState_Rejected ||
 				 state == WinsockNetLayer::eJoinState_Cancelled)
 		{
 			m_bJoinPending = false;
+			m_joinStartTick = 0;
 		}
 	}
 #endif
@@ -589,6 +620,9 @@ int CPlatformNetworkManagerStub::JoinGame(FriendSessionInfo* searchResult, int l
 
 	const char* hostIP = searchResult->data.hostIP;
 	int hostPort = searchResult->data.hostPort;
+	const bool partyPreferred =
+		(searchResult->data.transportType == WinsockNetLayer::eTransportMode_PlayFabParty) &&
+		WinsockNetLayer::IsPlayFabPartyRuntimeEnabled();
 
 	if (hostPort <= 0 || hostIP[0] == 0)
 		return CGameNetworkManager::JOINGAME_FAIL_GENERAL;
@@ -607,12 +641,36 @@ int CPlatformNetworkManagerStub::JoinGame(FriendSessionInfo* searchResult, int l
 	WinsockNetLayer::StopDiscovery();
 
 	wcsncpy_s(m_joinHostName, 32, searchResult->data.hostName, _TRUNCATE);
+	strncpy_s(m_joinHostIp, sizeof(m_joinHostIp), hostIP, _TRUNCATE);
+	m_joinHostPort = hostPort;
 	m_joinLocalUsersMask = localUsersMask;
+	m_joinStartTick = GetTickCount();
+	m_joinPartyFallbackAttempted = !partyPreferred;
+
+	if (partyPreferred)
+		WinsockNetLayer::SetJoinPartyExtras(searchResult->data.partySerializedNetworkDescriptor,
+			searchResult->data.partyInvitationId[0] != 0 ? searchResult->data.partyInvitationId : nullptr);
+	else
+		WinsockNetLayer::SetJoinPartyExtras(nullptr, nullptr);
 
 	app.DebugPrintf("Win64 join: connecting to %s:%d (sessionId=0x%016llX - LAN + PlayFab list use this address)\n",
 		hostIP, hostPort, (unsigned long long)searchResult->sessionId);
 
-	if (!WinsockNetLayer::BeginJoinGame(hostIP, hostPort))
+	bool beginOk = false;
+	if (partyPreferred)
+	{
+		app.DebugPrintf("[Party] PlayFab join selected Party transport (v=%u), attempting Party first.\n",
+			(unsigned)searchResult->data.transportVersion);
+		beginOk = WinsockNetLayer::BeginJoinGameEx(hostIP, hostPort, WinsockNetLayer::eTransportMode_PlayFabParty);
+		if (!beginOk)
+		{
+			app.DebugPrintf("[Party] Party join unavailable/failed to start, falling back to TCP %s:%d\n", hostIP, hostPort);
+		}
+	}
+	if (!beginOk)
+		beginOk = WinsockNetLayer::BeginJoinGame(hostIP, hostPort);
+
+	if (!beginOk)
 	{
 		app.DebugPrintf("Win64 LAN: Failed to connect to %s:%d\n", hostIP, hostPort);
 		return CGameNetworkManager::JOINGAME_FAIL_GENERAL;
@@ -974,6 +1032,8 @@ void CPlatformNetworkManagerStub::SearchForGames()
 					info->data.isJoinable = true;
 					strncpy_s(info->data.hostIP, sizeof(info->data.hostIP), ipBuf, _TRUNCATE);
 					info->data.hostPort = port;
+					info->data.transportType = WinsockNetLayer::eTransportMode_Tcp;
+					info->data.transportVersion = 1;
 					info->sessionId = static_cast<uint64_t>(inet_addr(ipBuf)) | static_cast<uint64_t>(port) << 32;
 					friendsSessions[0].push_back(info);
 				}
@@ -1004,6 +1064,15 @@ void CPlatformNetworkManagerStub::SearchForGames()
 		wcsncpy_s(info->data.hostName, XUSER_NAME_SIZE, pg.displayName.c_str(), _TRUNCATE);
 		info->data.playerCount = pg.playerCount;
 		info->data.maxPlayers = pg.maxPlayers;
+		info->data.transportType =
+			(pg.supportsParty && WinsockNetLayer::IsPlayFabPartyRuntimeEnabled())
+			? WinsockNetLayer::eTransportMode_PlayFabParty
+			: WinsockNetLayer::eTransportMode_Tcp;
+		info->data.transportVersion = (unsigned char)(pg.partyTransportVersion > 0 ? pg.partyTransportVersion : 1);
+		strncpy_s(info->data.partySerializedNetworkDescriptor, sizeof(info->data.partySerializedNetworkDescriptor),
+			pg.partySerializedNetworkDescriptor.c_str(), _TRUNCATE);
+		strncpy_s(info->data.partyInvitationId, sizeof(info->data.partyInvitationId), pg.partyInvitationId.c_str(),
+			_TRUNCATE);
 
 		info->sessionId = pg.sessionId;
 
