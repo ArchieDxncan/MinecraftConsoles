@@ -7,7 +7,7 @@
 #include "..\Common\NetworkUtils.h"
 #include "..\Common\StringUtils.h"
 #include "..\ServerLogger.h"
-#include "..\vendor\nlohmann\json.hpp"
+#include "Common/vendor/nlohmann/json.hpp"
 
 #include <algorithm>
 #include <stdio.h>
