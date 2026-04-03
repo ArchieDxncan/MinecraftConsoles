@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LegacyDxncan Account Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>LegacyDxncan Account Manager</h1>
+      <p class="sub">Sign in to manage friends.</p>
+
+      <div id="screen-login" class="card">
+        <label for="uid">UID</label>
+        <input
+          id="uid"
+          type="text"
+          autocomplete="username"
+          placeholder="e.g. 0xA1B2C3D4E5F60708"
+          spellcheck="false"
+        />
+        <div class="hint hint-paths" role="note">
+          <p class="hint-row">Your uid is located at:</p>
+          <p class="hint-row">
+            <code class="hint-path">%localappdata%/MinecraftLCE/LocalState/uid.dat</code>
+            <span class="hint-suffix"> on Windows.</span>
+          </p>
+          <p class="hint-row">
+            <code class="hint-path">LocalAppData/LocalState/uid.dat</code>
+            <span class="hint-suffix"> on Xbox.</span>
+          </p>
+        </div>
+        <button type="button" id="btn-login" class="btn-primary">Sign in</button>
+        <div id="login-error" class="error hidden" role="alert"></div>
+      </div>
+
+      <div id="screen-app" class="hidden">
+        <div class="session-bar">
+          <span>Signed in as <strong id="signed-username"></strong></span>
+          <button type="button" id="btn-logout" class="btn-ghost">Sign out</button>
+        </div>
+
+        <div class="card">
+          <section class="social-section add-friend" aria-labelledby="add-friend-heading">
+            <h2 id="add-friend-heading">Add friend</h2>
+            <div class="social-section-body">
+              <label for="friend-username" class="visually-hidden">Minecraft username</label>
+              <div class="row add-friend-row">
+                <input
+                  id="friend-username"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="e.g. Notch"
+                  spellcheck="false"
+                />
+                <button type="button" id="btn-add-friend" class="btn-primary">Add</button>
+              </div>
+              <p class="social-section-note">
+                Same username as shown on the in-game leaderboard.
+              </p>
+            </div>
+          </section>
+
+          <div id="app-error" class="error hidden" role="alert"></div>
+
+          <section class="social-section friend-requests" aria-labelledby="friend-requests-heading">
+            <h2 id="friend-requests-heading">Friend requests</h2>
+            <div id="friend-requests-list"></div>
+          </section>
+
+          <section class="social-section friends" aria-labelledby="friends-heading">
+            <h2 id="friends-heading">Friends</h2>
+            <div id="friend-list"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

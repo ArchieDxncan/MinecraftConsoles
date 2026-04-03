@@ -41,14 +41,14 @@
 
 // Internet join list via PlayFab Lobby (Win64): hosts publish when running an online, non-private game;
 // the join menu merges FindLobbies results with LAN (same row style, host display name as title).
-// Enable Multiplayer / Lobby on the title in Game Manager. Join still uses TCP to hostIP:hostPort until
-// relay is integrated. If the joiner sees the lobby but TCP fails (e.g. PC joining Xbox), the host may be
-// advertising the wrong address: on the host device put the reachable endpoint in LocalState\playfab_join_host.txt
-// — one line: IPv4 (e.g. 203.0.113.5), or hostname:port for a TCP tunnel (ngrok, playit.gg, frp) when the public
-// port differs from the game's port. Omit :port to use the game's listen port. Java-only tools like e4mc do not
-// apply to this LCE TCP stack.
 #ifndef MINECRAFT_PLAYFAB_LOBBY_ENABLED
 #define MINECRAFT_PLAYFAB_LOBBY_ENABLED 1
+#endif
+
+// Win32 desktop only: use Windows NAT UPnP (IUPnPNAT) to map TCP gamePort and announce the router's
+// public IPv4 in PlayFab SearchData. UWP falls back to LAN IP (no UPnP in this build).
+#ifndef MINECRAFT_PLAYFAB_LOBBY_UPNP
+#define MINECRAFT_PLAYFAB_LOBBY_UPNP 1
 #endif
 
 // If 1, FindLobbies can list lobbies you own (same PlayFab entity as host). Use only for local dev when
@@ -61,4 +61,11 @@
 // Use "" for retail builds.
 #ifndef MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX
 #define MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX ""
+#endif
+
+// If 1, internet join list (FindLobbies) only lists games whose host PlayFabId is a mutual friend (you have them
+// and they have you). Requires host lobbies to publish string_key4 (PlayFabId) and CloudScript
+// LCE_GetFriendsMutualFlags (scripts/playfab-cloudscript-friend-requests.js).
+#ifndef MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY
+#define MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY 1
 #endif

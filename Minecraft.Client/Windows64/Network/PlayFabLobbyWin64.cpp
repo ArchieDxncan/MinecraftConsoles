@@ -9,6 +9,7 @@
 #include "Common/Consoles_App.h"
 #include "Common/Network/PlatformNetworkManagerInterface.h"
 #include "../../Minecraft.h"
+#include "../../User.h"
 #include "../4JLibs/inc/4J_Profile.h"
 
 #include <nlohmann/json.hpp>
@@ -18,14 +19,20 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <atomic>
 #include <mutex>
+#include <unordered_set>
 #include <vector>
 #include <winhttp.h>
 
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "iphlpapi.lib")
 
-extern char g_LocalStatePath[512];
+#if MINECRAFT_PLAYFAB_LOBBY_UPNP && !defined(_UWP)
+#include <natupnp.h>
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "oleaut32.lib")
+#endif
 
 #ifdef _UWP
 extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize);
@@ -39,6 +46,7 @@ namespace
 	std::string g_entityToken;
 	std::string g_entityId;
 	std::string g_entityType;
+	std::string g_myPlayFabId;
 	std::string g_activeLobbyId;
 
 	// FindLobbies is polled from the join menu; PlayFab returns HTTP 429 if called too often.
@@ -168,71 +176,6 @@ namespace
 			return false;
 		}
 		return true;
-	}
-
-	// LocalState\playfab_join_host.txt — one line, UTF-8-ish ASCII:
-	//   "203.0.113.5" — WAN/LAN IPv4; PlayFab port is the game's listen port.
-	//   "0.tcp.ngrok.io:17412" — tunnel hostname + public port (ngrok, playit.gg, frp, etc.).
-	//   "myhost.example.com" — DNS only; port comes from the game.
-	bool ReadPlayFabAnnounceOverride(char *outHost, size_t outHostSize, int *outTunnelPort)
-	{
-		outHost[0] = 0;
-		if (outTunnelPort != nullptr)
-			*outTunnelPort = 0;
-		if (g_LocalStatePath[0] == '\0')
-			return false;
-		char path[MAX_PATH];
-		if (strcpy_s(path, g_LocalStatePath) != 0)
-			return false;
-		size_t n = strlen(path);
-		if (n > 0 && path[n - 1] != '\\' && path[n - 1] != '/')
-		{
-			if (strcat_s(path, "\\") != 0)
-				return false;
-		}
-		if (strcat_s(path, "playfab_join_host.txt") != 0)
-			return false;
-		FILE *f = nullptr;
-		if (fopen_s(&f, path, "r") != 0 || !f)
-			return false;
-		char line[512] = {};
-		if (!fgets(line, sizeof(line), f))
-		{
-			fclose(f);
-			return false;
-		}
-		fclose(f);
-		char *s = line;
-		while (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n')
-			++s;
-		char *e = s + strlen(s);
-		while (e > s && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\r' || e[-1] == '\n'))
-			--e;
-		*e = 0;
-		if (s[0] == 0)
-			return false;
-
-		char *colon = strrchr(s, ':');
-		if (colon != nullptr && colon > s)
-		{
-			char *portStart = colon + 1;
-			if (portStart[0] != 0)
-			{
-				char *endp = nullptr;
-				const long p = strtol(portStart, &endp, 10);
-				if (endp != portStart && endp != nullptr && *endp == 0 && p >= 1 && p <= 65535)
-				{
-					*colon = 0;
-					if (outTunnelPort != nullptr)
-						*outTunnelPort = (int)p;
-				}
-			}
-		}
-
-		if (s[0] == 0)
-			return false;
-		strncpy_s(outHost, outHostSize, s, _TRUNCATE);
-		return outHost[0] != 0;
 	}
 
 	// Same scoring idea as UWP_App Uwp_GetPrimaryLanIPv4 — prefer real LAN over random interfaces.
@@ -389,6 +332,186 @@ namespace
 #endif
 	}
 
+#if MINECRAFT_PLAYFAB_LOBBY_UPNP && !defined(_UWP)
+	static std::atomic<int> g_upnpMappedExternalPort{0};
+
+	static bool LooksLikeIpv4(const char *s)
+	{
+		unsigned a = 0, b = 0, c = 0, d = 0;
+		return s != nullptr && sscanf_s(s, "%u.%u.%u.%u", &a, &b, &c, &d) == 4 && a <= 255 && b <= 255 && c <= 255 && d <= 255;
+	}
+
+	static void UpnpRemoveMappingIfAny()
+	{
+		const int extPort = g_upnpMappedExternalPort.exchange(0);
+		if (extPort <= 0)
+			return;
+
+		bool comInitialized = false;
+		const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		if (hrCo == RPC_E_CHANGED_MODE)
+			;
+		else if (SUCCEEDED(hrCo))
+			comInitialized = true;
+		else
+			return;
+
+		IUPnPNAT *pNat = nullptr;
+		HRESULT hr = CoCreateInstance(__uuidof(UPnPNAT), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IUPnPNAT), (void **)&pNat);
+		if (SUCCEEDED(hr) && pNat)
+		{
+			IStaticPortMappingCollection *pColl = nullptr;
+			hr = pNat->get_StaticPortMappingCollection(&pColl);
+			pNat->Release();
+			if (SUCCEEDED(hr) && pColl)
+			{
+				BSTR bTcp = SysAllocString(L"TCP");
+				if (bTcp)
+				{
+					pColl->Remove((long)extPort, bTcp);
+					SysFreeString(bTcp);
+				}
+				pColl->Release();
+			}
+		}
+
+		if (comInitialized)
+			CoUninitialize();
+	}
+
+	static bool TryUpnpAddTcpMapAndGetPublicIp(int gamePort, const char *lanIpUtf8, char *outAnnounceHost, size_t announceHostSize,
+		int *outAnnouncePort)
+	{
+		if (outAnnouncePort != nullptr)
+			*outAnnouncePort = gamePort;
+		if (outAnnounceHost == nullptr || announceHostSize < 8)
+			return false;
+		outAnnounceHost[0] = 0;
+		if (gamePort <= 0 || gamePort > 65535 || lanIpUtf8 == nullptr || lanIpUtf8[0] == 0)
+			return false;
+
+		bool comInitialized = false;
+		const HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		if (hrCo == RPC_E_CHANGED_MODE)
+			;
+		else if (SUCCEEDED(hrCo))
+			comInitialized = true;
+		else
+			return false;
+
+		IUPnPNAT *pNat = nullptr;
+		HRESULT hr = CoCreateInstance(__uuidof(UPnPNAT), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IUPnPNAT), (void **)&pNat);
+		if (FAILED(hr) || !pNat)
+		{
+			if (comInitialized)
+				CoUninitialize();
+			app.DebugPrintf("[PlayFabLobby] UPnP: CoCreate IUPnPNAT failed (HRESULT=0x%08X)\n", (unsigned)hr);
+			return false;
+		}
+
+		IStaticPortMappingCollection *pColl = nullptr;
+		hr = pNat->get_StaticPortMappingCollection(&pColl);
+		pNat->Release();
+		pNat = nullptr;
+		if (FAILED(hr) || !pColl)
+		{
+			if (comInitialized)
+				CoUninitialize();
+			app.DebugPrintf("[PlayFabLobby] UPnP: StaticPortMappingCollection unavailable (HRESULT=0x%08X)\n", (unsigned)hr);
+			return false;
+		}
+
+		wchar_t wClient[64];
+		wClient[0] = 0;
+		if (MultiByteToWideChar(CP_ACP, 0, lanIpUtf8, -1, wClient, (int)(sizeof(wClient) / sizeof(wClient[0]))) <= 0)
+		{
+			pColl->Release();
+			if (comInitialized)
+				CoUninitialize();
+			return false;
+		}
+
+		{
+			BSTR bTcpRm = SysAllocString(L"TCP");
+			if (bTcpRm)
+			{
+				pColl->Remove((long)gamePort, bTcpRm);
+				SysFreeString(bTcpRm);
+			}
+		}
+
+		BSTR bTcp = SysAllocString(L"TCP");
+		BSTR bClient = SysAllocString(wClient);
+		BSTR bDesc = SysAllocString(L"MinecraftConsoles");
+		IStaticPortMapping *pMap = nullptr;
+		hr = pColl->Add((long)gamePort, bTcp, (long)gamePort, bClient, VARIANT_TRUE, bDesc, &pMap);
+		if (bTcp)
+			SysFreeString(bTcp);
+		if (bClient)
+			SysFreeString(bClient);
+		if (bDesc)
+			SysFreeString(bDesc);
+
+		if (FAILED(hr) || !pMap)
+		{
+			pColl->Release();
+			if (comInitialized)
+				CoUninitialize();
+			app.DebugPrintf("[PlayFabLobby] UPnP AddPortMapping failed (HRESULT=0x%08X)\n", (unsigned)hr);
+			return false;
+		}
+
+		BSTR extIp = nullptr;
+		hr = pMap->get_ExternalIPAddress(&extIp);
+		pMap->Release();
+		pMap = nullptr;
+		if (FAILED(hr) || extIp == nullptr || SysStringLen(extIp) == 0)
+		{
+			BSTR bTcp2 = SysAllocString(L"TCP");
+			if (bTcp2)
+			{
+				pColl->Remove((long)gamePort, bTcp2);
+				SysFreeString(bTcp2);
+			}
+			pColl->Release();
+			if (extIp)
+				SysFreeString(extIp);
+			if (comInitialized)
+				CoUninitialize();
+			app.DebugPrintf("[PlayFabLobby] UPnP GetExternalIPAddress failed (HRESULT=0x%08X)\n", (unsigned)hr);
+			return false;
+		}
+
+		char pubAnsi[256];
+		const int nPub = WideCharToMultiByte(CP_UTF8, 0, extIp, -1, pubAnsi, sizeof(pubAnsi) - 1, nullptr, nullptr);
+		SysFreeString(extIp);
+		if (nPub <= 0 || !LooksLikeIpv4(pubAnsi))
+		{
+			BSTR bTcp2 = SysAllocString(L"TCP");
+			if (bTcp2)
+			{
+				pColl->Remove((long)gamePort, bTcp2);
+				SysFreeString(bTcp2);
+			}
+			pColl->Release();
+			if (comInitialized)
+				CoUninitialize();
+			app.DebugPrintf("[PlayFabLobby] UPnP external address missing or not IPv4; falling back to LAN announce\n");
+			return false;
+		}
+
+		strncpy_s(outAnnounceHost, announceHostSize, pubAnsi, _TRUNCATE);
+		g_upnpMappedExternalPort.store(gamePort);
+		pColl->Release();
+		if (comInitialized)
+			CoUninitialize();
+		app.DebugPrintf("[PlayFabLobby] UPnP mapped public %s:%d (TCP %d -> %s)\n", outAnnounceHost, gamePort, gamePort, lanIpUtf8);
+		return true;
+	}
+#else
+	static void UpnpRemoveMappingIfAny() {}
+#endif
+
 	std::uint64_t HashLobbySessionId(const std::string &lobbyId)
 	{
 		std::uint64_t h = 14695981039346656037ULL;
@@ -510,6 +633,74 @@ namespace PlayFabLobbyWin64
 		return true;
 	}
 
+#if MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY
+	// Mutual friend PlayFabIds — CloudScript LCE_GetFriendsMutualFlags (scripts/playfab-cloudscript-friend-requests.js).
+	static bool TryGetMutualFriendPlayFabIds(const std::string &sessionTicket, std::unordered_set<std::string> &outMutual,
+		std::string &err)
+	{
+		outMutual.clear();
+		if (sessionTicket.empty())
+		{
+			err = "no session ticket";
+			return false;
+		}
+		nlohmann::json body;
+		body["FunctionName"] = "LCE_GetFriendsMutualFlags";
+		body["FunctionParameter"] = nlohmann::json::object();
+		const std::string hdr = "X-Authorization: " + sessionTicket + "\r\n";
+		std::string raw;
+		if (!PostTitle("/Client/ExecuteCloudScript", hdr, body.dump(), raw, err))
+			return false;
+		nlohmann::json root;
+		if (!PlayFabOk(raw, root, err))
+			return false;
+		if (!root.contains("data") || !root["data"].is_object())
+		{
+			err = "ExecuteCloudScript missing data";
+			return false;
+		}
+		const nlohmann::json &d = root["data"];
+		if (d.contains("Error"))
+		{
+			err = "CloudScript execution error";
+			return false;
+		}
+		nlohmann::json fr;
+		if (d.contains("FunctionResult"))
+			fr = d["FunctionResult"];
+		else if (d.contains("functionResult"))
+			fr = d["functionResult"];
+		if (!fr.is_object())
+		{
+			err = "FunctionResult missing";
+			return false;
+		}
+		const nlohmann::json *mbid = nullptr;
+		if (fr.contains("MutualById") && fr["MutualById"].is_object())
+			mbid = &fr["MutualById"];
+		else if (fr.contains("mutualById") && fr["mutualById"].is_object())
+			mbid = &fr["mutualById"];
+		if (mbid == nullptr)
+		{
+			err = "MutualById missing";
+			return false;
+		}
+		for (auto it = mbid->begin(); it != mbid->end(); ++it)
+		{
+			const std::string k = it.key();
+			const auto &v = it.value();
+			bool isMutual = false;
+			if (v.is_boolean())
+				isMutual = v.get<bool>();
+			else if (v.is_number())
+				isMutual = (v.get<int>() != 0);
+			if (isMutual)
+				outMutual.insert(k);
+		}
+		return true;
+	}
+#endif
+
 	static bool EnsureAuth(std::string &err)
 	{
 		std::lock_guard<std::mutex> lock(g_mu);
@@ -547,6 +738,10 @@ namespace PlayFabLobbyWin64
 			return false;
 		}
 		g_sessionTicket = data["SessionTicket"].get<std::string>();
+		if (data.contains("PlayFabId") && data["PlayFabId"].is_string())
+			g_myPlayFabId = data["PlayFabId"].get<std::string>();
+		else
+			g_myPlayFabId.clear();
 
 		nlohmann::json etRoot;
 		std::string rawEt;
@@ -669,16 +864,27 @@ namespace PlayFabLobbyWin64
 
 		LeaveAllOwnedMcWin64LobbiesBeforeCreate();
 
-		char announceHost[256] = {};
-		int tunnelPublicPort = 0;
-		if (!ReadPlayFabAnnounceOverride(announceHost, sizeof(announceHost), &tunnelPublicPort))
-			PickLanIPv4(announceHost, sizeof(announceHost));
-		if (announceHost[0] == 0)
+		char lanIp[256] = {};
+		if (!PickLanIPv4(lanIp, sizeof(lanIp)) || lanIp[0] == 0)
 		{
-			app.DebugPrintf("[PlayFabLobby] no announce address (LAN auto-pick failed; set LocalState\\playfab_join_host.txt)\n");
+			app.DebugPrintf("[PlayFabLobby] no LAN IPv4 for announce (adapter pick failed)\n");
 			return;
 		}
-		const int lobbyAnnouncePort = (tunnelPublicPort > 0) ? tunnelPublicPort : gamePort;
+
+		char announceHost[256] = {};
+		int lobbyAnnouncePort = gamePort;
+#if MINECRAFT_PLAYFAB_LOBBY_UPNP && !defined(_UWP)
+		const bool upnpOk = TryUpnpAddTcpMapAndGetPublicIp(gamePort, lanIp, announceHost, sizeof(announceHost), &lobbyAnnouncePort);
+#else
+		const bool upnpOk = false;
+#endif
+		if (!upnpOk)
+		{
+			strncpy_s(announceHost, sizeof(announceHost), lanIp, _TRUNCATE);
+			lobbyAnnouncePort = gamePort;
+			app.DebugPrintf("[PlayFabLobby] SearchData will use LAN %s:%d (UPnP unavailable, disabled, or failed)\n", announceHost,
+				lobbyAnnouncePort);
+		}
 
 		std::string hostUtf8;
 		{
@@ -735,6 +941,15 @@ namespace PlayFabLobbyWin64
 		search["number_key2"] = (double)lobbyAnnouncePort;
 		search["string_key3"] = hostUtf8;
 		search["number_key3"] = (double)gameHostSettings;
+		{
+			std::string pfHost;
+			{
+				std::lock_guard<std::mutex> lock(g_mu);
+				pfHost = g_myPlayFabId;
+			}
+			if (!pfHost.empty())
+				search["string_key4"] = std::move(pfHost);
+		}
 
 		nlohmann::json body;
 		body["MaxPlayers"] = maxPl;
@@ -751,6 +966,7 @@ namespace PlayFabLobbyWin64
 		if (!PostTitle("/Lobby/CreateLobby", hdr, body.dump(), raw, err))
 		{
 			app.DebugPrintf("[PlayFabLobby] CreateLobby failed: %s\n", err.c_str());
+			UpnpRemoveMappingIfAny();
 			return;
 		}
 
@@ -758,11 +974,13 @@ namespace PlayFabLobbyWin64
 		if (!PlayFabOk(raw, resp, err))
 		{
 			app.DebugPrintf("[PlayFabLobby] CreateLobby bad response: %s\n", err.c_str());
+			UpnpRemoveMappingIfAny();
 			return;
 		}
 		if (!resp.contains("data") || !resp["data"].contains("LobbyId"))
 		{
 			app.DebugPrintf("[PlayFabLobby] CreateLobby missing LobbyId\n");
+			UpnpRemoveMappingIfAny();
 			return;
 		}
 		std::string newLobbyId = resp["data"]["LobbyId"].get<std::string>();
@@ -776,7 +994,10 @@ namespace PlayFabLobbyWin64
 	void OnHostStoppedAdvertising()
 	{
 		if (!IsEnabled())
+		{
+			UpnpRemoveMappingIfAny();
 			return;
+		}
 
 		std::string lobbyId;
 		std::string token;
@@ -784,26 +1005,32 @@ namespace PlayFabLobbyWin64
 		std::string etype;
 		{
 			std::lock_guard<std::mutex> lock(g_mu);
-			if (g_activeLobbyId.empty())
-				return;
-			lobbyId = g_activeLobbyId;
-			g_activeLobbyId.clear();
+			if (!g_activeLobbyId.empty())
+			{
+				lobbyId = g_activeLobbyId;
+				g_activeLobbyId.clear();
+			}
 			token = g_entityToken;
 			eid = g_entityId;
 			etype = g_entityType;
 		}
 
-		nlohmann::json body;
-		body["LobbyId"] = lobbyId;
-		nlohmann::json mem;
-		mem["Id"] = eid;
-		mem["Type"] = etype;
-		body["MemberEntity"] = mem;
+		if (!lobbyId.empty())
+		{
+			nlohmann::json body;
+			body["LobbyId"] = lobbyId;
+			nlohmann::json mem;
+			mem["Id"] = eid;
+			mem["Type"] = etype;
+			body["MemberEntity"] = mem;
 
-		std::string hdr = "X-EntityToken: " + token + "\r\n";
-		std::string err, raw;
-		if (!PostTitle("/Lobby/LeaveLobby", hdr, body.dump(), raw, err))
-			app.DebugPrintf("[PlayFabLobby] LeaveLobby failed: %s\n", err.c_str());
+			std::string hdr = "X-EntityToken: " + token + "\r\n";
+			std::string err, raw;
+			if (!PostTitle("/Lobby/LeaveLobby", hdr, body.dump(), raw, err))
+				app.DebugPrintf("[PlayFabLobby] LeaveLobby failed: %s\n", err.c_str());
+		}
+
+		UpnpRemoveMappingIfAny();
 	}
 
 	void FindJoinableLobbies(std::vector<PlayFabListedGame> &out)
@@ -912,6 +1139,23 @@ namespace PlayFabLobbyWin64
 		const nlohmann::json &lobbiesArr = resp["data"]["Lobbies"];
 		const size_t rawLobbyCount = lobbiesArr.is_array() ? lobbiesArr.size() : 0;
 		size_t droppedOwnLobby = 0;
+#if MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY
+		std::unordered_set<std::string> mutualFriendPfIds;
+		bool mutualFilterActive = false;
+		{
+			std::string st;
+			{
+				std::lock_guard<std::mutex> lock(g_mu);
+				st = g_sessionTicket;
+			}
+			std::string mfErr;
+			if (!st.empty() && TryGetMutualFriendPlayFabIds(st, mutualFriendPfIds, mfErr))
+				mutualFilterActive = true;
+			else if (!st.empty())
+				app.DebugPrintf("[PlayFabLobby] mutual friends filter inactive (LCE_GetFriendsMutualFlags: %s)\n",
+					mfErr.c_str());
+		}
+#endif
 
 		for (const auto &lob : lobbiesArr)
 		{
@@ -943,6 +1187,15 @@ namespace PlayFabLobbyWin64
 			int ver = (int)JsonNumber(sd, "number_key1", -1);
 			if (ver != (int)MINECRAFT_NET_VERSION)
 				continue;
+
+#if MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY
+			if (mutualFilterActive)
+			{
+				const std::string hostPf = JsonString(sd, "string_key4");
+				if (hostPf.empty() || mutualFriendPfIds.find(hostPf) == mutualFriendPfIds.end())
+					continue;
+			}
+#endif
 
 			std::string nameU8 = JsonString(sd, "string_key3");
 			if (nameU8.empty())

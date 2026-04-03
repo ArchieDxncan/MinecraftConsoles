@@ -1,6 +1,10 @@
 #pragma once
 using namespace std;
 #include <vector>
+#include <mutex>
+#ifdef _WINDOWS64
+#include "../../Windows64/Network/PlayFabLobbyWin64.h"
+#endif
 #include "../../../Minecraft.World/C4JThread.h"
 #include "NetworkPlayerInterface.h"
 #include "PlatformNetworkManagerInterface.h"
@@ -84,6 +88,14 @@ private:
 	unsigned char	m_win64HostPublicSlots;
 	// LAN/PlayFab must not go live until GAME_PLAY + GetGameStarted; AcceptThread rejects TCP while SESSION_STARTING.
 	bool			m_win64PendingLanPlayFabAdvertise;
+
+	// PlayFab FindLobbies runs off-thread so the join menu does not hitch on HTTP; results merge in DoWork.
+	std::mutex m_win64PlayFabAsyncMutex;
+	unsigned m_win64SearchGeneration = 0;
+	std::vector<PlayFabListedGame> m_win64PlayFabAsyncBuffer;
+	bool m_win64PlayFabMergePending = false;
+	unsigned m_win64PlayFabAsyncForGen = 0;
+	void Win64TryMergePlayFabSearchResults();
 #endif
 
 	// This is only maintained by the host, and is not valid on client machines

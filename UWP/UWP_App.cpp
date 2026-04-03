@@ -307,7 +307,7 @@ static int Uwp_ScoreLanIpv4(const char *ip)
     return 40;
 }
 
-// PlayFab CreateLobby puts a LAN IP in SearchData; GetAdaptersInfo is unreliable in the UWP sandbox.
+// PlayFab CreateLobby SearchData uses LAN IPv4 on UWP (desktop Win32 uses UPnP when enabled). GetAdaptersInfo is unreliable in the UWP sandbox.
 // Prefer the IPv4 on the same NetworkAdapter as the active internet profile so other devices on LAN
 // (e.g. PC joining an Xbox-hosted lobby) get a reachable address, not the first arbitrary host name.
 extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize)

@@ -16,6 +16,7 @@
 #include "../../MinecraftServer.h"
 #include "../../PlayerList.h"
 #include <iostream>
+#include <thread>
 #endif
 
 CPlatformNetworkManagerStub *g_pPlatformNetworkManager;
@@ -224,10 +225,62 @@ bool CPlatformNetworkManagerStub::isSystemPrimaryPlayer(IQNetPlayer *pQNetPlayer
 	return true;
 }
 
+#ifdef _WINDOWS64
+void CPlatformNetworkManagerStub::Win64TryMergePlayFabSearchResults()
+{
+	if (m_SessionsUpdatedCallback == nullptr)
+		return;
+
+	std::vector<PlayFabListedGame> gamesCopy;
+	{
+		std::lock_guard<std::mutex> lk(m_win64PlayFabAsyncMutex);
+		if (!m_win64PlayFabMergePending)
+			return;
+		if (m_win64PlayFabAsyncForGen != m_win64SearchGeneration)
+		{
+			m_win64PlayFabMergePending = false;
+			return;
+		}
+		gamesCopy = std::move(m_win64PlayFabAsyncBuffer);
+		m_win64PlayFabMergePending = false;
+	}
+
+	for (const PlayFabListedGame &pg : gamesCopy)
+	{
+		FriendSessionInfo *info = new FriendSessionInfo();
+		size_t nameLen = pg.displayName.length();
+		info->displayLabel = new wchar_t[nameLen + 1];
+		wcscpy_s(info->displayLabel, nameLen + 1, pg.displayName.c_str());
+		info->displayLabelLength = static_cast<unsigned char>(nameLen > 255 ? 255 : nameLen);
+		info->displayLabelViewableStartIndex = 0;
+
+		info->data.netVersion = pg.netVersion;
+		info->data.m_uiGameHostSettings = pg.gameHostSettings;
+		info->data.texturePackParentId = 0;
+		info->data.subTexturePackId = 0;
+		info->data.isReadyToJoin = true;
+		info->data.isJoinable = true;
+		strncpy_s(info->data.hostIP, sizeof(info->data.hostIP), pg.hostIP.c_str(), _TRUNCATE);
+		info->data.hostPort = pg.hostPort;
+		wcsncpy_s(info->data.hostName, XUSER_NAME_SIZE, pg.displayName.c_str(), _TRUNCATE);
+		info->data.playerCount = pg.playerCount;
+		info->data.maxPlayers = pg.maxPlayers;
+
+		info->sessionId = pg.sessionId;
+
+		friendsSessions[0].push_back(info);
+	}
+
+	m_searchResultsCount[0] = static_cast<int>(friendsSessions[0].size());
+	m_SessionsUpdatedCallback(m_pSearchParam);
+}
+#endif
+
 // We call this twice a frame, either side of the render call so is a good place to "tick" things
 void CPlatformNetworkManagerStub::DoWork()
 {
 #ifdef _WINDOWS64
+	Win64TryMergePlayFabSearchResults();
 	extern QNET_STATE _iQNetStubState;
 
 	// Host: do not broadcast LAN/PlayFab until AcceptThread will accept TCP (GAME_PLAY + level started).
@@ -982,32 +1035,28 @@ void CPlatformNetworkManagerStub::SearchForGames()
 		std::fclose(file);
 	}
 
-	std::vector<PlayFabListedGame> playfabGames;
-	PlayFabLobbyWin64::FindJoinableLobbies(playfabGames);
-	for (const PlayFabListedGame &pg : playfabGames)
+	if (PlayFabLobbyWin64::IsEnabled())
 	{
-		FriendSessionInfo *info = new FriendSessionInfo();
-		size_t nameLen = pg.displayName.length();
-		info->displayLabel = new wchar_t[nameLen + 1];
-		wcscpy_s(info->displayLabel, nameLen + 1, pg.displayName.c_str());
-		info->displayLabelLength = static_cast<unsigned char>(nameLen > 255 ? 255 : nameLen);
-		info->displayLabelViewableStartIndex = 0;
-
-		info->data.netVersion = pg.netVersion;
-		info->data.m_uiGameHostSettings = pg.gameHostSettings;
-		info->data.texturePackParentId = 0;
-		info->data.subTexturePackId = 0;
-		info->data.isReadyToJoin = true;
-		info->data.isJoinable = true;
-		strncpy_s(info->data.hostIP, sizeof(info->data.hostIP), pg.hostIP.c_str(), _TRUNCATE);
-		info->data.hostPort = pg.hostPort;
-		wcsncpy_s(info->data.hostName, XUSER_NAME_SIZE, pg.displayName.c_str(), _TRUNCATE);
-		info->data.playerCount = pg.playerCount;
-		info->data.maxPlayers = pg.maxPlayers;
-
-		info->sessionId = pg.sessionId;
-
-		friendsSessions[0].push_back(info);
+		unsigned gen = 0;
+		{
+			std::lock_guard<std::mutex> lk(m_win64PlayFabAsyncMutex);
+			gen = ++m_win64SearchGeneration;
+			m_win64PlayFabMergePending = false;
+			m_win64PlayFabAsyncBuffer.clear();
+		}
+		std::thread(
+			[this, gen]()
+			{
+				std::vector<PlayFabListedGame> playfabGames;
+				PlayFabLobbyWin64::FindJoinableLobbies(playfabGames);
+				std::lock_guard<std::mutex> lk(m_win64PlayFabAsyncMutex);
+				if (gen != m_win64SearchGeneration)
+					return;
+				m_win64PlayFabAsyncBuffer = std::move(playfabGames);
+				m_win64PlayFabAsyncForGen = gen;
+				m_win64PlayFabMergePending = true;
+			})
+			.detach();
 	}
 
 	m_searchResultsCount[0] = static_cast<int>(friendsSessions[0].size());
