@@ -1,3 +1,4 @@
+## [LegacyDxncan Account Manager](https://archiedxncan.github.io/LegacyDxncan/)
 ![Legacy Edition Banner](.github/banner.png)
 
 # Minecraft: Legacy Console Edition
@@ -6,16 +7,28 @@ This repository is my personal fork of the Minecraft: Legacy Console Edition sou
 
 It is primarily used for:
 
-- Testing new features.
+- Implementing new features.
 - Integrating and adapting code from other projects.
-- Merging upstream pull requests that have not yet been officially merged.
-
+- Merging useful upstream pull requests that have not yet been merged.
+  
 ---
 
 ## 📌 Information
+- Build instructions and setup are **not included here**.  
+- Support will not be given for forks of this project.
+- Please refer to the original projects listed below for documentation & instructions.
 
-Build instructions and setup are **not included here**.  
-Please refer to the original projects listed below for documentation.
+---
+
+## ✨ Additions
+
+The following features have been added by me:
+
+- (TU43) Beetroot, Beetroot Seeds, Beetroot Soup.
+- Adapted/Continued hugozz26's implementation of UWP support.
+- Reimplementation of Leaderboards using PlayFab Leaderboards.
+- Implementation of world broadcasting using PlayFab lobbies that only displays worlds from PlayFab friends.
+- Fully featured account manager that allows you to add friends via username and authenticates using your uid.
 
 ---
 
@@ -38,7 +51,7 @@ A project focused on **backporting newer title updates** to the leaked TU19-base
 ### 🔹 MinecraftLCE-Xbox  
 https://github.com/hugozz26/MinecraftLCE-Xbox
 
-A fork of smartcmd/MinecraftConsoles with a full UWP adaptation for Xbox One.
+A fork of smartcmd/MinecraftConsoles with a full UWP adaptation for Xbox Dev Mode.
 
 ---
 
@@ -51,13 +64,3 @@ The following pull requests have been merged into this fork:
 - https://github.com/smartcmd/MinecraftConsoles/pull/1350
 - https://github.com/smartcmd/MinecraftConsoles/pull/1048  
 
----
-
-## ✨ Additions
-
-The following features have been added by me:
-
-- (TU43) Beetroot, Beetroot Seeds, Beetroot Soup
-- Adapted/Continued hugozz26's implementation of UWP support.
-
----
