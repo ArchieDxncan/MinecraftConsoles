@@ -8,11 +8,15 @@
 
 #include "Common/Consoles_App.h"
 #include "Common/Network/PlatformNetworkManagerInterface.h"
+#include "../../Minecraft.h"
+#include "../4JLibs/inc/4J_Profile.h"
 
 #include <nlohmann/json.hpp>
 
 #include <iphlpapi.h>
 #include <ipifcons.h>
+#include <climits>
+#include <cstdlib>
 #include <cstring>
 #include <mutex>
 #include <vector>
@@ -23,6 +27,10 @@
 
 extern char g_LocalStatePath[512];
 
+#ifdef _UWP
+extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize);
+#endif
+
 namespace
 {
 	std::mutex g_mu;
@@ -32,6 +40,15 @@ namespace
 	std::string g_entityId;
 	std::string g_entityType;
 	std::string g_activeLobbyId;
+
+	// FindLobbies is polled from the join menu; PlayFab returns HTTP 429 if called too often.
+	static std::vector<PlayFabListedGame> g_findLobbiesCache;
+	static DWORD g_lastFindLobbiesHttpTick = 0;
+	static DWORD g_findLobbiesBackoffUntilTick = 0;
+	static const DWORD kFindLobbiesMinIntervalMs = 10000;
+	static const DWORD kFindLobbies429BackoffMs = 60000;
+	static DWORD g_lastFindLobbiesCacheLogTick = 0;
+	static const DWORD kFindLobbiesCacheLogIntervalMs = 30000;
 
 	std::wstring Utf8ToWide(const std::string &u8)
 	{
@@ -153,9 +170,15 @@ namespace
 		return true;
 	}
 
-	bool ReadJoinHostOverride(char *out, size_t outSize)
+	// LocalState\playfab_join_host.txt — one line, UTF-8-ish ASCII:
+	//   "203.0.113.5" — WAN/LAN IPv4; PlayFab port is the game's listen port.
+	//   "0.tcp.ngrok.io:17412" — tunnel hostname + public port (ngrok, playit.gg, frp, etc.).
+	//   "myhost.example.com" — DNS only; port comes from the game.
+	bool ReadPlayFabAnnounceOverride(char *outHost, size_t outHostSize, int *outTunnelPort)
 	{
-		out[0] = 0;
+		outHost[0] = 0;
+		if (outTunnelPort != nullptr)
+			*outTunnelPort = 0;
 		if (g_LocalStatePath[0] == '\0')
 			return false;
 		char path[MAX_PATH];
@@ -172,7 +195,7 @@ namespace
 		FILE *f = nullptr;
 		if (fopen_s(&f, path, "r") != 0 || !f)
 			return false;
-		char line[128] = {};
+		char line[512] = {};
 		if (!fgets(line, sizeof(line), f))
 		{
 			fclose(f);
@@ -188,14 +211,91 @@ namespace
 		*e = 0;
 		if (s[0] == 0)
 			return false;
-		strncpy_s(out, outSize, s, _TRUNCATE);
-		return out[0] != 0;
+
+		char *colon = strrchr(s, ':');
+		if (colon != nullptr && colon > s)
+		{
+			char *portStart = colon + 1;
+			if (portStart[0] != 0)
+			{
+				char *endp = nullptr;
+				const long p = strtol(portStart, &endp, 10);
+				if (endp != portStart && endp != nullptr && *endp == 0 && p >= 1 && p <= 65535)
+				{
+					*colon = 0;
+					if (outTunnelPort != nullptr)
+						*outTunnelPort = (int)p;
+				}
+			}
+		}
+
+		if (s[0] == 0)
+			return false;
+		strncpy_s(outHost, outHostSize, s, _TRUNCATE);
+		return outHost[0] != 0;
 	}
+
+	// Same scoring idea as UWP_App Uwp_GetPrimaryLanIPv4 — prefer real LAN over random interfaces.
+	static int ScoreLanIpv4String(const char *ip)
+	{
+		unsigned a = 0, b = 0, c = 0, d = 0;
+		if (sscanf_s(ip, "%u.%u.%u.%u", &a, &b, &c, &d) != 4)
+			return -1;
+		if (a == 127u)
+			return -1;
+		if (a == 169u && b == 254u)
+			return -1;
+		if (a == 0u)
+			return -1;
+		if (a == 192u && b == 168u)
+			return 100;
+		if (a == 10u)
+			return 90;
+		if (a == 172u && b >= 16u && b <= 31u)
+			return 85;
+		return 40;
+	}
+
+#ifndef _UWP
+	static int VirtualAdapterDescriptionPenalty(const char *desc)
+	{
+		if (desc == nullptr || desc[0] == 0)
+			return 0;
+		// Deprioritize common virtual switches so we don't announce an IP the Xbox can't reach.
+		char low[256];
+		size_t i = 0;
+		for (; desc[i] && i + 1 < sizeof(low); ++i)
+		{
+			char t = desc[i];
+			if (t >= 'A' && t <= 'Z')
+				t = (char)(t - 'A' + 'a');
+			low[i] = t;
+		}
+		low[i] = 0;
+		if (strstr(low, "hyper-v") != nullptr || strstr(low, "hyperv") != nullptr)
+			return -35;
+		if (strstr(low, "vmware") != nullptr)
+			return -35;
+		if (strstr(low, "virtualbox") != nullptr)
+			return -35;
+		if (strstr(low, "vethernet") != nullptr)
+			return -35;
+		if (strstr(low, "wsl") != nullptr)
+			return -35;
+		if (strstr(low, "virtual ") != nullptr)
+			return -20;
+		return 0;
+	}
+#endif
 
 	// Uses GetAdaptersInfo (IPv4 string) so we do not need winsock2.h before windows.h (PCH order).
 	bool PickLanIPv4(char *out, size_t outSize)
 	{
 		out[0] = 0;
+#ifdef _UWP
+		if (Uwp_GetPrimaryLanIPv4(out, outSize))
+			return true;
+#endif
 		ULONG bufLen = sizeof(IP_ADAPTER_INFO);
 		std::vector<BYTE> buf(bufLen);
 		auto *info = reinterpret_cast<PIP_ADAPTER_INFO>(buf.data());
@@ -207,21 +307,86 @@ namespace
 		if (GetAdaptersInfo(info, &bufLen) != NO_ERROR)
 			return false;
 
+#ifndef _UWP
+		DWORD preferredIfIndex = 0;
+		bool havePreferredIf = false;
+		{
+			// 8.8.8.8 as ULONG in the same form GetBestRoute expects (network byte order for IPv4).
+			const ULONG dest8888 = (8u << 24) | (8u << 16) | (8u << 8) | 8u;
+			MIB_IPFORWARDROW fr{};
+			if (GetBestRoute(dest8888, 0, &fr) == NO_ERROR)
+			{
+				preferredIfIndex = fr.dwForwardIfIndex;
+				havePreferredIf = true;
+			}
+		}
+
+		int bestTotal = INT_MIN;
+		const char *bestIp = nullptr;
+
 		for (PIP_ADAPTER_INFO a = info; a != nullptr; a = a->Next)
 		{
 			if (a->Type == MIB_IF_TYPE_LOOPBACK)
 				continue;
-			const char *ip = a->IpAddressList.IpAddress.String;
-			if (ip == nullptr || ip[0] == 0 || strcmp(ip, "0.0.0.0") == 0)
-				continue;
-			if (strncmp(ip, "127.", 4) == 0)
-				continue;
-			if (strncmp(ip, "169.254.", 8) == 0)
-				continue;
-			strncpy_s(out, outSize, ip, _TRUNCATE);
+
+			const char *gw = a->GatewayList.IpAddress.String;
+			const bool hasRealGateway =
+				gw != nullptr && gw[0] != 0 && strcmp(gw, "0.0.0.0") != 0;
+
+			const int virtPen = VirtualAdapterDescriptionPenalty(a->Description);
+			const int routeBonus = (havePreferredIf && a->Index == preferredIfIndex) ? 50 : 0;
+			const int gwBonus = hasRealGateway ? 25 : 0;
+
+			for (PIP_ADDR_STRING p = &a->IpAddressList; p != nullptr; p = p->Next)
+			{
+				const char *ip = p->IpAddress.String;
+				if (ip == nullptr || ip[0] == 0 || strcmp(ip, "0.0.0.0") == 0)
+					continue;
+				if (strncmp(ip, "127.", 4) == 0)
+					continue;
+				if (strncmp(ip, "169.254.", 8) == 0)
+					continue;
+
+				const int base = ScoreLanIpv4String(ip);
+				if (base < 0)
+					continue;
+
+				const int total = base + routeBonus + gwBonus + virtPen;
+				if (total > bestTotal)
+				{
+					bestTotal = total;
+					bestIp = ip;
+				}
+			}
+		}
+
+		if (bestIp != nullptr)
+		{
+			strncpy_s(out, outSize, bestIp, _TRUNCATE);
 			return out[0] != 0;
 		}
 		return false;
+#else
+		// UWP: Uwp_GetPrimaryLanIPv4 already handled; if it failed, fall back to first sane adapter.
+		for (PIP_ADAPTER_INFO a = info; a != nullptr; a = a->Next)
+		{
+			if (a->Type == MIB_IF_TYPE_LOOPBACK)
+				continue;
+			for (PIP_ADDR_STRING p = &a->IpAddressList; p != nullptr; p = p->Next)
+			{
+				const char *ip = p->IpAddress.String;
+				if (ip == nullptr || ip[0] == 0 || strcmp(ip, "0.0.0.0") == 0)
+					continue;
+				if (strncmp(ip, "127.", 4) == 0)
+					continue;
+				if (strncmp(ip, "169.254.", 8) == 0)
+					continue;
+				strncpy_s(out, outSize, ip, _TRUNCATE);
+				return out[0] != 0;
+			}
+		}
+		return false;
+#endif
 	}
 
 	std::uint64_t HashLobbySessionId(const std::string &lobbyId)
@@ -246,6 +411,17 @@ namespace
 			return (double)v.get<long long>();
 		if (v.is_number_unsigned())
 			return (double)v.get<std::uint64_t>();
+		if (v.is_string())
+		{
+			try
+			{
+				return std::stod(v.get<std::string>());
+			}
+			catch (...)
+			{
+				return def;
+			}
+		}
 		return def;
 	}
 
@@ -254,6 +430,56 @@ namespace
 		if (!o.contains(key) || !o[key].is_string())
 			return std::string();
 		return o[key].get<std::string>();
+	}
+
+	// PlayFab Lobby REST responses use camelCase; older code assumed PascalCase.
+	const nlohmann::json *JsonObjectAlt(const nlohmann::json &o, const char *pascalKey, const char *camelKey)
+	{
+		if (o.contains(pascalKey) && o[pascalKey].is_object())
+			return &o[pascalKey];
+		if (camelKey != nullptr && o.contains(camelKey) && o[camelKey].is_object())
+			return &o[camelKey];
+		return nullptr;
+	}
+
+	std::string LobbyIdFromSummary(const nlohmann::json &lob)
+	{
+		static const char *keys[] = {"LobbyId", "lobbyId"};
+		for (const char *k : keys)
+		{
+			if (lob.contains(k) && lob[k].is_string())
+				return lob[k].get<std::string>();
+		}
+		return std::string();
+	}
+
+	std::string OwnerEntityIdFromSummary(const nlohmann::json &lob)
+	{
+		const nlohmann::json *owner = JsonObjectAlt(lob, "Owner", "owner");
+		if (!owner)
+			return std::string();
+		static const char *idKeys[] = {"Id", "id"};
+		for (const char *k : idKeys)
+		{
+			if (owner->contains(k) && (*owner)[k].is_string())
+				return (*owner)[k].get<std::string>();
+		}
+		return std::string();
+	}
+
+	int IntFromSummary(const nlohmann::json &lob, const char *pascalKey, const char *camelKey, int def = 0)
+	{
+		for (const char *k : {pascalKey, camelKey})
+		{
+			if (k == nullptr || !lob.contains(k))
+				continue;
+			const auto &v = lob[k];
+			if (v.is_number_integer())
+				return v.get<int>();
+			if (v.is_number_unsigned())
+				return (int)v.get<unsigned>();
+		}
+		return def;
 	}
 }
 
@@ -347,6 +573,85 @@ namespace PlayFabLobbyWin64
 		return true;
 	}
 
+	// FindLobbies (same filter as browse) and LeaveLobby every MC_WIN64 lobby owned by this entity so stale
+	// cloud rows from crashes / failed LeaveLobby do not accumulate when hosting again.
+	static void LeaveAllOwnedMcWin64LobbiesBeforeCreate()
+	{
+		std::string myId, myType, tok;
+		{
+			std::lock_guard<std::mutex> lock(g_mu);
+			myId = g_entityId;
+			myType = g_entityType;
+			tok = g_entityToken;
+		}
+		if (myId.empty() || tok.empty())
+			return;
+
+		char buf[64];
+		sprintf_s(buf, "string_key1 eq 'MC_WIN64' and number_key1 eq %d", (int)MINECRAFT_NET_VERSION);
+
+		nlohmann::json pag;
+		pag["PageSizeRequested"] = 50;
+		nlohmann::json findBody;
+		findBody["Filter"] = buf;
+		findBody["Pagination"] = pag;
+
+		const std::string hdr = "X-EntityToken: " + tok + "\r\n";
+		std::string raw, err;
+		if (!PostTitle("/Lobby/FindLobbies", hdr, findBody.dump(), raw, err))
+		{
+			app.DebugPrintf("[PlayFabLobby] pre-create cleanup FindLobbies failed: %s\n", err.c_str());
+			return;
+		}
+
+		nlohmann::json resp;
+		if (!PlayFabOk(raw, resp, err))
+		{
+			app.DebugPrintf("[PlayFabLobby] pre-create cleanup FindLobbies bad response: %s\n", err.c_str());
+			return;
+		}
+		if (!resp.contains("data") || !resp["data"].contains("Lobbies"))
+			return;
+		const nlohmann::json &lobbiesArr = resp["data"]["Lobbies"];
+		if (!lobbiesArr.is_array())
+			return;
+
+		int leftCount = 0;
+		for (const auto &lob : lobbiesArr)
+		{
+			const std::string oid = OwnerEntityIdFromSummary(lob);
+			if (oid != myId)
+				continue;
+			const std::string lid = LobbyIdFromSummary(lob);
+			if (lid.empty())
+				continue;
+
+			nlohmann::json lbody;
+			lbody["LobbyId"] = lid;
+			nlohmann::json mem;
+			mem["Id"] = myId;
+			mem["Type"] = myType;
+			lbody["MemberEntity"] = mem;
+
+			std::string lraw, lerr;
+			if (PostTitle("/Lobby/LeaveLobby", hdr, lbody.dump(), lraw, lerr))
+			{
+				++leftCount;
+				app.DebugPrintf("[PlayFabLobby] left owned lobby before create: %s\n", lid.c_str());
+			}
+			else
+				app.DebugPrintf("[PlayFabLobby] pre-create LeaveLobby failed %s: %s\n", lid.c_str(), lerr.c_str());
+		}
+
+		if (leftCount > 0)
+			app.DebugPrintf("[PlayFabLobby] pre-create cleanup removed %d owned lobby/lobbies\n", leftCount);
+
+		{
+			std::lock_guard<std::mutex> lock(g_mu);
+			g_activeLobbyId.clear();
+		}
+	}
+
 	void OnHostStartedAdvertising(bool onlineGame, bool isPrivate, unsigned char publicSlots, int gamePort,
 		const wchar_t *hostName, unsigned int gameHostSettings)
 	{
@@ -362,18 +667,44 @@ namespace PlayFabLobbyWin64
 			return;
 		}
 
-		char announceIp[64] = {};
-		if (!ReadJoinHostOverride(announceIp, sizeof(announceIp)))
-			PickLanIPv4(announceIp, sizeof(announceIp));
-		if (announceIp[0] == 0)
+		LeaveAllOwnedMcWin64LobbiesBeforeCreate();
+
+		char announceHost[256] = {};
+		int tunnelPublicPort = 0;
+		if (!ReadPlayFabAnnounceOverride(announceHost, sizeof(announceHost), &tunnelPublicPort))
+			PickLanIPv4(announceHost, sizeof(announceHost));
+		if (announceHost[0] == 0)
 		{
-			app.DebugPrintf("[PlayFabLobby] no announce IP (set LocalState\\playfab_join_host.txt for WAN)\n");
+			app.DebugPrintf("[PlayFabLobby] no announce address (LAN auto-pick failed; set LocalState\\playfab_join_host.txt)\n");
 			return;
 		}
+		const int lobbyAnnouncePort = (tunnelPublicPort > 0) ? tunnelPublicPort : gamePort;
 
-		std::string hostUtf8 = WideToUtf8(hostName);
+		std::string hostUtf8;
+		{
+			std::wstring wn;
+			Minecraft *mc = Minecraft::GetInstance();
+			if (mc != nullptr && mc->user != nullptr && !mc->user->name.empty())
+				wn = mc->user->name;
+			if (wn.empty())
+				wn = ProfileManager.GetDisplayName(ProfileManager.GetPrimaryPad());
+			if (wn.empty() && hostName != nullptr && hostName[0] != 0)
+				wn.assign(hostName);
+			hostUtf8 = wn.empty() ? std::string() : WideToUtf8(wn.c_str());
+		}
 		if (hostUtf8.empty())
 			hostUtf8 = "Host";
+		{
+			const char *pfPrefix = MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX;
+			if (pfPrefix != nullptr && pfPrefix[0] != '\0')
+			{
+				const size_t plen = strlen(pfPrefix);
+				const bool alreadyPrefixed =
+					(hostUtf8.size() >= plen && std::strncmp(hostUtf8.c_str(), pfPrefix, plen) == 0);
+				if (!alreadyPrefixed)
+					hostUtf8.insert(0, pfPrefix);
+			}
+		}
 
 		int maxPl = (int)publicSlots;
 		if (maxPl < 2)
@@ -400,8 +731,8 @@ namespace PlayFabLobbyWin64
 		nlohmann::json search;
 		search["string_key1"] = "MC_WIN64";
 		search["number_key1"] = (double)MINECRAFT_NET_VERSION;
-		search["string_key2"] = announceIp;
-		search["number_key2"] = (double)gamePort;
+		search["string_key2"] = announceHost;
+		search["number_key2"] = (double)lobbyAnnouncePort;
 		search["string_key3"] = hostUtf8;
 		search["number_key3"] = (double)gameHostSettings;
 
@@ -439,7 +770,7 @@ namespace PlayFabLobbyWin64
 			std::lock_guard<std::mutex> lock(g_mu);
 			g_activeLobbyId = std::move(newLobbyId);
 		}
-		app.DebugPrintf("[PlayFabLobby] created lobby (announce %s:%d)\n", announceIp, gamePort);
+		app.DebugPrintf("[PlayFabLobby] created lobby (announce %s:%d)\n", announceHost, lobbyAnnouncePort);
 	}
 
 	void OnHostStoppedAdvertising()
@@ -481,9 +812,48 @@ namespace PlayFabLobbyWin64
 		if (!IsEnabled())
 			return;
 
+		const DWORD now = GetTickCount();
+
+		auto logCacheUse = [&](const char *reason)
+		{
+			if (g_lastFindLobbiesCacheLogTick != 0 && (now - g_lastFindLobbiesCacheLogTick) < kFindLobbiesCacheLogIntervalMs)
+				return;
+			g_lastFindLobbiesCacheLogTick = now;
+			DWORD nextMs = 0;
+			if (g_findLobbiesBackoffUntilTick != 0 && now < g_findLobbiesBackoffUntilTick)
+				nextMs = g_findLobbiesBackoffUntilTick - now;
+			else if (g_lastFindLobbiesHttpTick != 0)
+			{
+				DWORD elapsed = now - g_lastFindLobbiesHttpTick;
+				if (elapsed < kFindLobbiesMinIntervalMs)
+					nextMs = kFindLobbiesMinIntervalMs - elapsed;
+			}
+			app.DebugPrintf(
+				"[PlayFabLobby] FindLobbies %s — using cache (%zu games, next HTTP ~%u ms)\n",
+				reason, g_findLobbiesCache.size(), (unsigned)nextMs);
+		};
+
+		if (g_findLobbiesBackoffUntilTick != 0 && now < g_findLobbiesBackoffUntilTick)
+		{
+			out = g_findLobbiesCache;
+			logCacheUse("rate-limit backoff");
+			return;
+		}
+
+		if (g_lastFindLobbiesHttpTick != 0 && (now - g_lastFindLobbiesHttpTick) < kFindLobbiesMinIntervalMs)
+		{
+			out = g_findLobbiesCache;
+			logCacheUse("throttled");
+			return;
+		}
+
 		std::string err;
 		if (!EnsureAuth(err))
+		{
+			app.DebugPrintf("[PlayFabLobby] FindLobbies auth failed: %s\n", err.c_str());
+			out = g_findLobbiesCache;
 			return;
+		}
 
 		char buf[64];
 		sprintf_s(buf, "string_key1 eq 'MC_WIN64' and number_key1 eq %d", (int)MINECRAFT_NET_VERSION);
@@ -501,18 +871,37 @@ namespace PlayFabLobbyWin64
 			hdr = "X-EntityToken: " + g_entityToken + "\r\n";
 		}
 
+		g_lastFindLobbiesHttpTick = now;
+
 		std::string raw;
 		if (!PostTitle("/Lobby/FindLobbies", hdr, body.dump(), raw, err))
 		{
-			app.DebugPrintf("[PlayFabLobby] FindLobbies failed: %s\n", err.c_str());
+			if (err.find("429") != std::string::npos)
+			{
+				g_findLobbiesBackoffUntilTick = now + kFindLobbies429BackoffMs;
+				app.DebugPrintf(
+					"[PlayFabLobby] FindLobbies rate limited (HTTP 429), backing off %u s (using cached list)\n",
+					(unsigned)(kFindLobbies429BackoffMs / 1000));
+			}
+			else
+				app.DebugPrintf("[PlayFabLobby] FindLobbies failed: %s\n", err.c_str());
+			out = g_findLobbiesCache;
 			return;
 		}
 
 		nlohmann::json resp;
 		if (!PlayFabOk(raw, resp, err))
+		{
+			app.DebugPrintf("[PlayFabLobby] FindLobbies bad JSON/API: %s\n", err.c_str());
+			out = g_findLobbiesCache;
 			return;
+		}
 		if (!resp.contains("data") || !resp["data"].contains("Lobbies"))
+		{
+			app.DebugPrintf("[PlayFabLobby] FindLobbies response missing Lobbies array\n");
+			out = g_findLobbiesCache;
 			return;
+		}
 
 		std::string myId;
 		{
@@ -520,18 +909,27 @@ namespace PlayFabLobbyWin64
 			myId = g_entityId;
 		}
 
-		for (const auto &lob : resp["data"]["Lobbies"])
+		const nlohmann::json &lobbiesArr = resp["data"]["Lobbies"];
+		const size_t rawLobbyCount = lobbiesArr.is_array() ? lobbiesArr.size() : 0;
+		size_t droppedOwnLobby = 0;
+
+		for (const auto &lob : lobbiesArr)
 		{
-			if (lob.contains("Owner") && lob["Owner"].is_object())
 			{
-				std::string oid = JsonString(lob["Owner"], "Id");
+				std::string oid = OwnerEntityIdFromSummary(lob);
+#if !MINECRAFT_PLAYFAB_LOBBY_INCLUDE_OWN_LOBBY
 				if (!oid.empty() && oid == myId)
+				{
+					++droppedOwnLobby;
 					continue;
+				}
+#endif
 			}
 
-			if (!lob.contains("SearchData") || !lob["SearchData"].is_object())
+			const nlohmann::json *sdPtr = JsonObjectAlt(lob, "SearchData", "searchData");
+			if (!sdPtr)
 				continue;
-			const nlohmann::json &sd = lob["SearchData"];
+			const nlohmann::json &sd = *sdPtr;
 
 			std::string ip = JsonString(sd, "string_key2");
 			int port = (int)JsonNumber(sd, "number_key2", 0);
@@ -556,15 +954,43 @@ namespace PlayFabLobbyWin64
 			g.hostPort = port;
 			g.netVersion = (unsigned short)MINECRAFT_NET_VERSION;
 			g.gameHostSettings = (unsigned int)JsonNumber(sd, "number_key3", 0);
-			if (lob.contains("CurrentPlayers") && lob["CurrentPlayers"].is_number_integer())
-				g.playerCount = (unsigned char)lob["CurrentPlayers"].get<int>();
-			if (lob.contains("MaxPlayers") && lob["MaxPlayers"].is_number_integer())
-				g.maxPlayers = (unsigned char)lob["MaxPlayers"].get<int>();
-			std::string lid = JsonString(lob, "LobbyId");
+			{
+				int cp = IntFromSummary(lob, "CurrentPlayers", "currentPlayers", -1);
+				if (cp >= 0)
+					g.playerCount = (unsigned char)cp;
+				int mp = IntFromSummary(lob, "MaxPlayers", "maxPlayers", -1);
+				if (mp >= 0)
+					g.maxPlayers = (unsigned char)mp;
+			}
+			std::string lid = LobbyIdFromSummary(lob);
 			if (lid.empty())
 				continue;
 			g.sessionId = HashLobbySessionId(lid);
 			out.push_back(std::move(g));
+		}
+
+		g_findLobbiesCache = out;
+		g_findLobbiesBackoffUntilTick = 0;
+		g_lastFindLobbiesCacheLogTick = now;
+		app.DebugPrintf(
+			"[PlayFabLobby] FindLobbies ok (%zu from API, %zu after filter, MINECRAFT_NET_VERSION=%d)\n",
+			rawLobbyCount, out.size(), (int)MINECRAFT_NET_VERSION);
+		if (rawLobbyCount > 0 && out.empty())
+		{
+			if (droppedOwnLobby > 0)
+			{
+				app.DebugPrintf(
+					"[PlayFabLobby] hint: skipped %zu lobby/lobbies as owned by this player (same PlayFab entity as "
+					"host — e.g. same uid.dat). Use another PC/account, or set "
+					"MINECRAFT_PLAYFAB_LOBBY_INCLUDE_OWN_LOBBY to 1 in PlayFabConfig.h for local testing only.\n",
+					droppedOwnLobby);
+			}
+			else
+			{
+				app.DebugPrintf(
+					"[PlayFabLobby] hint: lobbies returned but none passed filter (SearchData ip/port/tag/version, "
+					"or missing LobbyId)\n");
+			}
 		}
 	}
 }

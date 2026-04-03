@@ -29,12 +29,14 @@
 #include "PSVita/Social/SocialManager.h"
 #include "PSVita/Sentient/DynamicConfigurations.h"
 #include <libperf.h>
-#else
+#elif defined __ORBIS__
 #include "Orbis/Sentient/SentientManager.h"
 #include "StatsCounter.h"
 #include "Orbis/Social/SocialManager.h"
 #include "Orbis/Sentient/DynamicConfigurations.h"
 #include <perf.h>
+#else
+#error Extrax64Stubs.cpp: no platform match. Define one of __PS3__, _DURANGO, _WINDOWS64, __PSVITA__, __ORBIS__ (e.g. CMake preset windows64 sets _WINDOWS64).
 #endif
 
 #if !defined(__PS3__) && !defined(__ORBIS__) && !defined(__PSVITA__)

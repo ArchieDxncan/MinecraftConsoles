@@ -17,6 +17,9 @@
 #include <assert.h>
 #include <fstream>
 #include <cstdarg>
+#include <cstdio>
+#include <string>
+#include <vector>
 // NOTE: <collection.h> removed — it causes ABI::Windows::UI::Color redefinition
 //       when mixed with game headers. Not actually needed.
 
@@ -281,6 +284,131 @@ void ClearGlobalText()
     memset(chGlobalText, 0, 256);
     memset(ui16GlobalText, 0, 512);
 }
+
+#ifdef _UWP
+// Score RFC1918 / sane LAN so we pick 192.168.x.x over random virtual adapters when multiple IPv4s exist.
+static int Uwp_ScoreLanIpv4(const char *ip)
+{
+    unsigned a = 0, b = 0, c = 0, d = 0;
+    if (sscanf_s(ip, "%u.%u.%u.%u", &a, &b, &c, &d) != 4)
+        return -1;
+    if (a == 127u)
+        return -1;
+    if (a == 169u && b == 254u)
+        return -1;
+    if (a == 0u)
+        return -1;
+    if (a == 192u && b == 168u)
+        return 100;
+    if (a == 10u)
+        return 90;
+    if (a == 172u && b >= 16u && b <= 31u)
+        return 85;
+    return 40;
+}
+
+// PlayFab CreateLobby puts a LAN IP in SearchData; GetAdaptersInfo is unreliable in the UWP sandbox.
+// Prefer the IPv4 on the same NetworkAdapter as the active internet profile so other devices on LAN
+// (e.g. PC joining an Xbox-hosted lobby) get a reachable address, not the first arbitrary host name.
+extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize)
+{
+    out[0] = '\0';
+    if (!out || outSize < 8)
+        return false;
+    try
+    {
+        using namespace Windows::Networking::Connectivity;
+        using namespace Windows::Networking;
+
+        Platform::Guid targetAdapterId;
+        bool haveTargetAdapter = false;
+        {
+            ConnectionProfile^ cp = NetworkInformation::GetInternetConnectionProfile();
+            if (cp != nullptr)
+            {
+                NetworkAdapter^ na = cp->NetworkAdapter;
+                if (na != nullptr)
+                {
+                    targetAdapterId = na->NetworkAdapterId;
+                    haveTargetAdapter = true;
+                }
+            }
+        }
+
+        struct Entry
+        {
+            std::string ip;
+            int score = -1;
+            bool onInternetAdapter = false;
+        };
+        std::vector<Entry> entries;
+
+        auto vec = NetworkInformation::GetHostNames();
+        const unsigned count = vec->Size;
+        for (unsigned i = 0; i < count; i++)
+        {
+            HostName^ hn = vec->GetAt(i);
+            if (hn->Type != HostNameType::Ipv4)
+                continue;
+            Platform::String^ ps = hn->CanonicalName;
+            if (ps == nullptr || ps->Length() == 0)
+                continue;
+            std::wstring ws(ps->Data(), ps->Length());
+            char narrow[64];
+            const int nb = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, narrow, (int)sizeof(narrow), nullptr, nullptr);
+            if (nb <= 1)
+                continue;
+            const int sc = Uwp_ScoreLanIpv4(narrow);
+            if (sc < 0)
+                continue;
+
+            bool onInternet = false;
+            if (haveTargetAdapter && hn->IPInformation != nullptr && hn->IPInformation->NetworkAdapter != nullptr)
+            {
+                if (hn->IPInformation->NetworkAdapter->NetworkAdapterId.Equals(targetAdapterId))
+                    onInternet = true;
+            }
+
+            Entry e;
+            e.ip.assign(narrow);
+            e.score = sc;
+            e.onInternetAdapter = onInternet;
+            entries.push_back(std::move(e));
+        }
+
+        std::string bestIp;
+        int bestScore = -1;
+        for (int pass = 0; pass < 2 && bestIp.empty(); ++pass)
+        {
+            const bool requireInternetAdapter = (pass == 0) && haveTargetAdapter;
+            bestScore = -1;
+            for (const Entry &e : entries)
+            {
+                if (requireInternetAdapter && !e.onInternetAdapter)
+                    continue;
+                if (e.score > bestScore)
+                {
+                    bestScore = e.score;
+                    bestIp = e.ip;
+                }
+            }
+        }
+
+        if (!bestIp.empty())
+        {
+            strncpy_s(out, outSize, bestIp.c_str(), _TRUNCATE);
+            return out[0] != '\0';
+        }
+    }
+    catch (Platform::Exception^)
+    {
+    }
+    catch (...)
+    {
+    }
+    return false;
+}
+#endif // _UWP
 
 // ============================================================================
 // GAME INIT (mirrors InitialiseMinecraftRuntime from Windows64_Minecraft.cpp)

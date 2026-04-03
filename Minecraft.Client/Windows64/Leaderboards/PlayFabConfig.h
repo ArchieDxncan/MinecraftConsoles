@@ -42,7 +42,23 @@
 // Internet join list via PlayFab Lobby (Win64): hosts publish when running an online, non-private game;
 // the join menu merges FindLobbies results with LAN (same row style, host display name as title).
 // Enable Multiplayer / Lobby on the title in Game Manager. Join still uses TCP to hostIP:hostPort until
-// relay is integrated — put your public IPv4 in LocalState\playfab_join_host.txt if LAN IP is not reachable.
+// relay is integrated. If the joiner sees the lobby but TCP fails (e.g. PC joining Xbox), the host may be
+// advertising the wrong address: on the host device put the reachable endpoint in LocalState\playfab_join_host.txt
+// — one line: IPv4 (e.g. 203.0.113.5), or hostname:port for a TCP tunnel (ngrok, playit.gg, frp) when the public
+// port differs from the game's port. Omit :port to use the game's listen port. Java-only tools like e4mc do not
+// apply to this LCE TCP stack.
 #ifndef MINECRAFT_PLAYFAB_LOBBY_ENABLED
 #define MINECRAFT_PLAYFAB_LOBBY_ENABLED 1
+#endif
+
+// If 1, FindLobbies can list lobbies you own (same PlayFab entity as host). Use only for local dev when
+// host and browser share the same Custom ID / uid.dat; keep 0 in production.
+#ifndef MINECRAFT_PLAYFAB_LOBBY_INCLUDE_OWN_LOBBY
+#define MINECRAFT_PLAYFAB_LOBBY_INCLUDE_OWN_LOBBY 0
+#endif
+
+// Prepended to the host display name in PlayFab lobby SearchData (string_key3) only — not LAN discovery.
+// Use "" for retail builds.
+#ifndef MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX
+#define MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX ""
 #endif

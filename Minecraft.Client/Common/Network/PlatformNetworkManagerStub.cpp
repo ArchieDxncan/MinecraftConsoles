@@ -183,6 +183,7 @@ bool CPlatformNetworkManagerStub::Initialise(CGameNetworkManager *pGameNetworkMa
 	m_joinLocalUsersMask = 0;
 	m_joinHostName[0] = 0;
 	m_win64HostPublicSlots = MINECRAFT_NET_MAX_PLAYERS;
+	m_win64PendingLanPlayFabAdvertise = false;
 #endif
 	m_pSearchParam = nullptr;
 	m_SessionsUpdatedCallback = nullptr;
@@ -228,6 +229,34 @@ void CPlatformNetworkManagerStub::DoWork()
 {
 #ifdef _WINDOWS64
 	extern QNET_STATE _iQNetStubState;
+
+	// Host: do not broadcast LAN/PlayFab until AcceptThread will accept TCP (GAME_PLAY + level started).
+	if (m_win64PendingLanPlayFabAdvertise && m_pIQNet->IsHost() && _iQNetStubState == QNET_STATE_GAME_PLAY && app.GetGameStarted()
+		&& WinsockNetLayer::IsActive())
+	{
+		bool enableLanAdvertising = true;
+		if (g_Win64DedicatedServer)
+			enableLanAdvertising = g_Win64DedicatedServerLanAdvertise;
+
+		if (enableLanAdvertising)
+		{
+			const int port = WinsockNetLayer::GetHostPort();
+			const wchar_t *hostName = IQNet::m_player[0].m_gamertag;
+			const unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
+			WinsockNetLayer::StartAdvertising(port, hostName, settings, 0, 0, MINECRAFT_NET_VERSION);
+			PlayFabLobbyWin64::OnHostStartedAdvertising(!m_bIsOfflineGame, m_bIsPrivateGame, m_win64HostPublicSlots, port,
+				hostName, settings);
+			WinsockNetLayer::UpdateAdvertiseJoinable(true);
+			app.DebugPrintf("Win64: LAN + PlayFab advertising started (host ready for TCP joins)\n");
+		}
+		else
+		{
+			PlayFabLobbyWin64::OnHostStoppedAdvertising();
+			WinsockNetLayer::StopAdvertising();
+		}
+		m_win64PendingLanPlayFabAdvertise = false;
+	}
+
 	if (_iQNetStubState == QNET_STATE_SESSION_STARTING && app.GetGameStarted())
 	{
 		_iQNetStubState = QNET_STATE_GAME_PLAY;
@@ -427,6 +456,7 @@ bool CPlatformNetworkManagerStub::LeaveGame(bool bMigrateHost)
 	m_bLeaveGameOnTick = false;
 
 #ifdef _WINDOWS64
+	m_win64PendingLanPlayFabAdvertise = false;
 	PlayFabLobbyWin64::OnHostStoppedAdvertising();
 	WinsockNetLayer::StopAdvertising();
 #endif
@@ -502,8 +532,21 @@ void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame,
 		if (g_Win64DedicatedServerBindIP[0] != 0)
 			bindIp = g_Win64DedicatedServerBindIP;
 	}
-	if (!WinsockNetLayer::IsActive())
-		WinsockNetLayer::HostGame(port, bindIp);
+
+	// IsActive() stays true after a successful join (client TCP to host). The old check skipped HostGame()
+	// in that state, so we could still run StartAdvertising / PlayFab while no listen socket existed.
+	if (WinsockNetLayer::IsActive() && !WinsockNetLayer::IsHosting())
+	{
+		app.DebugPrintf("Win64: resetting network for host (was client / non-host)\n");
+		WinsockNetLayer::Shutdown();
+		WinsockNetLayer::Initialize();
+	}
+
+	if (!WinsockNetLayer::IsHosting() || !WinsockNetLayer::IsActive())
+	{
+		if (!WinsockNetLayer::HostGame(port, bindIp))
+			app.DebugPrintf("Win64: HostGame failed (bind/listen); LAN/PlayFab ads skipped\n");
+	}
 
 	if (WinsockNetLayer::IsActive())
 	{
@@ -515,19 +558,16 @@ void CPlatformNetworkManagerStub::HostGame(int localUsersMask, bool bOnlineGame,
 		}
 
 		if (enableLanAdvertising)
-		{
-			const wchar_t* hostName = IQNet::m_player[0].m_gamertag;
-			unsigned int settings = app.GetGameHostOption(eGameHostOption_All);
-			WinsockNetLayer::StartAdvertising(port, hostName, settings, 0, 0, MINECRAFT_NET_VERSION);
-			PlayFabLobbyWin64::OnHostStartedAdvertising(!m_bIsOfflineGame, m_bIsPrivateGame, m_win64HostPublicSlots,
-				port, hostName, settings);
-		}
+			m_win64PendingLanPlayFabAdvertise = true;
 		else
 		{
+			m_win64PendingLanPlayFabAdvertise = false;
 			PlayFabLobbyWin64::OnHostStoppedAdvertising();
 			WinsockNetLayer::StopAdvertising();
 		}
 	}
+	else
+		m_win64PendingLanPlayFabAdvertise = false;
 #endif
 //#endif
 }
@@ -568,6 +608,9 @@ int CPlatformNetworkManagerStub::JoinGame(FriendSessionInfo* searchResult, int l
 
 	wcsncpy_s(m_joinHostName, 32, searchResult->data.hostName, _TRUNCATE);
 	m_joinLocalUsersMask = localUsersMask;
+
+	app.DebugPrintf("Win64 join: connecting to %s:%d (sessionId=0x%016llX - LAN + PlayFab list use this address)\n",
+		hostIP, hostPort, (unsigned long long)searchResult->sessionId);
 
 	if (!WinsockNetLayer::BeginJoinGame(hostIP, hostPort))
 	{

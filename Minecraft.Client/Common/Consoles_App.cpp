@@ -259,6 +259,11 @@ void CMinecraftApp::DebugPrintf(const char *szFormat, ...)
     vsnprintf(buf, sizeof(buf), szFormat, ap);
     va_end(ap);
     OutputDebugStringA(buf);
+#if defined(_WINDOWS64) && defined(_UWP)
+    // UWP: mc_debug.log is fed by LogMsg() in UWP_App.cpp; DebugPrintf otherwise never hits the file.
+    extern void LogMsg(const char *fmt, ...);
+    LogMsg("%s", buf);
+#endif
 #endif
 
 }

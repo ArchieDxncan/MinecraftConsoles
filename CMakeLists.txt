@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(MinecraftConsoles LANGUAGES C CXX RC ASM_MASM)
+
+# Lets clangd / VS Code C++ use the same flags as CMake (fixes IntelliSense without PS4 SDK).
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -62,6 +66,15 @@ endfunction()
 # ---
 # Configuration
 # ---
+# When configuring without CMakePresets, default to Windows64 + _WINDOWS64 so sources and
+# preprocessor (e.g. Extrax64Stubs.cpp, stdafx.h) stay aligned. Presets still override CACHE.
+if(NOT PLATFORM_NAME)
+  set(PLATFORM_NAME "Windows64" CACHE STRING "Target platform: Windows64, Orbis, PS3, PSVita, Durango, Xbox")
+endif()
+if(NOT PLATFORM_DEFINES AND PLATFORM_NAME STREQUAL "Windows64")
+  set(PLATFORM_DEFINES "_WINDOWS64" CACHE STRING "Semicolon-separated platform compile definitions")
+endif()
+
 set(MINECRAFT_SHARED_DEFINES
   _LARGE_WORLDS
   _DEBUG_MENUS_ENABLED

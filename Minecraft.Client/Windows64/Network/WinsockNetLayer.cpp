@@ -135,6 +135,7 @@ void WinsockNetLayer::Shutdown()
 
 	s_active = false;
 	s_connected = false;
+	s_isHost = false;
 
 	if (s_listenSocket != INVALID_SOCKET)
 	{
