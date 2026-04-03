@@ -5,7 +5,7 @@
 
 #include "ArchiveFile.h"
 
-extern void LogMsg(const char* fmt, ...);
+extern void LogTrace(const char* fmt, ...);
 
 void ArchiveFile::_readHeader(DataInputStream *dis)
 {
@@ -38,9 +38,9 @@ ArchiveFile::ArchiveFile(File file)
 	{
 		char buf[512];
 		wcstombs(buf, file.getPath().c_str(), 512);
-		LogMsg("Archive: opening '%s'\n", buf);
-		LogMsg("Archive: wstringtofilename='%s'\n", wstringtofilename(file.getPath()));
-		LogMsg("Archive: file.exists()=%d file.length()=%lld\n", (int)file.exists(), (long long)file.length());
+		LogTrace("Archive: opening '%s'\n", buf);
+		LogTrace("Archive: wstringtofilename='%s'\n", wstringtofilename(file.getPath()));
+		LogTrace("Archive: file.exists()=%d file.length()=%lld\n", (int)file.exists(), (long long)file.length());
 	}
 
 	if(!file.exists())
@@ -53,10 +53,10 @@ ArchiveFile::ArchiveFile(File file)
 
 #if defined _XBOX_ONE || defined __ORBIS__ || defined _WINDOWS64
 	int64_t fileLen = file.length();
-	LogMsg("Archive: reading %lld bytes into memory...\n", (long long)fileLen);
+	LogTrace("Archive: reading %lld bytes into memory...\n", (long long)fileLen);
 	byteArray readArray(static_cast<unsigned int>(fileLen));
 	int bytesRead = fis.read(readArray,0,fileLen);
-	LogMsg("Archive: fis.read returned %d\n", bytesRead);
+	LogTrace("Archive: fis.read returned %d\n", bytesRead);
 
 	ByteArrayInputStream bais(readArray);
 	DataInputStream dis(&bais);
@@ -68,15 +68,15 @@ ArchiveFile::ArchiveFile(File file)
 
 	_readHeader(&dis);
 
-	LogMsg("Archive: loaded %d files from archive\n", (int)m_index.size());
+	LogTrace("Archive: loaded %d files from archive\n", (int)m_index.size());
 	// Log first 10 filenames for debugging
 	{
 		int count = 0;
 		for (auto& kv : m_index) {
 			char fn[256];
 			wcstombs(fn, kv.first.c_str(), 256);
-			LogMsg("Archive: [%d] '%s'\n", count, fn);
-			if (++count >= 20) { LogMsg("Archive: ... (%d more)\n", (int)m_index.size() - 20); break; }
+			LogTrace("Archive: [%d] '%s'\n", count, fn);
+			if (++count >= 20) { LogTrace("Archive: ... (%d more)\n", (int)m_index.size() - 20); break; }
 		}
 	}
 

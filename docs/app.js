@@ -5,7 +5,44 @@
  */
 const TITLE_ID = "C7923";
 
+/** Cross-browser-session sign-in (sessionStorage alone clears when the browser closes). */
+const SESSION_COOKIE_NAME = "lce_pf_session";
+const SESSION_COOKIE_MAX_AGE_SEC = 180 * 24 * 60 * 60; // ~6 months
+/** Browsers enforce ~4KB per cookie; skip cookie if payload would exceed this (sessionStorage still used). */
+const SESSION_COOKIE_MAX_CHARS = 3800;
+
 const $ = (id) => document.getElementById(id);
+
+function readSessionCookieRaw() {
+  const prefix = `${SESSION_COOKIE_NAME}=`;
+  const chunks = document.cookie.split("; ");
+  for (const part of chunks) {
+    if (part.startsWith(prefix)) {
+      try {
+        return decodeURIComponent(part.slice(prefix.length));
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function writeSessionCookie(jsonString) {
+  if (!jsonString || jsonString.length > SESSION_COOKIE_MAX_CHARS) return;
+  let c = `${SESSION_COOKIE_NAME}=${encodeURIComponent(jsonString)}; Path=/; Max-Age=${SESSION_COOKIE_MAX_AGE_SEC}; SameSite=Lax`;
+  if (location.protocol === "https:") c += "; Secure";
+  document.cookie = c;
+}
+
+function clearSessionCookie() {
+  let c = `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; SameSite=Lax`;
+  document.cookie = c;
+  if (location.protocol === "https:") {
+    c = `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; SameSite=Lax; Secure`;
+    document.cookie = c;
+  }
+}
 
 function normalizeCustomId(raw) {
   let s = String(raw).trim();
@@ -77,6 +114,7 @@ function setSignedOutUi() {
   customIdDisplay = null;
   displayUsername = null;
   sessionStorage.removeItem("pf_session");
+  clearSessionCookie();
   $("screen-app").classList.add("hidden");
   $("screen-login").classList.remove("hidden");
   $("friend-list").innerHTML = "";
@@ -84,15 +122,14 @@ function setSignedOutUi() {
 }
 
 function persistSession() {
-  sessionStorage.setItem(
-    "pf_session",
-    JSON.stringify({
-      sessionTicket,
-      playFabId,
-      customIdDisplay,
-      displayUsername,
-    })
-  );
+  const json = JSON.stringify({
+    sessionTicket,
+    playFabId,
+    customIdDisplay,
+    displayUsername,
+  });
+  sessionStorage.setItem("pf_session", json);
+  writeSessionCookie(json);
 }
 
 /** Title display name (leaderboard) or PlayFab username — never shown: PlayFabId */
@@ -107,7 +144,8 @@ async function fetchDisplayUsername() {
 
 function tryRestoreSession() {
   try {
-    const raw = sessionStorage.getItem("pf_session");
+    const raw =
+      sessionStorage.getItem("pf_session") || readSessionCookieRaw();
     if (!raw) return;
     const o = JSON.parse(raw);
     if (o.sessionTicket && o.playFabId) {
@@ -116,6 +154,7 @@ function tryRestoreSession() {
       customIdDisplay = o.customIdDisplay || "";
       displayUsername = o.displayUsername || null;
       setSignedInUi();
+      persistSession();
       if (!displayUsername) {
         fetchDisplayUsername()
           .then((name) => {
@@ -129,6 +168,7 @@ function tryRestoreSession() {
     }
   } catch {
     sessionStorage.removeItem("pf_session");
+    clearSessionCookie();
   }
 }
 

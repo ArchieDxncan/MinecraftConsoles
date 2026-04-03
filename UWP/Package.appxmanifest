@@ -9,7 +9,7 @@
   <Identity
     Name="MinecraftLCE.XboxDevMode"
     Publisher="CN=ArchieDxncan"
-    Version="1.6.0.2"
+    Version="1.6.0.3"
     ProcessorArchitecture="x64" />
 
   <mp:PhoneIdentity PhoneProductId="00000000-0000-0000-0000-000000000000"

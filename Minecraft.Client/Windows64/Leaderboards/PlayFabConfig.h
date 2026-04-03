@@ -45,8 +45,8 @@
 #define MINECRAFT_PLAYFAB_LOBBY_ENABLED 1
 #endif
 
-// Win32 desktop only: use Windows NAT UPnP (IUPnPNAT) to map TCP gamePort and announce the router's
-// public IPv4 in PlayFab SearchData. UWP falls back to LAN IP (no UPnP in this build).
+// Win32: Windows NAT UPnP (IUPnPNAT / natupnp) maps TCP gamePort and announces the router's public IPv4 in PlayFab SearchData.
+// UWP / Xbox dev mode: UPnP IGD via SSDP + SOAP (UpnpIgdUwp.cpp); same SearchData behavior when the LAN router exposes IGD.
 #ifndef MINECRAFT_PLAYFAB_LOBBY_UPNP
 #define MINECRAFT_PLAYFAB_LOBBY_UPNP 1
 #endif

@@ -9,8 +9,8 @@
 
 ConsoleUIController ui;
 
-// Forward-declare the logger from UWP_App.cpp
 extern void LogMsg(const char* fmt, ...);
+extern void LogTrace(const char* fmt, ...);
 
 void ConsoleUIController::init(ID3D11Device *dev, ID3D11DeviceContext *ctx, ID3D11RenderTargetView* pRenderTargetView, ID3D11DepthStencilView* pDepthStencilView, S32 w, S32 h)
 {
@@ -18,14 +18,14 @@ void ConsoleUIController::init(ID3D11Device *dev, ID3D11DeviceContext *ctx, ID3D
 	m_pRenderTargetView = pRenderTargetView;
 	m_pDepthStencilView = pDepthStencilView;
 
-	LogMsg("UICtrl: calling preInit(%d,%d)...\n", w, h);
+	LogTrace("UICtrl: calling preInit(%d,%d)...\n", w, h);
 	// Shared init
 	preInit(w,h);
-	LogMsg("UICtrl: preInit OK\n");
+	LogTrace("UICtrl: preInit OK\n");
 
-	LogMsg("UICtrl: calling gdraw_D3D11_CreateContext...\n");
+	LogTrace("UICtrl: calling gdraw_D3D11_CreateContext...\n");
 	gdraw_funcs = gdraw_D3D11_CreateContext(dev, ctx, w, h);
-	LogMsg("UICtrl: gdraw_D3D11_CreateContext returned %p\n", gdraw_funcs);
+	LogTrace("UICtrl: gdraw_D3D11_CreateContext returned %p\n", gdraw_funcs);
 
 	if(!gdraw_funcs)
 	{
@@ -40,20 +40,20 @@ void ConsoleUIController::init(ID3D11Device *dev, ID3D11DeviceContext *ctx, ID3D
 	gdraw_D3D11_SetResourceLimits(GDRAW_D3D11_RESOURCE_vertexbuffer, 5000,  16 * 1024 * 1024);
 	gdraw_D3D11_SetResourceLimits(GDRAW_D3D11_RESOURCE_texture     , 5000, 128 * 1024 * 1024);
 	gdraw_D3D11_SetResourceLimits(GDRAW_D3D11_RESOURCE_rendertarget,   10,  64 * 1024 * 1024);
-	LogMsg("UICtrl: resource limits set\n");
+	LogTrace("UICtrl: resource limits set\n");
 
 	/* GDraw is all set, so we'll point Iggy at it. */
 	IggySetGDraw(gdraw_funcs);
-	LogMsg("UICtrl: IggySetGDraw OK\n");
+	LogTrace("UICtrl: IggySetGDraw OK\n");
 
 	// DISABLED for UWP — DirectSound is not available in packaged apps.
 	// Game audio uses miniaudio, so Iggy embedded Flash audio is not needed.
 	// IggyAudioUseDirectSound();
 
-	LogMsg("UICtrl: calling postInit()...\n");
+	LogTrace("UICtrl: calling postInit()...\n");
 	// Shared init
 	postInit();
-	LogMsg("UICtrl: postInit OK\n");
+	LogTrace("UICtrl: postInit OK\n");
 #endif
 }
 

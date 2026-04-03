@@ -726,6 +726,8 @@ void* C_4JProfile::GetGameDefinedProfileData(int iQuadrant)
 	//defaultOptionsCallback(lpProfileParam, (C_4JProfile::PROFILESETTINGS *)profileData[iQuadrant], iQuadrant);
 	//pApp->SetDefaultOptions(pSettings,iPad);
 
+	if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT)
+		return nullptr;
 	return profileData[iQuadrant];
 }
 void				C_4JProfile::ResetProfileProcessState() {}

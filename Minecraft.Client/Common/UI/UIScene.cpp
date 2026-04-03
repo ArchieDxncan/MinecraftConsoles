@@ -8,6 +8,7 @@
 #include "../../ItemRenderer.h"
 #include "../../../Minecraft.World/net.minecraft.world.item.h"
 extern void LogMsg(const char* fmt, ...);
+extern void LogTrace(const char* fmt, ...);
 
 UIScene::UIScene(int iPad, UILayer *parentLayer)
 {
@@ -315,7 +316,7 @@ void UIScene::loadMovie()
 		{
 			char buf[256];
 			wcstombs(buf, moviePath.c_str(), 256);
-			LogMsg("UIScene: 1080.swf NOT FOUND in archive: '%s'\n", buf);
+			LogTrace("UIScene: 1080.swf NOT FOUND in archive: '%s'\n", buf);
 		}
 
 		moviePath = getMoviePath();
@@ -336,7 +337,7 @@ void UIScene::loadMovie()
 	{
 		char buf[256];
 		wcstombs(buf, moviePath.c_str(), 256);
-		LogMsg("UIScene: loading movie '%s' from archive...\n", buf);
+		LogTrace("UIScene: loading movie '%s' from archive...\n", buf);
 	}
 	byteArray baFile = ui.getMovieData(moviePath.c_str());
 	int64_t beforeLoad = ui.iggyAllocCount;

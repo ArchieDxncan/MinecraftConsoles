@@ -24,6 +24,8 @@
 #include <unordered_set>
 #include <vector>
 #include <winhttp.h>
+#include <cstdarg>
+#include <cstdio>
 
 #pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "iphlpapi.lib")
@@ -33,13 +35,34 @@
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")
 #endif
+#if MINECRAFT_PLAYFAB_LOBBY_UPNP && defined(_UWP)
+#include "UpnpIgdUwp.h"
+#endif
 
 #ifdef _UWP
 extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize);
+// UWP_App.cpp — must be global ::LogMsg, not inside an anonymous namespace (linker).
+void LogMsg(const char *fmt, ...);
 #endif
 
 namespace
 {
+	// UWP: write high-signal PlayFab lines to mc_debug.log (LogMsg). Win32: DebugPrintf only.
+	static void PlayFabFileDiag(const char *fmt, ...)
+	{
+		char buf[768];
+		va_list ap;
+		va_start(ap, fmt);
+		vsnprintf(buf, sizeof(buf), fmt, ap);
+		va_end(ap);
+		buf[sizeof(buf) - 1] = '\0';
+#if defined(_UWP)
+		::LogMsg("%s", buf);
+#else
+		app.DebugPrintf("%s", buf);
+#endif
+	}
+
 	std::mutex g_mu;
 	std::string g_titleId;
 	std::string g_sessionTicket;
@@ -508,6 +531,18 @@ namespace
 		app.DebugPrintf("[PlayFabLobby] UPnP mapped public %s:%d (TCP %d -> %s)\n", outAnnounceHost, gamePort, gamePort, lanIpUtf8);
 		return true;
 	}
+#elif MINECRAFT_PLAYFAB_LOBBY_UPNP && defined(_UWP)
+
+	static void UpnpRemoveMappingIfAny()
+	{
+		UpnpIgdUwp_RemoveMappingIfAny();
+	}
+
+	static bool TryUpnpAddTcpMapAndGetPublicIp(int gamePort, const char *lanIpUtf8, char *outAnnounceHost, size_t announceHostSize,
+		int *outAnnouncePort)
+	{
+		return UpnpIgdUwp_AddTcpMappingAndGetExternalIPv4(gamePort, lanIpUtf8, outAnnounceHost, announceHostSize, outAnnouncePort);
+	}
 #else
 	static void UpnpRemoveMappingIfAny() {}
 #endif
@@ -858,7 +893,7 @@ namespace PlayFabLobbyWin64
 		std::string err;
 		if (!EnsureAuth(err))
 		{
-			app.DebugPrintf("[PlayFabLobby] auth failed: %s\n", err.c_str());
+			PlayFabFileDiag("[PlayFabLobby] auth failed: %s\n", err.c_str());
 			return;
 		}
 
@@ -867,13 +902,13 @@ namespace PlayFabLobbyWin64
 		char lanIp[256] = {};
 		if (!PickLanIPv4(lanIp, sizeof(lanIp)) || lanIp[0] == 0)
 		{
-			app.DebugPrintf("[PlayFabLobby] no LAN IPv4 for announce (adapter pick failed)\n");
+			PlayFabFileDiag("[PlayFabLobby] no LAN IPv4 for announce (adapter pick failed)\n");
 			return;
 		}
 
 		char announceHost[256] = {};
 		int lobbyAnnouncePort = gamePort;
-#if MINECRAFT_PLAYFAB_LOBBY_UPNP && !defined(_UWP)
+#if MINECRAFT_PLAYFAB_LOBBY_UPNP
 		const bool upnpOk = TryUpnpAddTcpMapAndGetPublicIp(gamePort, lanIp, announceHost, sizeof(announceHost), &lobbyAnnouncePort);
 #else
 		const bool upnpOk = false;
@@ -882,8 +917,12 @@ namespace PlayFabLobbyWin64
 		{
 			strncpy_s(announceHost, sizeof(announceHost), lanIp, _TRUNCATE);
 			lobbyAnnouncePort = gamePort;
-			app.DebugPrintf("[PlayFabLobby] SearchData will use LAN %s:%d (UPnP unavailable, disabled, or failed)\n", announceHost,
+			PlayFabFileDiag("[PlayFabLobby] SearchData will use LAN %s:%d (UPnP unavailable, disabled, or failed)\n", announceHost,
 				lobbyAnnouncePort);
+		}
+		else
+		{
+			PlayFabFileDiag("[PlayFabLobby] SearchData will use WAN %s:%d (UPnP ok)\n", announceHost, lobbyAnnouncePort);
 		}
 
 		std::string hostUtf8;
@@ -965,7 +1004,7 @@ namespace PlayFabLobbyWin64
 		std::string raw;
 		if (!PostTitle("/Lobby/CreateLobby", hdr, body.dump(), raw, err))
 		{
-			app.DebugPrintf("[PlayFabLobby] CreateLobby failed: %s\n", err.c_str());
+			PlayFabFileDiag("[PlayFabLobby] CreateLobby failed: %s\n", err.c_str());
 			UpnpRemoveMappingIfAny();
 			return;
 		}
@@ -973,13 +1012,13 @@ namespace PlayFabLobbyWin64
 		nlohmann::json resp;
 		if (!PlayFabOk(raw, resp, err))
 		{
-			app.DebugPrintf("[PlayFabLobby] CreateLobby bad response: %s\n", err.c_str());
+			PlayFabFileDiag("[PlayFabLobby] CreateLobby bad response: %s\n", err.c_str());
 			UpnpRemoveMappingIfAny();
 			return;
 		}
 		if (!resp.contains("data") || !resp["data"].contains("LobbyId"))
 		{
-			app.DebugPrintf("[PlayFabLobby] CreateLobby missing LobbyId\n");
+			PlayFabFileDiag("[PlayFabLobby] CreateLobby missing LobbyId\n");
 			UpnpRemoveMappingIfAny();
 			return;
 		}
@@ -988,7 +1027,7 @@ namespace PlayFabLobbyWin64
 			std::lock_guard<std::mutex> lock(g_mu);
 			g_activeLobbyId = std::move(newLobbyId);
 		}
-		app.DebugPrintf("[PlayFabLobby] created lobby (announce %s:%d)\n", announceHost, lobbyAnnouncePort);
+		PlayFabFileDiag("[PlayFabLobby] created lobby (announce %s:%d)\n", announceHost, lobbyAnnouncePort);
 	}
 
 	void OnHostStoppedAdvertising()

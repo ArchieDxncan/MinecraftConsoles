@@ -219,6 +219,11 @@ void StatsCounter::save(int player, bool force)
 #else
 	PBYTE pbData = static_cast<PBYTE>(ProfileManager.GetGameDefinedProfileData(player));
 #endif
+	if (!pbData)
+	{
+		app.DebugPrintf("StatsCounter::save: GetGameDefinedProfileData(%d) returned null; skipping stats write\n", player);
+		return;
+	}
 	pbData+=sizeof(GAME_SETTINGS);
 	
 	//Pointer to current position in stat array

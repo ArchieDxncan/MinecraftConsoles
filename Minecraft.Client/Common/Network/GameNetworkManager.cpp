@@ -1523,7 +1523,10 @@ void CGameNetworkManager::StateChange_AnyToEnding(bool bStateWasPlaying)
 			if(pNetworkPlayer != nullptr && ProfileManager.IsSignedIn( i ) )
 			{
 				app.DebugPrintf("Stats save for an offline game for the player at index %d\n", i );
-				Minecraft::GetInstance()->forceStatsSave(pNetworkPlayer->GetUserIndex());
+				// Win64: IQNetPlayer::GetUserIndex() is the slot in IQNet::m_player[] (up to MINECRAFT_NET_MAX_PLAYERS),
+				// not the controller/profile index. Profile data is only allocated for XUSER_MAX_COUNT pads — using
+				// GetUserIndex() here caused nullptr + sizeof(GAME_SETTINGS) writes (e.g. AV at 0xE0) when leaving MP.
+				Minecraft::GetInstance()->forceStatsSave((int)i);
 			}
 		}
 	}
@@ -1738,7 +1741,20 @@ void CGameNetworkManager::HostChanged()
 
 void CGameNetworkManager::WriteStats( INetworkPlayer *pNetworkPlayer )
 {
+#if defined(_WINDOWS64)
+	// Match profile/slot index to controller index (see StateChange_AnyToEnding).
+	for (unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
+	{
+		if (GetLocalPlayerByUserIndex((int)i) == pNetworkPlayer)
+		{
+			Minecraft::GetInstance()->forceStatsSave((int)i);
+			return;
+		}
+	}
+	app.DebugPrintf("WriteStats: could not map INetworkPlayer to local pad; skipping forceStatsSave\n");
+#else
 	Minecraft::GetInstance()->forceStatsSave( pNetworkPlayer->GetUserIndex() );
+#endif
 }
 
 void CGameNetworkManager::GameInviteReceived( int userIndex, const INVITE_INFO *pInviteInfo)

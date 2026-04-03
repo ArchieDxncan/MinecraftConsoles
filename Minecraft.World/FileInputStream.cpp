@@ -5,6 +5,7 @@
 #include <string>
 
 extern void LogMsg(const char* fmt, ...);
+extern void LogTrace(const char* fmt, ...);
 
 #ifdef _UWP
 extern char g_LocalStatePath[512];
@@ -94,7 +95,7 @@ FileInputStream::FileInputStream(const File &file)
 	}
 	else
 	{
-		LogMsg("FIS: CreateFile OK handle=%p path='%s' (raw='%s')\n", m_fileHandle, openPath, pchFilename);
+		LogTrace("FIS: CreateFile OK handle=%p path='%s' (raw='%s')\n", m_fileHandle, openPath, pchFilename);
 	}
 }
 
@@ -190,7 +191,7 @@ int FileInputStream::read(byteArray b, unsigned int offset, unsigned int length)
 		nullptr // overlapped buffer
 		);
 
-	LogMsg("FIS::read handle=%p offset=%u len=%u bSuccess=%d bytesRead=%lu\n",
+	LogTrace("FIS::read handle=%p offset=%u len=%u bSuccess=%d bytesRead=%lu\n",
 		m_fileHandle, offset, length, (int)bSuccess, numberOfBytesRead);
 
 	if( bSuccess==FALSE )

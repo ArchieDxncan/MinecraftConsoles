@@ -77,6 +77,7 @@ list(FILTER MINECRAFT_CLIENT_SOURCES EXCLUDE REGEX ".*/iob_shim\\.asm$")
 list(APPEND MINECRAFT_CLIENT_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/UWP/UWP_App.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/crt_compat.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/Network/UpnpIgdUwp.cpp"
 )
 
 add_executable(MinecraftLCE ${MINECRAFT_CLIENT_SOURCES})

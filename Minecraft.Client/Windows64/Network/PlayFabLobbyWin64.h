@@ -9,7 +9,7 @@
 // PlayFab Lobby (internet) discovery for Win64 join list — complements LAN UDP discovery.
 // Host publishes when hosting an online, non-private game. Clients merge results into the same
 // FriendSessionInfo path as LAN. Connection still uses TCP to hostIP:hostPort until relay is added.
-// See PlayFabConfig.h (MINECRAFT_PLAYFAB_LOBBY_*). Win32 hosts try UPnP for a public announce address.
+// See PlayFabConfig.h (MINECRAFT_PLAYFAB_LOBBY_*). Hosts try UPnP (Win32: COM; UWP: IGD SOAP) for a public announce address when enabled.
 
 struct PlayFabListedGame
 {

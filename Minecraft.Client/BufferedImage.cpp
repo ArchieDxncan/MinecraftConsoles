@@ -5,6 +5,7 @@
 #include "BufferedImage.h"
 
 extern void LogMsg(const char* fmt, ...);
+extern void LogTrace(const char* fmt, ...);
 
 #ifdef _XBOX
 typedef struct
@@ -167,18 +168,21 @@ BufferedImage::BufferedImage(const wstring& File, bool filenameHasExtension /*=f
 #ifndef _CONTENT_PACKAGE
 		app.DebugPrintf("\n--- Loading TEXTURE - %s\n\n",pchTextureName);
 #endif
-		LogMsg("BufImg: Loading '%s' (mip=%d)...\n", pchTextureName, l);
+		LogTrace("BufImg: Loading '%s' (mip=%d)...\n", pchTextureName, l);
 
 		D3DXIMAGE_INFO ImageInfo;
 		ZeroMemory(&ImageInfo,sizeof(D3DXIMAGE_INFO));
 		hr=RenderManager.LoadTextureData(pchTextureName,&ImageInfo,&data[l]);
-		LogMsg("BufImg: LoadTextureData hr=0x%08X data[%d]=%p  %dx%d\n", hr, l, data[l], ImageInfo.Width, ImageInfo.Height);
+		LogTrace("BufImg: LoadTextureData hr=0x%08X data[%d]=%p  %dx%d\n", hr, l, data[l], ImageInfo.Width, ImageInfo.Height);
 
 
 		if(hr!=ERROR_SUCCESS)
 		{
-			LogMsg("BufImg: *** FAILED to load '%s'! ***\n", pchTextureName);
-			// 4J - If we haven't loaded the non-mipmap version then exit the game
+			// Base mip (l==0) missing is fatal; higher mips are optional — don't spam mc_debug.log on UWP.
+			if (l == 0)
+				LogMsg("BufImg: FATAL failed to load base mip '%s' (hr=0x%08X)\n", pchTextureName, (unsigned)hr);
+			else
+				LogTrace("BufImg: optional mip %d missing '%s' (hr=0x%08X)\n", l, pchTextureName, (unsigned)hr);
 			if( l == 0 )
 			{
 				app.FatalLoadError();

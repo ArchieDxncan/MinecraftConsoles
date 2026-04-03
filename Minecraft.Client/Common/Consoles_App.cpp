@@ -260,9 +260,9 @@ void CMinecraftApp::DebugPrintf(const char *szFormat, ...)
     va_end(ap);
     OutputDebugStringA(buf);
 #if defined(_WINDOWS64) && defined(_UWP)
-    // UWP: mc_debug.log is fed by LogMsg() in UWP_App.cpp; DebugPrintf otherwise never hits the file.
-    extern void LogMsg(const char *fmt, ...);
-    LogMsg("%s", buf);
+    // UWP: verbose game spew goes to OutputDebugString only (LogTrace); mc_debug.log stays small.
+    extern void LogTrace(const char *fmt, ...);
+    LogTrace("%s", buf);
 #endif
 #endif
 

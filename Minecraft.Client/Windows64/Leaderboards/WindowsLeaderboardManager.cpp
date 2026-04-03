@@ -443,9 +443,7 @@ WindowsLeaderboardManager::~WindowsLeaderboardManager()
 	m_cancelRequested = true;
 	if (m_workerThread.joinable())
 		m_workerThread.join();
-
-	delete[] m_deliveryScores;
-	m_deliveryScores = nullptr;
+	DiscardPendingReadDelivery();
 }
 
 void WindowsLeaderboardManager::Tick()
@@ -644,17 +642,49 @@ bool WindowsLeaderboardManager::WriteStats(unsigned int viewCount, ViewIn views)
 	return true;
 }
 
+void WindowsLeaderboardManager::DiscardPendingReadDelivery()
+{
+	std::lock_guard<std::mutex> lock(m_deliveryMutex);
+	if (!m_hasDelivery)
+		return;
+	m_hasDelivery = false;
+	delete[] m_deliveryScores;
+	m_deliveryScores = nullptr;
+	m_deliveryListener = nullptr;
+	m_deliveryNumScores = 0;
+}
+
 void WindowsLeaderboardManager::FlushStats()
 {
 	// WriteStats posts to a worker thread; wait so save/quit does not exit before PlayFab POST completes.
-	if (m_workerThread.joinable())
-		m_workerThread.join();
+	for (;;)
+	{
+		if (m_workerThread.joinable())
+			m_workerThread.join();
+
+		// Read jobs capture LeaderboardReadListener* at start; if the UI scene was destroyed (e.g. user left
+		// leaderboards then exited multiplayer), finish() may have queued a delivery for a freed object. Joining
+		// alone does not consume it — Tick would still call OnStatsReadComplete. Drop it after the worker stops.
+		DiscardPendingReadDelivery();
+
+		std::vector<RegisterScore> pending;
+		{
+			std::lock_guard<std::mutex> lock(m_queueMutex);
+			pending.swap(m_pendingWrites);
+		}
+		if (pending.empty())
+			break;
+		StartWriteJob(std::move(pending));
+	}
 }
 
 void WindowsLeaderboardManager::CancelOperation()
 {
 	m_cancelRequested = true;
 	m_readListener = nullptr;
+	if (m_workerThread.joinable())
+		m_workerThread.join();
+	DiscardPendingReadDelivery();
 }
 
 bool WindowsLeaderboardManager::isIdle()

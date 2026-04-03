@@ -24,8 +24,8 @@
 //       when mixed with game headers. Not actually needed.
 
 // ============================================================================
-// FILE-BASED CRASH LOGGER — writes to LocalState folder so we can see where
-// the app crashes even without a debugger attached.
+// Logging: LogTrace() -> OutputDebugString only. LogMsg() -> ODS + LocalState\mc_debug.log
+// (fatal/errors and a few milestones). Verbose paths use LogTrace so mc_debug.log stays small.
 // ============================================================================
 static std::ofstream g_logFile;
 extern char g_LocalStatePath[512];
@@ -42,7 +42,7 @@ static void LogInit()
         strcat_s(pathA, "\\mc_debug.log");
         g_logFile.open(pathA, std::ios::out | std::ios::trunc);
         if (g_logFile.is_open())
-            g_logFile << "=== MinecraftLCE Debug Log ===" << std::endl;
+            g_logFile << "=== MinecraftLCE (mc_debug.log: fatal/errors/milestones only; verbose -> OutputDebugString) ===" << std::endl;
         OutputDebugStringA("UWP: Log file at: ");
         OutputDebugStringA(pathA);
         OutputDebugStringA("\n");
@@ -52,6 +52,7 @@ static void LogInit()
 }
 void LogMsg(const char* fmt, ...)
 {
+    LogInit();
     char buf[1024];
     va_list args;
     va_start(args, fmt);
@@ -62,6 +63,17 @@ void LogMsg(const char* fmt, ...)
         g_logFile << buf;
         g_logFile.flush();
     }
+}
+
+// Debugger only — does not write mc_debug.log (keeps the file small).
+void LogTrace(const char* fmt, ...)
+{
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    OutputDebugStringA(buf);
 }
 
 static bool BuildLocalStateFilePath(char* outPath, size_t outPathSize, const char* fileName)
@@ -103,7 +115,7 @@ static void LoadUsernameFromLocalState()
         {
             strncpy_s(g_Win64Username, sizeof(g_Win64Username), buf, _TRUNCATE);
             MultiByteToWideChar(CP_ACP, 0, g_Win64Username, -1, g_Win64UsernameW, 17);
-            LogMsg("UWP: Loaded username.txt from LocalState: %s\n", g_Win64Username);
+            LogTrace("UWP: Loaded username.txt from LocalState: %s\n", g_Win64Username);
         }
     }
     fclose(f);
@@ -121,7 +133,7 @@ static void SaveUsernameToLocalState()
 
     fprintf_s(f, "%s\n", g_Win64Username);
     fclose(f);
-    LogMsg("UWP: Wrote username.txt to LocalState: %s\n", g_Win64Username);
+    LogTrace("UWP: Wrote username.txt to LocalState: %s\n", g_Win64Username);
 }
 
 // Global crash handler — logs SEH exceptions before the process dies
@@ -208,7 +220,7 @@ static void LogPackagedRelativeFileStatus(const char* relativePath)
     _snprintf_s(full, sizeof(full), _TRUNCATE, "%s\\%s", g_PackageRootPath, relativePath);
     DWORD attr = GetFileAttributesA(full);
     if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY))
-        LogMsg("UWP: packaged file check: %s -> present\n", full);
+        LogTrace("UWP: packaged file check: %s -> present\n", full);
     else
         LogMsg("UWP: packaged file check: %s -> MISSING (err=%lu)\n", full, GetLastError());
 }
@@ -307,7 +319,7 @@ static int Uwp_ScoreLanIpv4(const char *ip)
     return 40;
 }
 
-// PlayFab CreateLobby SearchData uses LAN IPv4 on UWP (desktop Win32 uses UPnP when enabled). GetAdaptersInfo is unreliable in the UWP sandbox.
+// PlayFab CreateLobby SearchData: UWP tries UPnP IGD (UpnpIgdUwp) then falls back to LAN IPv4. GetAdaptersInfo is unreliable in the UWP sandbox; Uwp_GetPrimaryLanIPv4 is preferred.
 // Prefer the IPv4 on the same NetworkAdapter as the active internet profile so other devices on LAN
 // (e.g. PC joining an Xbox-hosted lobby) get a reachable address, not the first arbitrary host name.
 extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize)
@@ -415,37 +427,37 @@ extern "C" bool Uwp_GetPrimaryLanIPv4(char *out, size_t outSize)
 // ============================================================================
 static Minecraft* InitialiseMinecraftRuntime_UWP()
 {
-    LogMsg("UWP: InitialiseMinecraftRuntime_UWP START\n");
+    LogTrace("UWP: InitialiseMinecraftRuntime_UWP START\n");
 
-    LogMsg("UWP: Calling app.loadMediaArchive()...\n");
+    LogTrace("UWP: Calling app.loadMediaArchive()...\n");
     app.loadMediaArchive();
-    LogMsg("UWP: loadMediaArchive OK\n");
+    LogTrace("UWP: loadMediaArchive OK\n");
 
-    LogMsg("UWP: Skipping RenderManager.Initialise (already done in CreateDeviceAndSwapChain)\n");
+    LogTrace("UWP: Skipping RenderManager.Initialise (already done in CreateDeviceAndSwapChain)\n");
     // RenderManager.Initialise already called in CreateDeviceAndSwapChain_HWND
-    LogMsg("UWP: RenderManager.Initialise OK (skipped)\n");
+    LogTrace("UWP: RenderManager.Initialise OK (skipped)\n");
 
-    LogMsg("UWP: Calling app.loadStringTable()...\n");
+    LogTrace("UWP: Calling app.loadStringTable()...\n");
     app.loadStringTable();
-    LogMsg("UWP: loadStringTable OK\n");
+    LogTrace("UWP: loadStringTable OK\n");
 
-    LogMsg("UWP: Calling ui.init() with device=%p ctx=%p rtv=%p dsv=%p %dx%d...\n",
+    LogTrace("UWP: Calling ui.init() with device=%p ctx=%p rtv=%p dsv=%p %dx%d...\n",
            g_pd3dDevice, g_pImmediateContext, g_pRenderTargetView, g_pDepthStencilView,
            g_rScreenWidth, g_rScreenHeight);
 
     // Check if iggy_w64.dll is loaded
     {
         HMODULE hIggy = GetModuleHandleA("iggy_w64.dll");
-        LogMsg("UWP: iggy_w64.dll module handle = %p\n", hIggy);
+        LogTrace("UWP: iggy_w64.dll module handle = %p\n", hIggy);
         HMODULE hMss = GetModuleHandleA("mss64.dll");
-        LogMsg("UWP: mss64.dll module handle = %p\n", hMss);
+        LogTrace("UWP: mss64.dll module handle = %p\n", hMss);
     }
 
     g_logFile.flush(); // flush before risky call
     ui.init(g_pd3dDevice, g_pImmediateContext,
             g_pRenderTargetView, g_pDepthStencilView,
             g_rScreenWidth, g_rScreenHeight);
-    LogMsg("UWP: ui.init OK\n");
+    LogTrace("UWP: ui.init OK\n");
 
     InputManager.Initialise(1, 3, MINECRAFT_ACTION_MAX, ACTION_MAX_MENU);
     InputManager.SetJoypadMapVal(0, 0);
@@ -593,7 +605,7 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
     InputManager.SetGameJoypadMaps(MAP_STYLE_2,MINECRAFT_ACTION_DPAD_UP,               _360_JOY_BUTTON_DPAD_UP);
     InputManager.SetGameJoypadMaps(MAP_STYLE_2,MINECRAFT_ACTION_DPAD_DOWN,             _360_JOY_BUTTON_DPAD_DOWN);
 
-    LogMsg("UWP: InputManager + DefineActions OK\n");
+    LogTrace("UWP: InputManager + DefineActions OK\n");
 
     ProfileManager.Initialise(TITLEID_MINECRAFT,
                               app.m_dwOfferID,
@@ -605,7 +617,7 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
                               &app.uiGameDefinedDataChangedBitmask);
     ProfileManager.SetDefaultOptionsCallback(
         &CConsoleMinecraftApp::DefaultOptionsCallback, (LPVOID)&app);
-    LogMsg("UWP: ProfileManager OK\n");
+    LogTrace("UWP: ProfileManager OK\n");
     // Note: On UWP, C_4JProfile::GetGamertag() is just g_Win64Username (Extrax64Stubs.cpp) — no separate Xbox source.
 
     // Align 4J Storage with LocalState (Init + TMS root) so GetMountedPath / profile / DLC paths match Minecraft::workingDirectory
@@ -628,16 +640,16 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
         // UWP: use folder-backed save IO/listing path in the sandboxed app data area.
         app.SetLoadSavesFromFolderEnabled(true);
         app.SetWriteSavesToFolderEnabled(true);
-        LogMsg("UWP: StorageManager.Init OK (LocalState-backed)\n");
-        LogMsg("UWP: StorageManager saveDisabled=%d\n", StorageManager.GetSaveDisabled() ? 1 : 0);
-        LogMsg("UWP: Folder save mode enabled (load=%d write=%d)\n",
+        LogTrace("UWP: StorageManager.Init OK (LocalState-backed)\n");
+        LogTrace("UWP: StorageManager saveDisabled=%d\n", StorageManager.GetSaveDisabled() ? 1 : 0);
+        LogTrace("UWP: Folder save mode enabled (load=%d write=%d)\n",
                app.GetLoadSavesFromFolderEnabled() ? 1 : 0,
                app.GetWriteSavesToFolderEnabled() ? 1 : 0);
     }
 
-    LogMsg("UWP: Calling g_NetworkManager.Initialise()...\n");
+    LogTrace("UWP: Calling g_NetworkManager.Initialise()...\n");
     g_NetworkManager.Initialise();
-    LogMsg("UWP: NetworkManager OK\n");
+    LogTrace("UWP: NetworkManager OK\n");
 
     // Set up local player gamertags — player 0 gets Xbox gamertag
     for (int i = 0; i < MINECRAFT_NET_MAX_PLAYERS; i++)
@@ -662,9 +674,9 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
     Level::enableLightingCache();
     Tile::CreateNewThreadStorage();
 
-    LogMsg("UWP: Calling Minecraft::main()...\n");
+    LogTrace("UWP: Calling Minecraft::main()...\n");
     Minecraft::main();
-    LogMsg("UWP: Minecraft::main() returned, getting instance...\n");
+    LogTrace("UWP: Minecraft::main() returned, getting instance...\n");
     Minecraft* pMinecraft = Minecraft::GetInstance();
     if (!pMinecraft)
     {
@@ -672,11 +684,11 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
         return nullptr;
     }
 
-    LogMsg("UWP: Calling app.InitGameSettings()...\n");
+    LogTrace("UWP: Calling app.InitGameSettings()...\n");
     app.InitGameSettings();
-    LogMsg("UWP: Calling app.InitialiseTips()...\n");
+    LogTrace("UWP: Calling app.InitialiseTips()...\n");
     app.InitialiseTips();
-    LogMsg("UWP: InitialiseMinecraftRuntime_UWP DONE\n");
+    LogTrace("UWP: InitialiseMinecraftRuntime_UWP DONE\n");
     return pMinecraft;
 }
 
@@ -686,7 +698,7 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
 namespace MinecraftLCE
 {
 
-IFrameworkView^ AppSource::CreateView() { LogMsg("UWP: CreateView() called\n"); return ref new App(); }
+IFrameworkView^ AppSource::CreateView() { LogTrace("UWP: CreateView() called\n"); return ref new App(); }
 
 // ============================================================================
 // App — constructor
@@ -697,7 +709,7 @@ App::App()
     , m_pMinecraft(nullptr)
     , m_gameInitialized(false)
 {
-    LogMsg("UWP: App::App() constructor\n");
+    LogTrace("UWP: App::App() constructor\n");
 }
 
 // ============================================================================
@@ -707,13 +719,13 @@ void App::Initialize(CoreApplicationView^ applicationView)
 {
     LogInit();
     SetUnhandledExceptionFilter(CrashFilter);
-    LogMsg("UWP: Initialize() START\n");
+    LogTrace("UWP: Initialize() START\n");
 
     // ---- Package root path (needed by BufferedImage, FileInputStream, etc.) ----
     {
         char cwd[512] = {};
         GetCurrentDirectoryA(512, cwd);
-        LogMsg("UWP: CWD = %s\n", cwd);
+        LogTrace("UWP: CWD = %s\n", cwd);
 
         auto pkg = Windows::ApplicationModel::Package::Current;
         auto localFolder = Windows::Storage::ApplicationData::Current->LocalFolder;
@@ -723,8 +735,8 @@ void App::Initialize(CoreApplicationView^ applicationView)
         char localStatePathA[512] = {};
         WideCharToMultiByte(CP_ACP, 0, installPath->Data(), -1, installPathA, 512, nullptr, nullptr);
         WideCharToMultiByte(CP_ACP, 0, localStatePath->Data(), -1, localStatePathA, 512, nullptr, nullptr);
-        LogMsg("UWP: Package install path = %s\n", installPathA);
-        LogMsg("UWP: LocalState path = %s\n", localStatePathA);
+        LogTrace("UWP: Package install path = %s\n", installPathA);
+        LogTrace("UWP: LocalState path = %s\n", localStatePathA);
 
         strncpy(g_PackageRootPath, installPathA, 511);
         g_PackageRootPath[511] = '\0';
@@ -735,7 +747,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
         wcsncpy_s(g_LocalStatePathW, _countof(g_LocalStatePathW), localStatePath->Data(), _TRUNCATE);
 
         SetCurrentDirectoryA(installPathA);
-        LogMsg("UWP: CWD set to package install path\n");
+        LogTrace("UWP: CWD set to package install path\n");
     }
 
     // Keep parity with Win64 behavior, but store in writable LocalState.
@@ -751,7 +763,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
     CoreApplication::Resuming +=
         ref new EventHandler<Platform::Object^>(this, &App::OnResuming);
 
-    LogMsg("UWP: Initialize() DONE\n");
+    LogTrace("UWP: Initialize() DONE\n");
 }
 
 // ============================================================================
@@ -759,7 +771,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
 // ============================================================================
 void App::SetWindow(CoreWindow^ window)
 {
-    LogMsg("UWP: SetWindow() START\n");
+    LogTrace("UWP: SetWindow() START\n");
     m_window = window;
 
     window->SizeChanged +=
@@ -779,14 +791,14 @@ void App::SetWindow(CoreWindow^ window)
         navMgr->BackRequested +=
             ref new EventHandler<Windows::UI::Core::BackRequestedEventArgs^>(
                 this, &App::OnBackRequested);
-        LogMsg("UWP: BackRequested handler registered (B button won't quit)\n");
+        LogTrace("UWP: BackRequested handler registered (B button won't quit)\n");
     }
     catch (Platform::Exception^ e)
     {
-        LogMsg("UWP: SystemNavigationManager not available (ignored): hr=0x%08X\n", e->HResult);
+        LogTrace("UWP: SystemNavigationManager not available (ignored): hr=0x%08X\n", e->HResult);
     }
 
-    LogMsg("UWP: SetWindow() DONE\n");
+    LogTrace("UWP: SetWindow() DONE\n");
 }
 
 // ============================================================================
@@ -794,17 +806,17 @@ void App::SetWindow(CoreWindow^ window)
 // ============================================================================
 void App::Load(Platform::String^ /*entryPoint*/)
 {
-    LogMsg("UWP: Load() START\n");
+    LogTrace("UWP: Load() START\n");
 
     // ---- Pre-load Iggy + Miles from the package (implicit load can fail on UWP) ----
     {
         HMODULE hIggy = LoadPackagedLibrary(L"iggy_w64.dll", 0);
         if (hIggy) {
-            LogMsg("UWP: iggy_w64.dll pre-loaded OK, handle=%p\n", hIggy);
+            LogTrace("UWP: iggy_w64.dll pre-loaded OK, handle=%p\n", hIggy);
         } else {
             LogMsg("UWP: *** iggy_w64.dll preload FAILED, err=%lu ***\n", GetLastError());
             hIggy = LoadLibraryW(L"iggy_w64.dll");
-            if (hIggy) LogMsg("UWP: iggy_w64.dll LoadLibraryW fallback OK\n");
+            if (hIggy) LogTrace("UWP: iggy_w64.dll LoadLibraryW fallback OK\n");
         }
     }
     // On UWP, implicit DLL loading can fail silently for DLLs bundled in the
@@ -824,16 +836,16 @@ void App::Load(Platform::String^ /*entryPoint*/)
             hMss = LoadPackagedLibrary(rel, 0);
             if (hMss)
             {
-                LogMsg("UWP: mss64.dll pre-loaded OK via %ls, handle=%p\n", rel, hMss);
+                LogTrace("UWP: mss64.dll pre-loaded OK via %ls, handle=%p\n", rel, hMss);
                 break;
             }
-            LogMsg("UWP: LoadPackagedLibrary(%ls) err=%lu\n", rel, GetLastError());
+            LogTrace("UWP: LoadPackagedLibrary(%ls) err=%lu\n", rel, GetLastError());
         }
         if (!hMss)
         {
             hMss = LoadLibraryW(L"mss64.dll");
             if (hMss)
-                LogMsg("UWP: mss64.dll LoadLibraryW fallback OK, handle=%p\n", hMss);
+                LogTrace("UWP: mss64.dll LoadLibraryW fallback OK, handle=%p\n", hMss);
             else
             {
                 DWORD err = GetLastError();
@@ -865,9 +877,9 @@ void App::Load(Platform::String^ /*entryPoint*/)
     Win64Xuid::ResolvePersistentXuid();
 
     // Create D3D11 device + CoreWindow swap chain
-    LogMsg("UWP: Calling CreateDeviceAndSwapChain...\n");
+    LogTrace("UWP: Calling CreateDeviceAndSwapChain...\n");
     CreateDeviceAndSwapChain();
-    LogMsg("UWP: Load() DONE\n");
+    LogTrace("UWP: Load() DONE\n");
 }
 
 // ============================================================================
@@ -878,10 +890,10 @@ static int  s_tickCount = 0;
 
 void App::Run()
 {
-    LogMsg("UWP: Run() START\n");
+    LogTrace("UWP: Run() START\n");
 
     // Initialise all game subsystems (same order as Win32 path)
-    LogMsg("UWP: Calling InitialiseMinecraftRuntime_UWP...\n");
+    LogTrace("UWP: Calling InitialiseMinecraftRuntime_UWP...\n");
     m_pMinecraft = InitialiseMinecraftRuntime_UWP();
     if (!m_pMinecraft)
     {
@@ -889,7 +901,7 @@ void App::Run()
         return;
     }
     m_gameInitialized = true;
-    LogMsg("UWP: Entering game loop\n");
+    LogTrace("UWP: Entering game loop\n");
 
     while (!m_windowClosed && !app.m_bShutdown)
     {
@@ -902,7 +914,7 @@ void App::Run()
             bool nowStarted = app.GetGameStarted();
             if (nowStarted && !s_wasGameStarted) {
                 LogMsg("UWP: *** GAME STARTED — world is now active! tick=%d ***\n", s_tickCount);
-                LogMsg("UWP: level=%p player=%p\n",
+                LogTrace("UWP: level=%p player=%p\n",
                        m_pMinecraft ? m_pMinecraft->level : nullptr,
                        m_pMinecraft ? m_pMinecraft->player.get() : nullptr);
                 g_logFile.flush();
@@ -919,7 +931,7 @@ void App::Run()
         }
     }
 
-    LogMsg("UWP: Run() exiting (windowClosed=%d shutdown=%d)\n",
+    LogTrace("UWP: Run() exiting (windowClosed=%d shutdown=%d)\n",
            m_windowClosed, app.m_bShutdown);
 }
 
@@ -983,14 +995,13 @@ void App::GameTick()
             if (!s_gameStartedInTick) {
                 s_gameStartedInTick = true;
                 s_gameStartedFrame = s_gameTickCount;
-                LogMsg("UWP: GAMETICK — GetGameStarted() first TRUE at tick %d\n", s_gameTickCount);
-                LogMsg("UWP: GAMETICK — level=%p player=%p\n",
+                LogTrace("UWP: GAMETICK — GetGameStarted() first TRUE at tick %d\n", s_gameTickCount);
+                LogTrace("UWP: GAMETICK — level=%p player=%p\n",
                        m_pMinecraft->level, m_pMinecraft->player.get());
-                g_logFile.flush();
             }
-            if (verbose) { LogMsg("UWP: GT[%d] calling run_middle()\n", s_gameTickCount); g_logFile.flush(); }
+            if (verbose) { LogTrace("UWP: GT[%d] calling run_middle()\n", s_gameTickCount); }
             m_pMinecraft->run_middle();
-            if (verbose) { LogMsg("UWP: GT[%d] run_middle() OK\n", s_gameTickCount); g_logFile.flush(); }
+            if (verbose) { LogTrace("UWP: GT[%d] run_middle() OK\n", s_gameTickCount); }
             app.SetAppPaused(
                 g_NetworkManager.IsLocalGame() &&
                 g_NetworkManager.GetPlayerCount() == 1 &&
@@ -1005,19 +1016,19 @@ void App::GameTick()
                 m_pMinecraft->tickAllConnections();
         }
 
-        if (verbose) { LogMsg("UWP: GT[%d] calling playMusicTick\n", s_gameTickCount); g_logFile.flush(); }
+        if (verbose) { LogTrace("UWP: GT[%d] calling playMusicTick\n", s_gameTickCount); }
         m_pMinecraft->soundEngine->playMusicTick();
 
-        if (verbose) { LogMsg("UWP: GT[%d] calling ui.tick()\n", s_gameTickCount); g_logFile.flush(); }
+        if (verbose) { LogTrace("UWP: GT[%d] calling ui.tick()\n", s_gameTickCount); }
         ui.tick();
-        if (verbose) { LogMsg("UWP: GT[%d] calling ui.render()\n", s_gameTickCount); g_logFile.flush(); }
+        if (verbose) { LogTrace("UWP: GT[%d] calling ui.render()\n", s_gameTickCount); }
         ui.render();
 
-        if (verbose) { LogMsg("UWP: GT[%d] calling ApplyGammaPostProcess\n", s_gameTickCount); g_logFile.flush(); }
+        if (verbose) { LogTrace("UWP: GT[%d] calling ApplyGammaPostProcess\n", s_gameTickCount); }
         m_pMinecraft->gameRenderer->ApplyGammaPostProcess();
 
         // Present
-        if (verbose) { LogMsg("UWP: GT[%d] calling Present\n", s_gameTickCount); g_logFile.flush(); }
+        if (verbose) { LogTrace("UWP: GT[%d] calling Present\n", s_gameTickCount); }
         RenderManager.Present();
 
         ui.CheckMenuDisplayed();
@@ -1054,7 +1065,7 @@ void App::GameTick()
 // ============================================================================
 void App::CreateDeviceAndSwapChain()
 {
-    LogMsg("UWP: CreateDeviceAndSwapChain() START\n");
+    LogTrace("UWP: CreateDeviceAndSwapChain() START\n");
     HRESULT hr = S_OK;
 
     // ---------- Device creation (no HWND needed) ----------
@@ -1099,7 +1110,7 @@ void App::CreateDeviceAndSwapChain()
             &g_featureLevel,
             context.GetAddressOf());
     }
-    LogMsg("UWP: D3D11CreateDevice hr=0x%08X featureLevel=0x%X\n", hr, g_featureLevel);
+    LogTrace("UWP: D3D11CreateDevice hr=0x%08X featureLevel=0x%X\n", hr, g_featureLevel);
     assert(SUCCEEDED(hr));
 
     // Store raw pointers in the globals the game expects
@@ -1115,7 +1126,7 @@ void App::CreateDeviceAndSwapChain()
     auto bounds = m_window->Bounds;
     int width  = static_cast<int>(bounds.Width);
     int height = static_cast<int>(bounds.Height);
-    LogMsg("UWP: CoreWindow bounds: %dx%d\n", width, height);
+    LogTrace("UWP: CoreWindow bounds: %dx%d\n", width, height);
     if (width  < 1920) width  = 1920;
     if (height < 1080) height = 1080;
     g_iScreenWidth  = 1920;
@@ -1144,35 +1155,35 @@ void App::CreateDeviceAndSwapChain()
     dxgiAdapter->GetParent(IID_PPV_ARGS(dxgiFactory.GetAddressOf()));
 
     ComPtr<IDXGISwapChain1> swapChain1;
-    LogMsg("UWP: Creating swap chain for CoreWindow...\n");
+    LogTrace("UWP: Creating swap chain for CoreWindow...\n");
     hr = dxgiFactory->CreateSwapChainForCoreWindow(
         g_pd3dDevice,
         reinterpret_cast<IUnknown*>(m_window),
         &scd,
         nullptr,
         swapChain1.GetAddressOf());
-    LogMsg("UWP: CreateSwapChainForCoreWindow hr=0x%08X\n", hr);
+    LogTrace("UWP: CreateSwapChainForCoreWindow hr=0x%08X\n", hr);
     if (FAILED(hr)) { LogMsg("UWP: FATAL — CreateSwapChainForCoreWindow FAILED\n"); return; }
 
     // The game uses IDXGISwapChain* — transfer ownership to global
-    LogMsg("UWP: Detaching swap chain to global...\n");
+    LogTrace("UWP: Detaching swap chain to global...\n");
     g_pSwapChain = swapChain1.Detach();
-    LogMsg("UWP: g_pSwapChain = %p\n", g_pSwapChain);
+    LogTrace("UWP: g_pSwapChain = %p\n", g_pSwapChain);
 
     // ---------- Render target view ----------
-    LogMsg("UWP: GetBuffer(0) for back buffer...\n");
+    LogTrace("UWP: GetBuffer(0) for back buffer...\n");
     ComPtr<ID3D11Texture2D> backBuffer;
     hr = g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf()));
-    LogMsg("UWP: GetBuffer hr=0x%08X backBuffer=%p\n", hr, backBuffer.Get());
+    LogTrace("UWP: GetBuffer hr=0x%08X backBuffer=%p\n", hr, backBuffer.Get());
     if (FAILED(hr)) { LogMsg("UWP: FATAL — GetBuffer FAILED\n"); return; }
 
-    LogMsg("UWP: CreateRenderTargetView...\n");
+    LogTrace("UWP: CreateRenderTargetView...\n");
     hr = g_pd3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &g_pRenderTargetView);
-    LogMsg("UWP: CreateRenderTargetView hr=0x%08X\n", hr);
+    LogTrace("UWP: CreateRenderTargetView hr=0x%08X\n", hr);
     if (FAILED(hr)) { LogMsg("UWP: FATAL — CreateRenderTargetView FAILED\n"); return; }
 
     // ---------- Depth-stencil ----------
-    LogMsg("UWP: Creating depth-stencil texture %dx%d...\n", width, height);
+    LogTrace("UWP: Creating depth-stencil texture %dx%d...\n", width, height);
     D3D11_TEXTURE2D_DESC depthDesc = {};
     depthDesc.Width      = width;
     depthDesc.Height     = height;
@@ -1184,23 +1195,23 @@ void App::CreateDeviceAndSwapChain()
     depthDesc.BindFlags  = D3D11_BIND_DEPTH_STENCIL;
 
     hr = g_pd3dDevice->CreateTexture2D(&depthDesc, nullptr, &g_pDepthStencilBuffer);
-    LogMsg("UWP: CreateTexture2D (depth) hr=0x%08X\n", hr);
+    LogTrace("UWP: CreateTexture2D (depth) hr=0x%08X\n", hr);
     if (FAILED(hr)) { LogMsg("UWP: FATAL — CreateTexture2D depth FAILED\n"); return; }
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
     dsvDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
     dsvDesc.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
     dsvDesc.Texture2D.MipSlice = 0;
-    LogMsg("UWP: CreateDepthStencilView...\n");
+    LogTrace("UWP: CreateDepthStencilView...\n");
     hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencilBuffer, &dsvDesc, &g_pDepthStencilView);
-    LogMsg("UWP: CreateDepthStencilView hr=0x%08X\n", hr);
+    LogTrace("UWP: CreateDepthStencilView hr=0x%08X\n", hr);
     if (FAILED(hr)) { LogMsg("UWP: FATAL — CreateDepthStencilView FAILED\n"); return; }
 
-    LogMsg("UWP: OMSetRenderTargets...\n");
+    LogTrace("UWP: OMSetRenderTargets...\n");
     g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
     // ---------- Viewport ----------
-    LogMsg("UWP: RSSetViewports %dx%d...\n", width, height);
+    LogTrace("UWP: RSSetViewports %dx%d...\n", width, height);
     D3D11_VIEWPORT vp = {};
     vp.Width    = static_cast<float>(width);
     vp.Height   = static_cast<float>(height);
@@ -1209,15 +1220,15 @@ void App::CreateDeviceAndSwapChain()
     g_pImmediateContext->RSSetViewports(1, &vp);
 
     // ---------- 4J RenderManager ----------
-    LogMsg("UWP: RenderManager.Initialise(device=%p, swapchain=%p)...\n", g_pd3dDevice, g_pSwapChain);
+    LogTrace("UWP: RenderManager.Initialise(device=%p, swapchain=%p)...\n", g_pd3dDevice, g_pSwapChain);
     RenderManager.Initialise(g_pd3dDevice, g_pSwapChain);
-    LogMsg("UWP: RenderManager.Initialise() DONE\n");
+    LogTrace("UWP: RenderManager.Initialise() DONE\n");
 
-    LogMsg("UWP: PostProcesser::Init()...\n");
+    LogTrace("UWP: PostProcesser::Init()...\n");
     PostProcesser::GetInstance().Init();
-    LogMsg("UWP: PostProcesser::Init() DONE\n");
+    LogTrace("UWP: PostProcesser::Init() DONE\n");
 
-    LogMsg("UWP: D3D11 device + CoreWindow swap chain created OK\n");
+    LogTrace("UWP: D3D11 device + CoreWindow swap chain created OK\n");
 }
 
 // ============================================================================

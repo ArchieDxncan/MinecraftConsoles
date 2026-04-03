@@ -34,6 +34,7 @@ private:
 	void StartReadJob(EFilterMode filter);
 	void StartWriteJob(std::vector<RegisterScore> scores);
 	void DeliverCompletedWork();
+	void DiscardPendingReadDelivery();
 
 	static unsigned int ColumnCountForType(EStatsType type);
 
