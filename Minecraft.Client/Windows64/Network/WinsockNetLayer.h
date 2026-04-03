@@ -65,12 +65,6 @@ struct Win64RemoteConnection
 class WinsockNetLayer
 {
 public:
-	enum eTransportMode
-	{
-		eTransportMode_Tcp = 0,
-		eTransportMode_PlayFabParty = 1
-	};
-
 	static bool Initialize();
 	static void Shutdown();
 
@@ -87,7 +81,6 @@ public:
 		eJoinState_Cancelled
 	};
 	static bool BeginJoinGame(const char* ip, int port);
-	static bool BeginJoinGameEx(const char* ip, int port, eTransportMode mode);
 	static void CancelJoinGame();
 	static eJoinState GetJoinState();
 	static int GetJoinAttempt();
@@ -130,18 +123,6 @@ public:
 	static std::vector<Win64LANSession> GetDiscoveredSessions();
 
 	static int GetHostPort() { return s_hostGamePort; }
-	static bool IsPlayFabPartyAvailable();
-	static bool IsPlayFabPartyRuntimeEnabled();
-	static eTransportMode GetJoinTransportMode() { return s_joinTransportMode; }
-
-	// PlayFab Party game path: allocate smallId + IQNet registration without a TCP socket.
-	static bool TryAllocateRemoteJoinSmallId(BYTE *outSmallId);
-	static void CompletePartyRemotePlayerSetup(BYTE smallId);
-	static void NotifyPartyRemoteDisconnected(BYTE smallId);
-	static void SetPartyJoinRejectReason(DisconnectPacket::eDisconnectReason reason);
-
-	// Lobby SearchData string_key5/6 — used by Party join handshake before TCP game connection.
-	static void SetJoinPartyExtras(const char *serializedNetworkDescriptor, const char *invitationId);
 
 private:
 	static DWORD WINAPI AcceptThreadProc(LPVOID param);
@@ -153,7 +134,6 @@ private:
 	static DWORD WINAPI JoinThreadProc(LPVOID param);
 
 	static HANDLE s_joinThread;
-	static eTransportMode s_joinTransportMode;
 	static volatile eJoinState s_joinState;
 	static volatile int s_joinAttempt;
 	static volatile bool s_joinCancel;

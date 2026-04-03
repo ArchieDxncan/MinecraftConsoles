@@ -402,8 +402,6 @@ source_group("Windows64/Leaderboards" FILES ${_MINECRAFT_CLIENT_WINDOWS_WINDOWS6
 set(_MINECRAFT_CLIENT_WINDOWS_WINDOWS64_PLAYFAB_LOBBY
   "${BASE_DIR}/Network/PlayFabLobbyWin64.cpp"
   "${BASE_DIR}/Network/PlayFabLobbyWin64.h"
-  "${BASE_DIR}/Network/PlayFabPartyTransport.cpp"
-  "${BASE_DIR}/Network/PlayFabPartyTransport.h"
 )
 source_group("Windows64/Network/PlayFabLobby" FILES ${_MINECRAFT_CLIENT_WINDOWS_WINDOWS64_PLAYFAB_LOBBY})
 

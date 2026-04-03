@@ -21,22 +21,11 @@ struct PlayFabListedGame
 	std::uint64_t sessionId = 0;
 	unsigned char playerCount = 1;
 	unsigned char maxPlayers = 8;
-	bool supportsParty = false;
-	int partyTransportVersion = 0;
-	std::string partySerializedNetworkDescriptor;
-	std::string partyInvitationId;
 };
 
 namespace PlayFabLobbyWin64
 {
 	bool IsEnabled();
-
-	// Current PlayFab entity credentials (for Party local user / auth). Thread-safe with lobby mutex.
-	bool GetPlayFabEntityCredentials(std::string *outEntityId, std::string *outEntityType, std::string *outEntityToken);
-
-	// Re-fetch entity token from PlayFab (/Authentication/GetEntityToken) using the session ticket.
-	// Entity tokens expire; call before Party AuthenticateLocalUser if the Party handshake took a long time.
-	bool RefreshPlayFabEntityToken();
 
 	// Call when Win64 host starts UDP LAN advertising for an online, joinable session.
 	void OnHostStartedAdvertising(bool onlineGame, bool isPrivate, unsigned char publicSlots, int gamePort,

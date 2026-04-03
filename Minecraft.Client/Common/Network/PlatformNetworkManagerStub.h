@@ -81,10 +81,6 @@ private:
 	bool			m_bJoinPending;
 	int				m_joinLocalUsersMask;
 	wchar_t			m_joinHostName[32];
-	char			m_joinHostIp[256];
-	int				m_joinHostPort;
-	DWORD			m_joinStartTick;
-	bool			m_joinPartyFallbackAttempted;
 	unsigned char	m_win64HostPublicSlots;
 	// LAN/PlayFab must not go live until GAME_PLAY + GetGameStarted; AcceptThread rejects TCP while SESSION_STARTING.
 	bool			m_win64PendingLanPlayFabAdvertise;

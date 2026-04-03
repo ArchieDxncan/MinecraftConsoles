@@ -62,24 +62,3 @@
 #ifndef MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX
 #define MINECRAFT_PLAYFAB_LOBBY_DISPLAY_PREFIX ""
 #endif
-
-// PlayFab Party integration (Win64/UWP):
-// - Compile-time gate for Party transport code paths.
-// - SDK availability is separate so code can compile cleanly when Party SDK is not linked.
-// - Runtime gate keeps rollout controllable without code changes.
-#ifndef MINECRAFT_PLAYFAB_PARTY_ENABLED
-#define MINECRAFT_PLAYFAB_PARTY_ENABLED 1
-#endif
-
-#ifndef MINECRAFT_PLAYFAB_PARTY_SDK_AVAILABLE
-#define MINECRAFT_PLAYFAB_PARTY_SDK_AVAILABLE 0
-#endif
-
-#ifndef MINECRAFT_PLAYFAB_PARTY_RUNTIME_ENABLED
-#define MINECRAFT_PLAYFAB_PARTY_RUNTIME_ENABLED 1
-#endif
-
-// Milliseconds to wait for Party connect before falling back to TCP join.
-#ifndef MINECRAFT_PLAYFAB_PARTY_CONNECT_TIMEOUT_MS
-#define MINECRAFT_PLAYFAB_PARTY_CONNECT_TIMEOUT_MS 3500
-#endif

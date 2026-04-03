@@ -76,11 +76,6 @@ typedef struct _GameSessionData
 	wchar_t hostName[XUSER_NAME_SIZE];
 	unsigned char playerCount;
 	unsigned char maxPlayers;
-	unsigned char transportType; // 0=tcp (default), 1=playfab-party
-	unsigned char transportVersion;
-	// PlayFab Party lobby payload (SearchData string_key5 / string_key6) when using Party transport.
-	char partySerializedNetworkDescriptor[512];
-	char partyInvitationId[256];
 
 	_GameSessionData()
 	{
@@ -95,10 +90,6 @@ typedef struct _GameSessionData
 		memset(hostName, 0, sizeof(hostName));
 		playerCount = 0;
 		maxPlayers = MINECRAFT_NET_MAX_PLAYERS;
-		transportType = 0;
-		transportVersion = 0;
-		memset(partySerializedNetworkDescriptor, 0, sizeof(partySerializedNetworkDescriptor));
-		memset(partyInvitationId, 0, sizeof(partyInvitationId));
 	}
 } GameSessionData;
 #endif
