@@ -17,8 +17,23 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 set(_MC_ROOT "${CMAKE_SOURCE_DIR}")
 set(_SAVED_CURRENT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Same as Minecraft.Client/CMakeLists.txt — UWP build does not use that file; keep Party detection in sync.
+set(MINECRAFT_PLAYFAB_PARTY_CPP_ROOT "" CACHE PATH
+  "Path to PlayFab.Party.Cpp root (overrides GDK search; needed for CI without GDK)")
+
 set(_PARTY_EXT_BASE "")
-if(DEFINED ENV{GameDKLatest} AND NOT "$ENV{GameDKLatest}" STREQUAL "")
+if(MINECRAFT_PLAYFAB_PARTY_CPP_ROOT AND EXISTS "${MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}")
+  set(_PARTY_EXT_BASE "${MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}")
+elseif(DEFINED ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT} AND NOT "$ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}" STREQUAL "")
+  file(TO_CMAKE_PATH "$ENV{MINECRAFT_PLAYFAB_PARTY_CPP_ROOT}" _PARTY_EXT_BASE)
+endif()
+
+set(_PARTY_BUNDLE_ROOT "${CMAKE_SOURCE_DIR}/Minecraft.Client/Windows64/ThirdParty/PlayFabParty")
+if(_PARTY_EXT_BASE STREQUAL "" AND EXISTS "${_PARTY_BUNDLE_ROOT}/Include/Party.h")
+  set(_PARTY_EXT_BASE "${_PARTY_BUNDLE_ROOT}")
+endif()
+
+if(_PARTY_EXT_BASE STREQUAL "" AND DEFINED ENV{GameDKLatest} AND NOT "$ENV{GameDKLatest}" STREQUAL "")
   set(_PARTY_GDK_BASE "$ENV{GameDKLatest}")
   if(EXISTS "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
     set(_PARTY_EXT_BASE "${_PARTY_GDK_BASE}/GRDK/ExtensionLibraries/PlayFab.Party.Cpp")
@@ -42,6 +57,11 @@ set(_PARTY_DLL "${_PARTY_EXT_BASE}/Redist/x64/Party.dll")
 set(_PARTY_AVAILABLE FALSE)
 if(EXISTS "${_PARTY_INCLUDE_DIR}/Party.h" AND EXISTS "${_PARTY_LIB}" AND EXISTS "${_PARTY_DLL}")
   set(_PARTY_AVAILABLE TRUE)
+endif()
+if(_PARTY_AVAILABLE)
+  message(STATUS "PlayFab Party SDK: yes (${_PARTY_EXT_BASE})")
+else()
+  message(STATUS "PlayFab Party SDK: not found — Party.lib/Party.dll copy disabled. Populate Windows64/ThirdParty/PlayFabParty, set MINECRAFT_PLAYFAB_PARTY_CPP_ROOT, or install GDK.")
 endif()
 
 # The source-list files use CMAKE_CURRENT_SOURCE_DIR for relative entries.
