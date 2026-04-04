@@ -173,7 +173,7 @@ void UIScene_Keyboard::tick()
 	// Sync our buffer from Flash so we pick up changes made via controller/on-screen buttons.
 	// Without this, switching between controller and keyboard would use stale text.
 	// In PC mode we own the buffer — skip sync to preserve cursor position.
-	if (!m_bPCMode)
+	if (!m_bPCMode && m_eKeyboardMode != C_4JInput::EKeyboardMode_Password)
 	{
 		const wchar_t* flashText = m_KeyboardTextInput.getLabel();
 		if (flashText)
@@ -417,8 +417,12 @@ void UIScene_Keyboard::KeyboardDonePressed()
 	// Use getLabel() here — this is a timer callback (not an Iggy callback) so it's safe.
 	// getLabel() reflects both physical keyboard input (pushed via setLabel) and
 	// on-screen button input (set directly by Flash ActionScript).
-	const wchar_t* finalText = m_KeyboardTextInput.getLabel();
-	app.DebugPrintf("UI Keyboard - DONE - [%ls]\n", finalText);
+	// in password mode the label is masked with asterisks, so use the real buffer instead
+	const wchar_t* finalText = (m_eKeyboardMode == C_4JInput::EKeyboardMode_Password)
+		? m_win64TextBuffer.c_str()
+		: m_KeyboardTextInput.getLabel();
+	app.DebugPrintf("UI Keyboard - DONE - [%ls]\n",
+		(m_eKeyboardMode == C_4JInput::EKeyboardMode_Password) ? L"<password>" : finalText);
 
 	// Store the typed text so callbacks can retrieve it via Win64_GetKeyboardText()
 	wcsncpy_s(g_Win64KeyboardResult, 256, finalText, _TRUNCATE);
