@@ -33,6 +33,13 @@ private:
 	wstring activeVariation;
 	wstring protocolVersion;
 
+	wstring accessToken;
+	wstring clientUid;
+	wstring clientUsername;
+	wstring preferredVariation;
+
+	vector<shared_ptr<AuthPacket>> pendingPackets;
+
 public:
 	wstring finalUid;
 	wstring finalUsername;
@@ -41,8 +48,10 @@ public:
 	~HandshakeManager();
 
 	void registerModule(AuthModule *module);
+	void setCredentials(const wstring &token, const wstring &uid, const wstring &username, const wstring &variation = L"");
 	shared_ptr<AuthPacket> handlePacket(const shared_ptr<AuthPacket> &packet);
 	shared_ptr<AuthPacket> createInitialPacket();
+	vector<shared_ptr<AuthPacket>> drainPendingPackets();
 
 	bool isComplete() const { return state == HandshakeState::COMPLETE; }
 	bool isFailed() const { return state == HandshakeState::FAILED; }

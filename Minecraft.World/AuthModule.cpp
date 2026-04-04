@@ -5,11 +5,6 @@
 #include "Common/vendor/nlohmann/json.hpp"
 #include <random>
 
-static string narrowStr(const wstring &w)
-{
-	return string(w.begin(), w.end());
-}
-
 static wstring generateServerId()
 {
 	static constexpr wchar_t hex[] = L"0123456789abcdef";

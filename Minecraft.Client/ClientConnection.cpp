@@ -56,6 +56,7 @@
 #include "DLCTexturePack.h"
 #include "..\Minecraft.World\HandshakeManager.h"
 #include "..\Minecraft.World\AuthModule.h"
+#include "AuthScreen.h"
 
 #ifdef _WINDOWS64
 #include "Xbox\Network\NetworkPlayerXbox.h"
@@ -4143,6 +4144,17 @@ void ClientConnection::beginAuth()
 	handshakeManager->registerModule(new KeypairOfflineAuthModule());
 	handshakeManager->registerModule(new OfflineAuthModule());
 
+	const auto &profiles = AuthProfileManager::getProfiles();
+	int idx = AuthProfileManager::getSelectedIndex();
+	if (idx >= 0 && idx < static_cast<int>(profiles.size()))
+	{
+		const auto &p = profiles[idx];
+		wstring variation;
+		if (p.type == AuthProfile::MICROSOFT) variation = L"mojang";
+		else if (p.type == AuthProfile::ELYBY) variation = L"elyby";
+		handshakeManager->setCredentials(p.token, p.uid, p.username, variation);
+	}
+
 	auto initial = handshakeManager->createInitialPacket();
 	if (initial) send(initial);
 }
@@ -4155,6 +4167,8 @@ void ClientConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
 	auto response = handshakeManager->handlePacket(packet);
 	if (response) send(response);
 
+	for (auto &p : handshakeManager->drainPendingPackets())
+		send(p);
 	if (handshakeManager->isComplete())
 	{
 		authComplete = true;

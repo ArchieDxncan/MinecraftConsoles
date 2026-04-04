@@ -27,6 +27,7 @@ UIScene_Keyboard::UIScene_Keyboard(int iPad, void *initData, UILayer *parentLaye
 	const wchar_t* defaultText = L"";
 
 	m_bPCMode = false;
+	m_eKeyboardMode = C_4JInput::EKeyboardMode_Default;
 	if (initData)
 	{
 		UIKeyboardInitData* kbData = static_cast<UIKeyboardInitData *>(initData);
@@ -36,6 +37,7 @@ UIScene_Keyboard::UIScene_Keyboard(int iPad, void *initData, UILayer *parentLaye
 		if (kbData->defaultText) defaultText      = kbData->defaultText;
 		m_win64MaxChars = kbData->maxChars;
 		m_bPCMode = kbData->pcMode;
+		m_eKeyboardMode = kbData->keyboardMode;
 	}
 
 	m_win64TextBuffer = defaultText;
@@ -276,7 +278,12 @@ void UIScene_Keyboard::tick()
 	}
 
 	if (changed)
-		m_KeyboardTextInput.setLabel(m_win64TextBuffer.c_str(), true /*instant*/);
+	{
+		if (m_eKeyboardMode == C_4JInput::EKeyboardMode_Password)
+			m_KeyboardTextInput.setLabel(wstring(m_win64TextBuffer.length(), L'*').c_str(), true);
+		else
+			m_KeyboardTextInput.setLabel(m_win64TextBuffer.c_str(), true /*instant*/);
+	}
 
 	if (m_bPCMode)
 	{

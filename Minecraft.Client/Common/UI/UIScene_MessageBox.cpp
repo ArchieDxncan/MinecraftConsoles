@@ -144,6 +144,8 @@ void UIScene_MessageBox::handlePress(F64 controlId, F64 childId)
 void UIScene_MessageBox::updateContent(const wchar_t *text)
 {
 	m_labelContent.init(text);
+	IggyDataValue result;
+	IggyPlayerCallMethodRS(getMovie(), &result, IggyPlayerRootPath(getMovie()), m_funcAutoResize, 0, nullptr);
 }
 
 bool UIScene_MessageBox::hasFocus(int iPad)

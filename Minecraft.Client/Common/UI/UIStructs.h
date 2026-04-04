@@ -295,8 +295,9 @@ typedef struct _UIKeyboardInitData
 	int(*callback)(LPVOID, const bool);
 	LPVOID lpParam;
 	bool pcMode; // When true, disables on-screen keyboard buttons (PC keyboard users only need the text field)
+	C_4JInput::EKeyboardMode keyboardMode;
 
-	_UIKeyboardInitData() : title(nullptr), defaultText(nullptr), maxChars(25), callback(nullptr), lpParam(nullptr), pcMode(false) {}
+	_UIKeyboardInitData() : title(nullptr), defaultText(nullptr), maxChars(25), callback(nullptr), lpParam(nullptr), pcMode(false), keyboardMode(C_4JInput::EKeyboardMode_Default) {}
 } UIKeyboardInitData;
 
 // Stores the text typed in UIScene_Keyboard so callbacks can retrieve it

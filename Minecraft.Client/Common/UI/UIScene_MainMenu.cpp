@@ -33,6 +33,9 @@ UIScene_MainMenu::UIScene_MainMenu(int iPad, void *initData, UILayer *parentLaye
 	m_eAction=eAction_None;
 	m_bIgnorePress=false;
 
+	// auto-apply saved auth profile on startup
+	AuthProfileManager::load();
+	AuthProfileManager::applySelectedProfile();
 
 	m_buttons[static_cast<int>(eControl_PlayGame)].init(IDS_PLAY_GAME,eControl_PlayGame);
 
@@ -455,6 +458,41 @@ void UIScene_MainMenu::RunAction(int iPad)
 }
 
 static int s_authPad = 0;
+static void *s_authParam = nullptr;
+static wstring s_elybyUsername;
+static bool s_authFlowActive = false;
+
+static wstring ReadKeyboardText(int maxLen)
+{
+	vector<uint16_t> buf(maxLen, 0);
+#ifdef _WINDOWS64
+	Win64_GetKeyboardText(buf.data(), maxLen);
+#else
+	InputManager.GetText(buf.data());
+#endif
+	wstring result;
+	for (int i = 0; i < maxLen && buf[i]; i++)
+		result += static_cast<wchar_t>(buf[i]);
+	return result;
+}
+
+static void ShowAuthMessageBox(int iPad, const wchar_t *title, const wchar_t *text,
+	const wchar_t **options, int optionCount,
+	int(*func)(LPVOID, int, C4JStorage::EMessageResult), void *lpParam, bool keepOpen = false)
+{
+	MessageBoxInfo param = {};
+	param.uiOptionC = optionCount;
+	param.dwPad = iPad;
+	param.Func = func;
+	param.lpParam = lpParam;
+	param.rawTitle = title;
+	param.rawText = text;
+	param.rawOptions = options;
+	ui.NavigateToScene(iPad, eUIScene_MessageBox, &param, eUILayer_Alert, eUIGroup_Fullscreen);
+	if (keepOpen)
+		if (auto *scene = ui.FindScene(eUIScene_MessageBox))
+			static_cast<UIScene_MessageBox *>(scene)->setKeepOpen(true);
+}
 
 static const wchar_t *BuildAuthProfileText()
 {
@@ -484,34 +522,18 @@ static const wchar_t *BuildAuthProfileText()
 void UIScene_MainMenu::ShowAuthMenu(int iPad, void *pClass)
 {
 	s_authPad = iPad;
+	s_authParam = pClass;
 
 	static const wchar_t *authOptions[] = { L"Next", L"Use", L"Add", L"Back" };
-	MessageBoxInfo param = {};
-	param.uiOptionC = 4;
-	param.dwPad = iPad;
-	param.Func = &UIScene_MainMenu::AuthMenuReturned;
-	param.lpParam = pClass;
-	param.rawTitle = L"Authentication";
-	param.rawText = BuildAuthProfileText();
-	param.rawOptions = authOptions;
-	ui.NavigateToScene(iPad, eUIScene_MessageBox, &param, eUILayer_Alert, eUIGroup_Fullscreen);
-	UIScene *scene = ui.FindScene(eUIScene_MessageBox);
-	if (scene)
-		static_cast<UIScene_MessageBox *>(scene)->setKeepOpen(true);
+	ShowAuthMessageBox(iPad, L"Authentication", BuildAuthProfileText(),
+		authOptions, 4, &UIScene_MainMenu::AuthMenuReturned, pClass, true);
 }
 
 void UIScene_MainMenu::ShowAuthAddMenu(int iPad, void *pClass)
 {
 	static const wchar_t *addOptions[] = { L"Microsoft Auth", L"Ely.by Auth", L"Add Offline User", L"Back" };
-	MessageBoxInfo param = {};
-	param.uiOptionC = 4;
-	param.dwPad = iPad;
-	param.Func = &UIScene_MainMenu::AuthAddMenuReturned;
-	param.lpParam = pClass;
-	param.rawTitle = L"Add Profile";
-	param.rawText = L"Select an auth type";
-	param.rawOptions = addOptions;
-	ui.NavigateToScene(iPad, eUIScene_MessageBox, &param, eUILayer_Alert, eUIGroup_Fullscreen);
+	ShowAuthMessageBox(iPad, L"Add Profile", L"Select an auth type",
+		addOptions, 4, &UIScene_MainMenu::AuthAddMenuReturned, pClass);
 }
 
 int UIScene_MainMenu::AuthMenuReturned(LPVOID lpParam, int iPad, const C4JStorage::EMessageResult result)
@@ -534,6 +556,7 @@ int UIScene_MainMenu::AuthMenuReturned(LPVOID lpParam, int iPad, const C4JStorag
 	{
 		ui.NavigateBack(iPad);
 		AuthProfileManager::applySelectedProfile();
+		AuthProfileManager::save();
 		break;
 	}
 	case C4JStorage::EMessage_ResultThirdOption:
@@ -556,13 +579,31 @@ int UIScene_MainMenu::AuthAddMenuReturned(LPVOID lpParam, int iPad, const C4JSto
 	switch (result)
 	{
 	case C4JStorage::EMessage_ResultAccept:
-		AuthProfileManager::addProfile(AuthProfile::MICROSOFT, L"Player");
-		ShowAuthMenu(iPad, lpParam);
+	{
+		AuthFlow::startMicrosoft();
+		s_authFlowActive = true;
+
+		static const wchar_t *cancelOptions[] = { L"Cancel" };
+		ShowAuthMessageBox(iPad, L"Microsoft Login", L"Starting...",
+			cancelOptions, 1, &UIScene_MainMenu::AuthMsFlowReturned, lpParam, true);
 		break;
+	}
 	case C4JStorage::EMessage_ResultDecline:
-		AuthProfileManager::addProfile(AuthProfile::ELYBY, L"Player");
-		ShowAuthMenu(iPad, lpParam);
+	{
+#ifdef _WINDOWS64
+		UIKeyboardInitData kbData;
+		kbData.title = L"Ely.by Username";
+		kbData.defaultText = L"";
+		kbData.maxChars = 64;
+		kbData.callback = &UIScene_MainMenu::ElyByUsernameReturned;
+		kbData.lpParam = lpParam;
+		kbData.pcMode = g_KBMInput.IsKBMActive();
+		ui.NavigateToScene(iPad, eUIScene_Keyboard, &kbData);
+#else
+		InputManager.RequestKeyboard(L"Ely.by Username", L"", (DWORD)0, 64, &UIScene_MainMenu::ElyByUsernameReturned, lpParam, C_4JInput::EKeyboardMode_Default);
+#endif
 		break;
+	}
 	case C4JStorage::EMessage_ResultThirdOption:
 	{
 #ifdef _WINDOWS64
@@ -586,24 +627,72 @@ int UIScene_MainMenu::AuthAddMenuReturned(LPVOID lpParam, int iPad, const C4JSto
 	return 0;
 }
 
+int UIScene_MainMenu::AuthMsFlowReturned(LPVOID lpParam, int iPad, const C4JStorage::EMessageResult result)
+{
+	s_authFlowActive = false;
+	AuthFlow::reset();
+	ui.NavigateBack(iPad);
+	ShowAuthMenu(iPad, lpParam);
+	return 0;
+}
+
+int UIScene_MainMenu::ElyByUsernameReturned(LPVOID lpParam, const bool bRes)
+{
+	if (bRes)
+	{
+		wstring name = ReadKeyboardText(128);
+		if (!name.empty())
+		{
+			s_elybyUsername = std::move(name);
+#ifdef _WINDOWS64
+			UIKeyboardInitData kbData;
+			kbData.title = L"Ely.by Password";
+			kbData.defaultText = L"";
+			kbData.maxChars = 128;
+			kbData.callback = &UIScene_MainMenu::ElyByPasswordReturned;
+			kbData.lpParam = lpParam;
+			kbData.pcMode = g_KBMInput.IsKBMActive();
+			kbData.keyboardMode = C_4JInput::EKeyboardMode_Password;
+			ui.NavigateToScene(s_authPad, eUIScene_Keyboard, &kbData);
+#else
+			InputManager.RequestKeyboard(L"Ely.by Password", L"", (DWORD)0, 128, &UIScene_MainMenu::ElyByPasswordReturned, lpParam, C_4JInput::EKeyboardMode_Password);
+#endif
+			return 0;
+		}
+	}
+	ShowAuthMenu(s_authPad, lpParam);
+	return 0;
+}
+
+int UIScene_MainMenu::ElyByPasswordReturned(LPVOID lpParam, const bool bRes)
+{
+	if (bRes)
+	{
+		wstring pass = ReadKeyboardText(256);
+		if (!pass.empty())
+		{
+			AuthFlow::startElyBy(s_elybyUsername, pass);
+			s_authFlowActive = true;
+
+			static const wchar_t *waitOptions[] = { L"Cancel" };
+			ShowAuthMessageBox(s_authPad, L"Ely.by Login", L"Authenticating...",
+				waitOptions, 1, &UIScene_MainMenu::AuthMsFlowReturned, lpParam, true);
+
+			SecureZeroMemory(pass.data(), pass.size() * sizeof(wchar_t));
+			return 0;
+		}
+	}
+	ShowAuthMenu(s_authPad, lpParam);
+	return 0;
+}
+
 int UIScene_MainMenu::AuthKeyboardReturned(LPVOID lpParam, const bool bRes)
 {
 	if (bRes)
 	{
-		uint16_t ui16Text[128];
-		ZeroMemory(ui16Text, 128 * sizeof(uint16_t));
-#ifdef _WINDOWS64
-		Win64_GetKeyboardText(ui16Text, 128);
-#else
-		InputManager.GetText(ui16Text);
-#endif
-		if (ui16Text[0] != 0)
-		{
-			wchar_t wName[128] = {};
-			for (int k = 0; k < 127 && ui16Text[k]; k++)
-				wName[k] = static_cast<wchar_t>(ui16Text[k]);
-			AuthProfileManager::addProfile(AuthProfile::OFFLINE, wName);
-		}
+		wstring name = ReadKeyboardText(128);
+		if (!name.empty())
+			AuthProfileManager::addProfile(AuthProfile::OFFLINE, name);
 	}
 	ShowAuthMenu(s_authPad, lpParam);
 	return 0;
@@ -2016,6 +2105,54 @@ void UIScene_MainMenu::RunUnlockOrDLC(int iPad)
 void UIScene_MainMenu::tick()
 {
 	UIScene::tick();
+	if (s_authFlowActive)
+	{
+		auto flowState = AuthFlow::getState();
+		auto *scene = ui.FindScene(eUIScene_MessageBox);
+		auto *msgBox = scene ? static_cast<UIScene_MessageBox *>(scene) : nullptr;
+
+		switch (flowState)
+		{
+		case AuthFlowState::WAITING_FOR_USER:
+		case AuthFlowState::POLLING:
+		{
+			if (msgBox && !AuthFlow::getUserCode().empty())
+			{
+				static wstring statusText;
+				statusText = L"Go to: " + AuthFlow::getVerificationUri() + L"\nEnter code: " + AuthFlow::getUserCode();
+				if (flowState == AuthFlowState::POLLING) statusText += L"\n\nWaiting for login...";
+				msgBox->updateContent(statusText.c_str());
+			}
+			break;
+		}
+		case AuthFlowState::EXCHANGING:
+		{
+			if (msgBox) msgBox->updateContent(L"Exchanging tokens...");
+			break;
+		}
+		case AuthFlowState::COMPLETE:
+		{
+			s_authFlowActive = false;
+			const auto &r = AuthFlow::getResult();
+			auto type = AuthFlow::getUserCode().empty() ? AuthProfile::ELYBY : AuthProfile::MICROSOFT;
+			AuthProfileManager::addProfile(type, r.username, r.uuid, r.accessToken);
+			AuthFlow::reset();
+			if (scene) ui.NavigateBack(s_authPad);
+			ShowAuthMenu(s_authPad, s_authParam);
+			break;
+		}
+		case AuthFlowState::FAILED:
+		{
+			s_authFlowActive = false;
+			const auto &r = AuthFlow::getResult();
+			if (msgBox) msgBox->updateContent(r.error.empty() ? L"Authentication failed" : r.error.c_str());
+			AuthFlow::reset();
+			break;
+		}
+		default:
+			break;
+		}
+	}
 
 	if ( (eNavigateWhenReady >= 0) )
 	{

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct HttpResponse
 {
@@ -11,6 +12,6 @@ struct HttpResponse
 class HttpClient
 {
 public:
-	static HttpResponse get(const std::string &url);
-	static HttpResponse post(const std::string &url, const std::string &body, const std::string &contentType = "application/json");
+	static HttpResponse get(const std::string &url, const std::vector<std::string> &headers = {});
+	static HttpResponse post(const std::string &url, const std::string &body, const std::string &contentType = "application/json", const std::vector<std::string> &headers = {});
 };

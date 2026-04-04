@@ -1,8 +1,18 @@
 #include "stdafx.h"
 #include "HandshakeManager.h"
 #include "AuthModule.h"
+#include "HttpClient.h"
+#include "StringHelpers.h"
+#include "Common/vendor/nlohmann/json.hpp"
 
 static constexpr auto PROTOCOL_VERSION = L"1.0";
+
+static wstring getField(const vector<pair<wstring, wstring>> &fields, const wchar_t *key)
+{
+	for (const auto &[k, v] : fields)
+		if (k == key) return v;
+	return {};
+}
 
 HandshakeManager::HandshakeManager(bool isServer)
 	: isServer(isServer), state(HandshakeState::IDLE), activeModule(nullptr)
@@ -18,6 +28,21 @@ HandshakeManager::~HandshakeManager()
 void HandshakeManager::registerModule(AuthModule *module)
 {
 	modules[module->schemeName()] = module;
+}
+
+void HandshakeManager::setCredentials(const wstring &token, const wstring &uid, const wstring &username, const wstring &variation)
+{
+	accessToken = token;
+	clientUid = uid;
+	clientUsername = username;
+	preferredVariation = variation;
+}
+
+vector<shared_ptr<AuthPacket>> HandshakeManager::drainPendingPackets()
+{
+	vector<shared_ptr<AuthPacket>> out;
+	out.swap(pendingPackets);
+	return out;
 }
 
 shared_ptr<AuthPacket> HandshakeManager::handlePacket(const shared_ptr<AuthPacket> &packet)
@@ -37,10 +62,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 	{
 	case AuthStage::ANNOUNCE_VERSION:
 	{
-		protocolVersion = L"";
-		for (const auto &[k, v] : packet->fields)
-			if (k == L"version") protocolVersion = v;
-
+		protocolVersion = getField(packet->fields, L"version");
 		if (protocolVersion != PROTOCOL_VERSION)
 			return fail();
 
@@ -58,11 +80,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 
 	case AuthStage::ACCEPT_SCHEME:
 	{
-		wstring variation;
-		for (const auto &[k, v] : packet->fields)
-			if (k == L"variation") variation = v;
-
-		activeVariation = variation;
+		activeVariation = getField(packet->fields, L"variation");
 		state = HandshakeState::SETTINGS_SENT;
 		auto settings = activeModule->getSettings(activeVariation);
 		return makePacket(AuthStage::SCHEME_SETTINGS, std::move(settings));
@@ -87,14 +105,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 
 	case AuthStage::AUTH_DONE:
 	{
-		wstring uid, username;
-		for (const auto &[k, v] : packet->fields)
-		{
-			if (k == L"uid") uid = v;
-			else if (k == L"username") username = v;
-		}
-
-		if (uid != finalUid || username != finalUsername)
+		if (getField(packet->fields, L"uid") != finalUid || getField(packet->fields, L"username") != finalUsername)
 			return fail();
 
 		state = HandshakeState::IDENTITY_ASSIGNED;
@@ -106,14 +117,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 
 	case AuthStage::CONFIRM_IDENTITY:
 	{
-		wstring uid, username;
-		for (const auto &[k, v] : packet->fields)
-		{
-			if (k == L"uid") uid = v;
-			else if (k == L"username") username = v;
-		}
-
-		if (uid != finalUid || username != finalUsername)
+		if (getField(packet->fields, L"uid") != finalUid || getField(packet->fields, L"username") != finalUsername)
 			return fail();
 
 		state = HandshakeState::COMPLETE;
@@ -131,12 +135,8 @@ shared_ptr<AuthPacket> HandshakeManager::handleClient(const shared_ptr<AuthPacke
 	{
 	case AuthStage::DECLARE_SCHEME:
 	{
-		wstring scheme;
-		for (const auto &[k, v] : packet->fields)
-		{
-			if (k == L"version") protocolVersion = v;
-			else if (k == L"scheme") scheme = v;
-		}
+		protocolVersion = getField(packet->fields, L"version");
+		wstring scheme = getField(packet->fields, L"scheme");
 
 		if (protocolVersion != PROTOCOL_VERSION)
 			return fail();
@@ -148,7 +148,11 @@ shared_ptr<AuthPacket> HandshakeManager::handleClient(const shared_ptr<AuthPacke
 		activeModule = it->second;
 
 		auto variations = activeModule->supportedVariations();
-		activeVariation = variations.empty() ? L"" : variations[0];
+		if (!preferredVariation.empty() &&
+			std::find(variations.begin(), variations.end(), preferredVariation) != variations.end())
+			activeVariation = preferredVariation;
+		else
+			activeVariation = variations.empty() ? L"" : variations[0];
 
 		state = HandshakeState::SCHEME_ACCEPTED;
 		return makePacket(AuthStage::ACCEPT_SCHEME, {{L"variation", activeVariation}});
@@ -156,17 +160,38 @@ shared_ptr<AuthPacket> HandshakeManager::handleClient(const shared_ptr<AuthPacke
 
 	case AuthStage::SCHEME_SETTINGS:
 	{
+		wstring serverId = getField(packet->fields, L"serverId");
+		wstring sessionEndpoint = getField(packet->fields, L"sessionEndpoint");
+		wstring scheme(activeModule->schemeName());
+		if (scheme == L"mcconsoles:session" && !accessToken.empty())
+		{
+			nlohmann::json body = {
+				{"accessToken", narrowStr(accessToken)},
+				{"selectedProfile", narrowStr(clientUid)},
+				{"serverId", narrowStr(serverId)}
+			};
+			auto resp = HttpClient::post(narrowStr(sessionEndpoint) + "/session/minecraft/join", body.dump());
+			if (resp.statusCode != 204)
+				return fail();
+		}
+
 		state = HandshakeState::AUTH_IN_PROGRESS;
-		return makePacket(AuthStage::BEGIN_AUTH);
+		pendingPackets.push_back(makePacket(AuthStage::BEGIN_AUTH));
+		pendingPackets.push_back(makePacket(AuthStage::AUTH_DATA, {
+			{L"uid", clientUid},
+			{L"username", clientUsername}
+		}));
+		pendingPackets.push_back(makePacket(AuthStage::AUTH_DONE, {
+			{L"uid", clientUid},
+			{L"username", clientUsername}
+		}));
+		return nullptr;
 	}
 
 	case AuthStage::ASSIGN_IDENTITY:
 	{
-		for (const auto &[k, v] : packet->fields)
-		{
-			if (k == L"uid") finalUid = v;
-			else if (k == L"username") finalUsername = v;
-		}
+		finalUid = getField(packet->fields, L"uid");
+		finalUsername = getField(packet->fields, L"username");
 
 		state = HandshakeState::IDENTITY_CONFIRMED;
 		return makePacket(AuthStage::CONFIRM_IDENTITY, {

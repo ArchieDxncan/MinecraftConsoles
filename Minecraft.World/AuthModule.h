@@ -6,6 +6,11 @@ using namespace std;
 #include <utility>
 #include <unordered_map>
 
+inline string narrowStr(const wstring &w)
+{
+	return string(w.begin(), w.end());
+}
+
 class AuthModule
 {
 public:

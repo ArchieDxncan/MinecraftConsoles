@@ -150,6 +150,9 @@ private:
 	static int AuthMenuReturned(void *pParam, int iPad, C4JStorage::EMessageResult result);
 	static int AuthAddMenuReturned(void *pParam, int iPad, C4JStorage::EMessageResult result);
 	static int AuthKeyboardReturned(LPVOID lpParam, const bool bRes);
+	static int AuthMsFlowReturned(void *pParam, int iPad, C4JStorage::EMessageResult result);
+	static int ElyByUsernameReturned(LPVOID lpParam, const bool bRes);
+	static int ElyByPasswordReturned(LPVOID lpParam, const bool bRes);
 
 	static void LoadTrial();
 
