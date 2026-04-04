@@ -22,6 +22,7 @@ namespace ServerRuntime
 		struct BannedPlayerEntry
 		{
 			std::string xuid;
+			std::string uuid;
 			std::string name;
 			BanMetadata metadata;
 		};

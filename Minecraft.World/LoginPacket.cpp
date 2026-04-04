@@ -111,6 +111,8 @@ void LoginPacket::read(DataInputStream *dis) //throws IOException
 	maxPlayers = dis->readByte();
 	m_offlineXuid = dis->readPlayerUID();
 	m_onlineXuid = dis->readPlayerUID();
+	m_gameUuid.msb = dis->readLong();
+	m_gameUuid.lsb = dis->readLong();
 	m_friendsOnlyUGC = dis->readBoolean();
 	m_ugcPlayersVersion = dis->readInt();
 	difficulty = dis->readByte();
@@ -150,6 +152,8 @@ void LoginPacket::write(DataOutputStream *dos) //throws IOException
 	dos->writeByte(maxPlayers);
 	dos->writePlayerUID(m_offlineXuid);
 	dos->writePlayerUID(m_onlineXuid);
+	dos->writeLong(m_gameUuid.msb);
+	dos->writeLong(m_gameUuid.lsb);
 	dos->writeBoolean(m_friendsOnlyUGC);
 	dos->writeInt(m_ugcPlayersVersion);
 	dos->writeByte(difficulty);

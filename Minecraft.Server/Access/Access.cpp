@@ -371,7 +371,10 @@ namespace ServerRuntime
 			}
 
 			auto whitelistManager = std::make_shared<WhitelistManager>(*current);
-			const WhitelistedPlayerEntry entry = { formatted, name, metadata };
+			WhitelistedPlayerEntry entry;
+			entry.xuid = formatted;
+			entry.name = name;
+			entry.metadata = metadata;
 			if (!whitelistManager->AddPlayer(entry))
 			{
 				return false;

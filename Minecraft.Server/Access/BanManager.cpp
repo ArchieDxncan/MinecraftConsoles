@@ -199,6 +199,7 @@ namespace ServerRuntime
 				}
 
 				AccessStorageUtils::TryGetStringField(object, "name", &entry.name);
+				AccessStorageUtils::TryGetStringField(object, "uuid", &entry.uuid);
 				AccessStorageUtils::TryGetStringField(object, "created", &entry.metadata.created);
 				AccessStorageUtils::TryGetStringField(object, "source", &entry.metadata.source);
 				AccessStorageUtils::TryGetStringField(object, "expires", &entry.metadata.expires);
@@ -302,6 +303,8 @@ namespace ServerRuntime
 			{
 				OrderedJson object = OrderedJson::object();
 				object["xuid"] = AccessStorageUtils::NormalizeXuid(entry.xuid);
+				if (!entry.uuid.empty())
+					object["uuid"] = entry.uuid;
 				object["name"] = entry.name;
 				object["created"] = entry.metadata.created;
 				object["source"] = entry.metadata.source;

@@ -2,6 +2,7 @@
 using namespace std;
 
 #include "Packet.h"
+#include "UUID.h"
 class LevelType;
 
 class LoginPacket : public Packet, public enable_shared_from_this<LoginPacket>
@@ -12,6 +13,7 @@ public:
 	int64_t seed;
 	char dimension;
 	PlayerUID m_offlineXuid, m_onlineXuid;			// 4J Added
+	GameUUID m_gameUuid;
 	char difficulty;	// 4J Added
 	bool m_friendsOnlyUGC; // 4J Added
 	DWORD m_ugcPlayersVersion; // 4J Added

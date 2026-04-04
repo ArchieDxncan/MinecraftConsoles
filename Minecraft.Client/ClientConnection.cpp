@@ -877,6 +877,7 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 	player->yRotp = packet->yRot;
 	player->yHeadRot = packet->yHeadRot * 360 / 256.0f;
 	player->setXuid(packet->xuid);
+	player->setGameUUID(packet->gameUuid);
 
 #ifdef _DURANGO
 	// On Durango request player display name from network manager
