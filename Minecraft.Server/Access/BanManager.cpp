@@ -8,6 +8,7 @@
 #include "..\Common\StringUtils.h"
 #include "..\ServerLogger.h"
 #include "Common/vendor/nlohmann/json.hpp"
+#include "..\..\Minecraft.World\UUID.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -121,9 +122,19 @@ namespace ServerRuntime
 			{
 				return false;
 			}
+			bool dirty = false;
+			for (auto &entry : players)
+			{
+				if (!entry.uuid.empty() || entry.xuid.empty()) continue;
+				try {
+					uint64_t xuid = std::stoull(entry.xuid, nullptr, 0);
+					if (xuid) { entry.uuid = GameUUID::fromXuid(xuid).toString(); dirty = true; }
+				} catch (...) {}
+			}
 
 			m_bannedPlayers.swap(players);
 			m_bannedIps.swap(ips);
+			if (dirty) Save();
 			return true;
 		}
 
