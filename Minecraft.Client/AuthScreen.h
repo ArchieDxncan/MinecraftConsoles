@@ -11,6 +11,7 @@ struct AuthProfile
 	wstring uid;
 	wstring username;
 	wstring token;
+	wstring clientToken;
 };
 
 class AuthProfileManager
@@ -22,7 +23,7 @@ private:
 public:
 	static void load();
 	static void save();
-	static void addProfile(AuthProfile::Type type, const wstring &username, const wstring &uid = L"", const wstring &token = L"");
+	static void addProfile(AuthProfile::Type type, const wstring &username, const wstring &uid = L"", const wstring &token = L"", const wstring &clientToken = L"");
 	static void removeSelectedProfile();
 	static bool applySelectedProfile();
 
@@ -36,6 +37,7 @@ struct AuthResult
 	wstring username;
 	wstring uuid;
 	wstring accessToken;
+	wstring clientToken;
 	wstring error;
 };
 

@@ -12,6 +12,11 @@
 using json = nlohmann::json;
 static constexpr auto PROFILES_FILE = L"auth_profiles.dat";
 static constexpr auto MS_CLIENT_ID = "00000000441cc96b";
+static json parseResponse(const HttpResponse &resp, int expectedStatus = 200);
+static bool msTokenExchange(const string &msAccessToken, string &mcToken, string &profId, string &profName);
+static bool msRefreshOAuth(const string &refreshToken, string &newAccessToken, string &newRefreshToken);
+static bool elybyValidate(const string &accessToken, const string &clientToken);
+static bool elybyRefresh(const string &accessToken, const string &clientToken, string &newAccessToken, string &newClientToken);
 
 vector<AuthProfile> AuthProfileManager::profiles;
 int AuthProfileManager::selectedProfile = -1;
@@ -45,6 +50,7 @@ void AuthProfileManager::load()
 		p.uid = readWstr();
 		p.username = readWstr();
 		p.token = readWstr();
+		p.clientToken = readWstr();
 		profiles.push_back(std::move(p));
 	}
 
@@ -75,16 +81,17 @@ void AuthProfileManager::save()
 		writeWstr(p.uid);
 		writeWstr(p.username);
 		writeWstr(p.token);
+		writeWstr(p.clientToken);
 	}
 
 	int32_t idx = static_cast<int32_t>(selectedProfile);
 	file.write(reinterpret_cast<const char *>(&idx), sizeof(idx));
 }
 
-void AuthProfileManager::addProfile(AuthProfile::Type type, const wstring &username, const wstring &uid, const wstring &token)
+void AuthProfileManager::addProfile(AuthProfile::Type type, const wstring &username, const wstring &uid, const wstring &token, const wstring &clientToken)
 {
 	wstring finalUid = uid.empty() ? L"offline_" + username : uid;
-	profiles.push_back({type, finalUid, username, token});
+	profiles.push_back({type, finalUid, username, token, clientToken});
 	selectedProfile = static_cast<int>(profiles.size()) - 1;
 	save();
 }
@@ -105,7 +112,44 @@ bool AuthProfileManager::applySelectedProfile()
 	if (selectedProfile < 0 || selectedProfile >= static_cast<int>(profiles.size()))
 		return false;
 
-	const auto &p = profiles[selectedProfile];
+	auto &p = profiles[selectedProfile];
+
+	if (p.type == AuthProfile::MICROSOFT && !p.clientToken.empty())
+	{
+		auto checkResp = HttpClient::get("https://api.minecraftservices.com/minecraft/profile",
+			{"Authorization: Bearer " + narrowStr(p.token)});
+
+		if (checkResp.statusCode != 200)
+		{
+			string newMsAccess, newMsRefresh;
+			if (msRefreshOAuth(narrowStr(p.clientToken), newMsAccess, newMsRefresh))
+			{
+				string mcToken, profId, profName;
+				if (msTokenExchange(newMsAccess, mcToken, profId, profName))
+				{
+					p.token = convStringToWstring(mcToken);
+					p.clientToken = convStringToWstring(newMsRefresh);
+					p.username = convStringToWstring(profName);
+					p.uid = convStringToWstring(profId);
+					save();
+				}
+			}
+		}
+	}
+	else if (p.type == AuthProfile::ELYBY && !p.token.empty())
+	{
+		if (!elybyValidate(narrowStr(p.token), narrowStr(p.clientToken)))
+		{
+			string newAccess, newClient;
+			if (elybyRefresh(narrowStr(p.token), narrowStr(p.clientToken), newAccess, newClient))
+			{
+				p.token = convStringToWstring(newAccess);
+				if (!newClient.empty()) p.clientToken = convStringToWstring(newClient);
+				save();
+			}
+		}
+	}
+
 	auto *mc = Minecraft::GetInstance();
 
 	if (mc->user)
@@ -161,15 +205,94 @@ void AuthFlow::startElyBy(const wstring &username, const wstring &password)
 
 static void authFail(AuthResult &result, std::atomic<AuthFlowState> &state, const wchar_t *msg)
 {
-	result = {false, {}, {}, {}, msg};
+	result = {false, {}, {}, {}, {}, msg};
 	state = AuthFlowState::FAILED;
 }
 
 // parse json response body, return discarded json on bad status
-static json parseResponse(const HttpResponse &resp, int expectedStatus = 200)
+static json parseResponse(const HttpResponse &resp, int expectedStatus)
 {
 	if (resp.statusCode != expectedStatus) return json::value_t::discarded;
 	return json::parse(resp.body, nullptr, false);
+}
+static bool msTokenExchange(const string &msAccessToken, string &mcToken, string &profId, string &profName)
+{
+	auto xblResp = HttpClient::post("https://user.auth.xboxlive.com/user/authenticate", json({
+		{"Properties", {{"AuthMethod", "RPS"}, {"SiteName", "user.auth.xboxlive.com"}, {"RpsTicket", msAccessToken}}},
+		{"RelyingParty", "http://auth.xboxlive.com"},
+		{"TokenType", "JWT"}
+	}).dump());
+
+	auto xblJson = parseResponse(xblResp);
+	if (xblJson.is_discarded()) return false;
+
+	string xblToken = xblJson.value("Token", "");
+	string userHash;
+	try { userHash = xblJson["DisplayClaims"]["xui"][0].value("uhs", ""); } catch (...) {}
+	if (xblToken.empty() || userHash.empty()) return false;
+
+	auto xstsResp = HttpClient::post("https://xsts.auth.xboxlive.com/xsts/authorize", json({
+		{"Properties", {{"SandboxId", "RETAIL"}, {"UserTokens", {xblToken}}}},
+		{"RelyingParty", "rp://api.minecraftservices.com/"},
+		{"TokenType", "JWT"}
+	}).dump());
+
+	auto xstsJson = parseResponse(xstsResp);
+	string xstsToken = xstsJson.is_discarded() ? "" : xstsJson.value("Token", "");
+	if (xstsToken.empty()) return false;
+
+	auto mcResp = HttpClient::post("https://api.minecraftservices.com/authentication/login_with_xbox",
+		json({{"identityToken", "XBL3.0 x=" + userHash + ";" + xstsToken}}).dump());
+
+	auto mcJson = parseResponse(mcResp);
+	mcToken = mcJson.is_discarded() ? "" : mcJson.value("access_token", "");
+	if (mcToken.empty()) return false;
+
+	auto profResp = HttpClient::get("https://api.minecraftservices.com/minecraft/profile",
+		{"Authorization: Bearer " + mcToken});
+
+	auto profJson = parseResponse(profResp);
+	if (profJson.is_discarded()) return false;
+
+	profId = profJson.value("id", "");
+	profName = profJson.value("name", "");
+	return !profId.empty() && !profName.empty();
+}
+
+static bool msRefreshOAuth(const string &refreshToken, string &newAccessToken, string &newRefreshToken)
+{
+	auto resp = HttpClient::post("https://login.live.com/oauth20_token.srf",
+		"client_id=" + string(MS_CLIENT_ID) + "&refresh_token=" + refreshToken + "&grant_type=refresh_token&scope=service::user.auth.xboxlive.com::MBI_SSL",
+		"application/x-www-form-urlencoded");
+
+	auto j = parseResponse(resp);
+	if (j.is_discarded()) return false;
+
+	newAccessToken = j.value("access_token", "");
+	newRefreshToken = j.value("refresh_token", "");
+	return !newAccessToken.empty();
+}
+
+// validate ely.by token via yggdrasil /validate endpoint
+static bool elybyValidate(const string &accessToken, const string &clientToken)
+{
+	auto resp = HttpClient::post("https://authserver.ely.by/auth/validate",
+		json({{"accessToken", accessToken}, {"clientToken", clientToken}}).dump());
+	return resp.statusCode == 200;
+}
+
+// refresh ely.by token via yggdrasil /refresh endpoint
+static bool elybyRefresh(const string &accessToken, const string &clientToken, string &newAccessToken, string &newClientToken)
+{
+	auto resp = HttpClient::post("https://authserver.ely.by/auth/refresh",
+		json({{"accessToken", accessToken}, {"clientToken", clientToken}}).dump());
+
+	auto j = parseResponse(resp);
+	if (j.is_discarded()) return false;
+
+	newAccessToken = j.value("accessToken", "");
+	newClientToken = j.value("clientToken", "");
+	return !newAccessToken.empty();
 }
 
 void AuthFlow::microsoftFlowThread()
@@ -221,6 +344,7 @@ void AuthFlow::microsoftFlowThread()
 
 	state = AuthFlowState::POLLING;
 	string msAccessToken;
+	string msRefreshToken;
 
 	for (int attempt = 0; attempt < 180; attempt++)
 	{
@@ -242,6 +366,7 @@ void AuthFlow::microsoftFlowThread()
 		if (pollResp.statusCode == 200)
 		{
 			msAccessToken = pollJson.value("access_token", "");
+			msRefreshToken = pollJson.value("refresh_token", "");
 			if (!msAccessToken.empty()) break;
 		}
 
@@ -250,7 +375,7 @@ void AuthFlow::microsoftFlowThread()
 		if (err == "slow_down") { interval += 5; continue; }
 		if (!err.empty())
 		{
-			result = {false, {}, {}, {}, convStringToWstring("Auth error: " + err)};
+			result = {false, {}, {}, {}, {}, convStringToWstring("Auth error: " + err)};
 			state = AuthFlowState::FAILED;
 			return;
 		}
@@ -265,80 +390,14 @@ void AuthFlow::microsoftFlowThread()
 	state = AuthFlowState::EXCHANGING;
 	if (cancelRequested) return;
 
-	// xbox live auth
-	auto xblResp = HttpClient::post("https://user.auth.xboxlive.com/user/authenticate", json({
-		{"Properties", {{"AuthMethod", "RPS"}, {"SiteName", "user.auth.xboxlive.com"}, {"RpsTicket", msAccessToken}}},
-		{"RelyingParty", "http://auth.xboxlive.com"},
-		{"TokenType", "JWT"}
-	}).dump());
-
-	auto xblJson = parseResponse(xblResp);
-	if (xblJson.is_discarded())
+	string mcAccessToken, profId, profName;
+	if (!msTokenExchange(msAccessToken, mcAccessToken, profId, profName))
 	{
-		authFail(result, state, L"Xbox Live auth failed");
+		authFail(result, state, L"Token exchange failed");
 		return;
 	}
 
-	string xblToken = xblJson.value("Token", "");
-	string userHash;
-	try { userHash = xblJson["DisplayClaims"]["xui"][0].value("uhs", ""); } catch (...) {}
-
-	if (xblToken.empty() || userHash.empty())
-	{
-		authFail(result, state, L"Bad Xbox Live response");
-		return;
-	}
-
-	// xsts auth
-	auto xstsResp = HttpClient::post("https://xsts.auth.xboxlive.com/xsts/authorize", json({
-		{"Properties", {{"SandboxId", "RETAIL"}, {"UserTokens", {xblToken}}}},
-		{"RelyingParty", "rp://api.minecraftservices.com/"},
-		{"TokenType", "JWT"}
-	}).dump());
-
-	auto xstsJson = parseResponse(xstsResp);
-	string xstsToken = xstsJson.is_discarded() ? "" : xstsJson.value("Token", "");
-
-	if (xstsToken.empty())
-	{
-		authFail(result, state, L"XSTS auth failed");
-		return;
-	}
-
-	// minecraft login
-	auto mcResp = HttpClient::post("https://api.minecraftservices.com/authentication/login_with_xbox",
-		json({{"identityToken", "XBL3.0 x=" + userHash + ";" + xstsToken}}).dump());
-
-	auto mcJson = parseResponse(mcResp);
-	string mcAccessToken = mcJson.is_discarded() ? "" : mcJson.value("access_token", "");
-
-	if (mcAccessToken.empty())
-	{
-		authFail(result, state, L"Minecraft auth failed");
-		return;
-	}
-
-	// get profile
-	auto profResp = HttpClient::get("https://api.minecraftservices.com/minecraft/profile",
-		{"Authorization: Bearer " + mcAccessToken});
-
-	auto profJson = parseResponse(profResp);
-	if (profJson.is_discarded())
-	{
-		authFail(result, state, L"Failed to get Minecraft profile");
-		return;
-	}
-
-	string profId = profJson.value("id", "");
-	string profName = profJson.value("name", "");
-
-	if (profId.empty() || profName.empty())
-	{
-		authFail(result, state, L"Profile missing id or name");
-		return;
-	}
-
-	result = {true, convStringToWstring(profName), convStringToWstring(profId), convStringToWstring(mcAccessToken), {}};
+	result = {true, convStringToWstring(profName), convStringToWstring(profId), convStringToWstring(mcAccessToken), convStringToWstring(msRefreshToken), {}};
 	state = AuthFlowState::COMPLETE;
 }
 
@@ -357,12 +416,13 @@ void AuthFlow::elybyFlowThread(const string &username, const string &password)
 	{
 		string msg = "Ely.by auth failed";
 		if (!respJson.is_discarded()) msg = respJson.value("errorMessage", msg);
-		result = {false, {}, {}, {}, convStringToWstring(msg)};
+		result = {false, {}, {}, {}, {}, convStringToWstring(msg)};
 		state = AuthFlowState::FAILED;
 		return;
 	}
 
 	string accessToken = respJson.value("accessToken", "");
+	string elyClientToken = respJson.value("clientToken", "");
 	string uuid, name;
 	try { uuid = respJson["selectedProfile"].value("id", ""); name = respJson["selectedProfile"].value("name", ""); } catch (...) {}
 
@@ -372,6 +432,6 @@ void AuthFlow::elybyFlowThread(const string &username, const string &password)
 		return;
 	}
 
-	result = {true, convStringToWstring(name), convStringToWstring(uuid), convStringToWstring(accessToken), {}};
+	result = {true, convStringToWstring(name), convStringToWstring(uuid), convStringToWstring(accessToken), convStringToWstring(elyClientToken), {}};
 	state = AuthFlowState::COMPLETE;
 }

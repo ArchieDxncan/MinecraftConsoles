@@ -2135,7 +2135,7 @@ void UIScene_MainMenu::tick()
 			s_authFlowActive = false;
 			const auto &r = AuthFlow::getResult();
 			auto type = AuthFlow::getUserCode().empty() ? AuthProfile::ELYBY : AuthProfile::MICROSOFT;
-			AuthProfileManager::addProfile(type, r.username, r.uuid, r.accessToken);
+			AuthProfileManager::addProfile(type, r.username, r.uuid, r.accessToken, r.clientToken);
 			AuthFlow::reset();
 			if (scene) ui.NavigateBack(s_authPad);
 			ShowAuthMenu(s_authPad, s_authParam);
