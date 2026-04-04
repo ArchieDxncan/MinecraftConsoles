@@ -4589,6 +4589,9 @@ int CMinecraftApp::SignoutExitWorldThreadProc( void* lpParameter )
 			case DisconnectPacket::eDisconnect_OutdatedClient:
 				exitReasonStringId = IDS_DISCONNECTED_CLIENT_OLD;
 				break;
+			case DisconnectPacket::eDisconnect_AuthFailed:
+				exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+				break;
 			default:
 				exitReasonStringId = IDS_DISCONNECTED;
 			}
@@ -4649,6 +4652,10 @@ int CMinecraftApp::SignoutExitWorldThreadProc( void* lpParameter )
 				break;
 			case DisconnectPacket::eDisconnect_OutdatedClient:
 				exitReasonStringId = IDS_DISCONNECTED_CLIENT_OLD;
+				break;
+			case DisconnectPacket::eDisconnect_AuthFailed:
+				exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+				break;
 			default:
 				exitReasonStringId = IDS_DISCONNECTED;
 			}

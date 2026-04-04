@@ -508,6 +508,10 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 					exitReasonTitleId = IDS_CONNECTION_FAILED;
 					break;
 #endif
+				case DisconnectPacket::eDisconnect_AuthFailed:
+					exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+					exitReasonTitleId = IDS_CONNECTION_FAILED;
+					break;
 				default:
 					exitReasonStringId = IDS_CONNECTION_LOST_SERVER;
 				}
@@ -609,6 +613,10 @@ void IUIScene_PauseMenu::_ExitWorld(LPVOID lpParameter)
 				exitReasonTitleId = IDS_CONNECTION_FAILED;
 				break;
 #endif
+			case DisconnectPacket::eDisconnect_AuthFailed:
+				exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+				exitReasonTitleId = IDS_CONNECTION_FAILED;
+				break;
 			default:
 				exitReasonStringId = IDS_DISCONNECTED;
 			}

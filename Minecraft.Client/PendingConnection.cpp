@@ -125,7 +125,8 @@ void PendingConnection::handlePreLogin(shared_ptr<PreLoginPacket> packet)
 		return;
 	}
 	//	printf("Server: handlePreLogin\n");
-	name = packet->loginKey; // 4J Stu - Change from the login packet as we know better on client end during the pre-login packet
+	if (!authComplete)
+		name = packet->loginKey;
 	sendPreLoginResponse();
 }
 
@@ -411,9 +412,10 @@ bool PendingConnection::isDisconnected()
 void PendingConnection::initAuth()
 {
 	handshakeManager = new HandshakeManager(true);
-	handshakeManager->registerModule(new SessionAuthModule());
-	handshakeManager->registerModule(new KeypairOfflineAuthModule());
-	handshakeManager->registerModule(new OfflineAuthModule());
+	if (server->authMode == "session")
+		handshakeManager->registerModule(new SessionAuthModule());
+	else
+		handshakeManager->registerModule(new OfflineAuthModule());
 }
 
 void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
@@ -433,6 +435,6 @@ void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
 	}
 	else if (handshakeManager->isFailed())
 	{
-		disconnect(DisconnectPacket::eDisconnect_Closed);
+		disconnect(DisconnectPacket::eDisconnect_AuthFailed);
 	}
 }

@@ -5867,6 +5867,10 @@ Press{*CONTROLLER_VK_B*} if you already know about Fireworks.</value>
 		<value>You cannot join this game as the player you are trying to join is running a newer version of the game.</value>
 	</data>	
 
+	<data name="IDS_DISCONNECTED_AUTH_FAILED">
+		<value>Authentication required. This server requires you to be signed in.</value>
+	</data>	
+
 	<data name="IDS_DEFAULT_SAVENAME">
 		<value>New World</value>
 	</data>	

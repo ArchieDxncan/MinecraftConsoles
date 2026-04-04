@@ -4173,6 +4173,12 @@ void ClientConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
 	if (handshakeManager->isComplete())
 	{
 		authComplete = true;
+		const wstring &authName = handshakeManager->finalUsername;
+		minecraft->user->name = authName;
+		extern char g_Win64Username[17];
+		extern wchar_t g_Win64UsernameW[17];
+		wcsncpy_s(g_Win64UsernameW, authName.c_str(), 16);
+		wcstombs_s(nullptr, g_Win64Username, g_Win64UsernameW, 16);
 	}
 	else if (handshakeManager->isFailed())
 	{

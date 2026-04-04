@@ -133,6 +133,9 @@ void UIScene_ConnectingProgress::tick()
 			case DisconnectPacket::eDisconnect_Banned:
 				exitReasonStringId = IDS_DISCONNECTED_KICKED;
 				break;
+			case DisconnectPacket::eDisconnect_AuthFailed:
+				exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+				break;
 			default:
 				exitReasonStringId = IDS_CONNECTION_LOST_SERVER;
 				break;
@@ -277,6 +280,9 @@ void UIScene_ConnectingProgress::handleTimerComplete(int id)
 			exitReasonStringId = IDS_DISCONNECTED_NAT_TYPE_MISMATCH;
 			break;
 #endif
+		case DisconnectPacket::eDisconnect_AuthFailed:
+			exitReasonStringId = IDS_DISCONNECTED_AUTH_FAILED;
+			break;
 		default:
 			exitReasonStringId = IDS_CONNECTION_LOST_SERVER;
 			break;
