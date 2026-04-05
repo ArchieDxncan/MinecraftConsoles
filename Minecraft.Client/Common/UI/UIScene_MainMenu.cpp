@@ -524,7 +524,7 @@ void UIScene_MainMenu::ShowAuthMenu(int iPad, void *pClass)
 	s_authPad = iPad;
 	s_authParam = pClass;
 
-	static const wchar_t *authOptions[] = { L"Next", L"Use", L"Add", L"Back" };
+	static const wchar_t *authOptions[] = { L"Next", L"Use", L"Add", L"Remove" };
 	ShowAuthMessageBox(iPad, L"Authentication", BuildAuthProfileText(),
 		authOptions, 4, &UIScene_MainMenu::AuthMenuReturned, pClass, true);
 }
@@ -564,6 +564,16 @@ int UIScene_MainMenu::AuthMenuReturned(LPVOID lpParam, int iPad, const C4JStorag
 		ui.NavigateBack(iPad);
 		ShowAuthAddMenu(iPad, lpParam);
 		break;
+	}
+	case C4JStorage::EMessage_ResultFourthOption:
+	{
+		if (!profiles.empty())
+		{
+			AuthProfileManager::removeSelectedProfile();
+			if (auto *scene = ui.FindScene(eUIScene_MessageBox))
+				static_cast<UIScene_MessageBox *>(scene)->updateContent(BuildAuthProfileText());
+		}
+		return 0;
 	}
 	default:
 	{
