@@ -10,6 +10,9 @@
 //     "dropbox_app_key":"", "dropbox_app_secret":""
 //   }
 //
+// Google Cloud (same project as OAuth client): enable "Google Drive API" (APIs & Services → Library).
+// OAuth scope should be https://www.googleapis.com/auth/drive (not drive.file) if players add world folders manually
+// in drive.google.com; drive.file only lists app-created files. Add the scope on the OAuth consent screen.
 // Outbound HTTP: enable googleapis.com, login.microsoftonline.com, graph.microsoft.com,
 // api.dropboxapi.com, content.dropboxapi.com in PlayFab (Title settings → API Features → External HTTP).
 //
@@ -44,8 +47,13 @@ function lceGetInternalDataEntry(dataObj, exactKey) {
 	return null;
 }
 
+/**
+ * Title Internal Data (GetTitleInternalData) returns Data as key -> string (plain JSON text).
+ * User-style objects { Value: "..." } also appear in some APIs; accept both.
+ */
 function lceEntryValue(entry) {
-	if (!entry) return null;
+	if (entry == null) return null;
+	if (typeof entry === "string") return entry;
 	var v = entry.Value != null ? entry.Value : entry.value;
 	return v;
 }

@@ -17,6 +17,8 @@
 #include <atomic>
 #include <cctype>
 #include <cstdio>
+#include <ctime>
+#include <set>
 #include <thread>
 #include <vector>
 #include <windows.h>
@@ -75,13 +77,36 @@ namespace
 		return dynamic_cast<WindowsLeaderboardManager *>(LeaderboardManager::Instance());
 	}
 
+	bool WinHttpReadResponseLocation(HINTERNET hRequest, std::string *outLocationUtf8)
+	{
+		if (!outLocationUtf8)
+			return true;
+		outLocationUtf8->clear();
+		DWORD dwSize = 0;
+		SetLastError(0);
+		if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_LOCATION, WINHTTP_HEADER_NAME_BY_INDEX, WINHTTP_NO_OUTPUT_BUFFER,
+				&dwSize, WINHTTP_NO_HEADER_INDEX))
+			return true;
+		if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || dwSize < sizeof(wchar_t))
+			return true;
+		std::vector<wchar_t> wbuf(dwSize / sizeof(wchar_t) + 2u, L'\0');
+		DWORD bufBytes = (DWORD)(wbuf.size() * sizeof(wchar_t));
+		if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_LOCATION, WINHTTP_HEADER_NAME_BY_INDEX, wbuf.data(), &bufBytes,
+				WINHTTP_NO_HEADER_INDEX))
+			return true;
+		*outLocationUtf8 = WideToUtf8(std::wstring(wbuf.data()));
+		return true;
+	}
+
 	bool WinHttpRequest(const wchar_t *verb, const std::wstring &host, const std::wstring &pathAndQuery,
 		const std::string &headersUtf8, const void *body, DWORD bodyLen, long &httpStatus, std::string &respBody,
-		std::string &err)
+		std::string &err, std::string *outLocationUtf8 = nullptr)
 	{
 		httpStatus = 0;
 		respBody.clear();
 		err.clear();
+		if (outLocationUtf8)
+			outLocationUtf8->clear();
 
 		HINTERNET hSession = WinHttpOpen(L"MinecraftConsoles-CloudSync/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 			WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
@@ -130,6 +155,8 @@ namespace
 			httpStatus = (long)statusCode;
 		}
 
+		(void)WinHttpReadResponseLocation(hRequest, outLocationUtf8);
+
 		std::string acc;
 		for (;;)
 		{
@@ -146,6 +173,25 @@ namespace
 
 		respBody = std::move(acc);
 		return true;
+	}
+
+	bool ParseHttpsUrl(const std::string &url, std::wstring &outHost, std::wstring &outPathQuery)
+	{
+		static const char kHttps[] = "https://";
+		const size_t n = sizeof(kHttps) - 1u;
+		if (url.size() < n || url.compare(0, n, kHttps) != 0)
+			return false;
+		size_t i = n;
+		size_t slash = url.find('/', i);
+		if (slash == std::string::npos)
+		{
+			outHost = Utf8ToWide(url.substr(i));
+			outPathQuery = L"/";
+			return !outHost.empty();
+		}
+		outHost = Utf8ToWide(url.substr(i, slash - i));
+		outPathQuery = Utf8ToWide(url.substr(slash));
+		return !outHost.empty() && !outPathQuery.empty();
 	}
 
 	struct LocalFileRec
@@ -363,6 +409,71 @@ namespace
 		return true;
 	}
 
+	/** Immediate children folder names under path (non-recursive). Empty if path missing. */
+	bool DropboxListImmediateChildFolderNames(const std::string &accessToken, const std::string &path,
+		std::vector<std::string> &outNames, std::string &err)
+	{
+		outNames.clear();
+		nlohmann::json req;
+		req["path"] = path;
+		req["recursive"] = false;
+		req["include_media_info"] = false;
+		req["include_deleted"] = false;
+		req["include_has_explicit_shared_members"] = false;
+		std::string reqStr = req.dump();
+		std::string headers = "Authorization: Bearer " + accessToken + "\r\nContent-Type: application/json\r\n";
+
+		std::string cursor;
+		for (int pass = 0; pass < 200; ++pass)
+		{
+			long http = 0;
+			std::string resp;
+			const char *subpath = cursor.empty() ? "/2/files/list_folder" : "/2/files/list_folder/continue";
+			std::string bodyJson = cursor.empty() ? reqStr : nlohmann::json{ { "cursor", cursor } }.dump();
+			if (!WinHttpRequest(L"POST", L"api.dropboxapi.com", Utf8ToWide(subpath), headers, bodyJson.data(),
+					(DWORD)bodyJson.size(), http, resp, err))
+				return false;
+			if (http < 200 || http >= 300)
+			{
+				if (pass == 0 && (resp.find("not_found") != std::string::npos ||
+									 resp.find("path_not_found") != std::string::npos))
+				{
+					err.clear();
+					return true;
+				}
+				err = "Dropbox list (shallow) HTTP " + std::to_string(http) + " " + resp;
+				return false;
+			}
+			try
+			{
+				nlohmann::json j = nlohmann::json::parse(resp);
+				if (j.contains("entries") && j["entries"].is_array())
+				{
+					for (const auto &e : j["entries"])
+					{
+						if (!e.contains(".tag") || e[".tag"] != "folder")
+							continue;
+						std::string n = e.value("name", std::string());
+						if (!n.empty())
+							outNames.push_back(std::move(n));
+					}
+				}
+				bool hasMore = j.value("has_more", false);
+				cursor = j.value("cursor", std::string());
+				if (!hasMore)
+					break;
+				if (cursor.empty())
+					break;
+			}
+			catch (...)
+			{
+				err = "Dropbox list (shallow) JSON";
+				return false;
+			}
+		}
+		return true;
+	}
+
 	// --- Google Drive ---
 	bool GooglePatchParents(const std::string &accessToken, const std::string &fileId, const std::string &parentId,
 		const std::string &removeParent, std::string &err)
@@ -419,6 +530,59 @@ namespace
 		return true;
 	}
 
+	/** Google Drive resumable upload (single PUT) for files above simple upload limits. */
+	bool GoogleDriveUploadResumable(const std::string &accessToken, const std::string &parentFolderId,
+		const std::string &displayName, const std::vector<unsigned char> &bytes, std::string &err)
+	{
+		nlohmann::json meta;
+		meta["name"] = displayName;
+		meta["parents"] = nlohmann::json::array({parentFolderId});
+		std::string jsonBody = meta.dump();
+		std::string headers = "Authorization: Bearer " + accessToken +
+			"\r\nContent-Type: application/json; charset=UTF-8\r\nX-Upload-Content-Type: application/octet-stream\r\n"
+			"X-Upload-Content-Length: " +
+			std::to_string(bytes.size()) + "\r\n";
+		long http = 0;
+		std::string resp;
+		std::string location;
+		if (!WinHttpRequest(L"POST", L"www.googleapis.com", L"/upload/drive/v3/files?uploadType=resumable&fields=id", headers,
+				jsonBody.data(), (DWORD)jsonBody.size(), http, resp, err, &location))
+			return false;
+		if (http < 200 || http >= 300)
+		{
+			err = "Drive resumable init HTTP " + std::to_string(http) + " " + resp;
+			return false;
+		}
+		if (location.empty())
+		{
+			err = "Drive resumable init missing Location header";
+			return false;
+		}
+		std::wstring putHost, putPath;
+		if (!ParseHttpsUrl(location, putHost, putPath))
+		{
+			err = "Drive resumable bad Location URL";
+			return false;
+		}
+		std::string rangeHdr = bytes.empty() ? std::string("bytes */0")
+											 : ("bytes 0-" + std::to_string(bytes.size() - 1) + "/" + std::to_string(bytes.size()));
+		std::string putHeaders = "Authorization: Bearer " + accessToken +
+			"\r\nContent-Type: application/octet-stream\r\nContent-Length: " + std::to_string(bytes.size()) +
+			"\r\nContent-Range: " + rangeHdr + "\r\n";
+		long httpPut = 0;
+		std::string putResp;
+		const void *putBody = bytes.empty() ? nullptr : bytes.data();
+		const DWORD putLen = (DWORD)bytes.size();
+		if (!WinHttpRequest(L"PUT", putHost, putPath, putHeaders, putBody, putLen, httpPut, putResp, err, nullptr))
+			return false;
+		if (httpPut < 200 || httpPut >= 300)
+		{
+			err = "Drive resumable upload HTTP " + std::to_string(httpPut) + " " + putResp;
+			return false;
+		}
+		return true;
+	}
+
 	bool GooglePatchName(const std::string &accessToken, const std::string &fileId, const std::string &name, std::string &err)
 	{
 		nlohmann::json meta;
@@ -457,7 +621,8 @@ namespace
 			}
 		}
 		q += enc;
-		std::wstring path = Utf8ToWide("/drive/v3/files?" + q + "&fields=files(id,name,mimeType)&pageSize=1000");
+		std::wstring path =
+			Utf8ToWide("/drive/v3/files?" + q + "&fields=files(id,name,mimeType,modifiedTime)&pageSize=1000");
 		std::string headers = "Authorization: Bearer " + accessToken + "\r\n";
 		long http = 0;
 		std::string resp;
@@ -580,6 +745,24 @@ namespace
 		}
 	}
 
+	bool GoogleListCloudWorldFolderNames(const std::string &accessToken, const std::string &rootId,
+		std::vector<std::string> &outNames, std::string &err)
+	{
+		outNames.clear();
+		std::vector<nlohmann::json> files;
+		if (!GoogleListChildren(accessToken, rootId, files, err))
+			return false;
+		for (const auto &f : files)
+		{
+			if (f.value("mimeType", std::string()) != "application/vnd.google-apps.folder")
+				continue;
+			std::string n = f.value("name", std::string());
+			if (!n.empty())
+				outNames.push_back(std::move(n));
+		}
+		return true;
+	}
+
 	// --- Microsoft Graph ---
 	bool GraphListChildren(const std::string &accessToken, const std::string &itemId, std::vector<nlohmann::json> &items,
 		std::string &err)
@@ -609,6 +792,24 @@ namespace
 		{
 			err = "Graph list parse";
 			return false;
+		}
+		return true;
+	}
+
+	bool GraphListCloudWorldFolderNames(const std::string &accessToken, const std::string &rootItemId,
+		std::vector<std::string> &outNames, std::string &err)
+	{
+		outNames.clear();
+		std::vector<nlohmann::json> items;
+		if (!GraphListChildren(accessToken, rootItemId, items, err))
+			return false;
+		for (const auto &it : items)
+		{
+			if (!it.contains("folder"))
+				continue;
+			std::string n = it.value("name", std::string());
+			if (!n.empty())
+				outNames.push_back(std::move(n));
 		}
 		return true;
 	}
@@ -787,6 +988,281 @@ namespace
 
 	const size_t kLargeFileWarnBytes = 4u * 1024u * 1024u;
 
+	/** OutputDebugStringA — use Sysinternals DebugView or VS Output (debug) to read. */
+	void LogCloudSyncPhase(const char *phase, const std::string &worldUtf8, bool ok, const std::string &err)
+	{
+		char buf[1024];
+		if (ok)
+		{
+			sprintf_s(buf, sizeof(buf), "[Win64CloudSync] %s OK '%s'\n", phase, worldUtf8.c_str());
+			OutputDebugStringA(buf);
+			return;
+		}
+		std::string e = err.empty() ? std::string("(no message)") : err;
+		if (e.size() > 420)
+			e = e.substr(0, 420) + "...";
+		sprintf_s(buf, sizeof(buf), "[Win64CloudSync] %s '%s': %s\n", phase, worldUtf8.c_str(), e.c_str());
+		OutputDebugStringA(buf);
+	}
+
+	uint64_t FileTimeToUnixMsUtc(const FILETIME &ft)
+	{
+		ULARGE_INTEGER uli;
+		uli.LowPart = ft.dwLowDateTime;
+		uli.HighPart = ft.dwHighDateTime;
+		const uint64_t epoch1601Ms = uli.QuadPart / 10000ULL;
+		const uint64_t unixEpochMs = 11644473600000ULL;
+		if (epoch1601Ms < unixEpochMs)
+			return 0;
+		return epoch1601Ms - unixEpochMs;
+	}
+
+	inline void ConsiderMaxParsedTime(uint64_t parsedMs, uint64_t &outMax, bool &any)
+	{
+		if (parsedMs == 0)
+			return;
+		if (!any || parsedMs > outMax)
+		{
+			outMax = parsedMs;
+			any = true;
+		}
+	}
+
+	/** PlayFab / JS ISO string e.g. 2024-04-05T15:04:21.000Z — second precision is enough for sync decisions. */
+	uint64_t ParseIso8601UtcToUnixMs(const std::string &iso)
+	{
+		if (iso.size() < 19)
+			return 0;
+		int y = 0, mo = 0, d = 0, h = 0, mi = 0, se = 0;
+		if (sscanf_s(iso.c_str(), "%d-%d-%dT%d:%d:%d", &y, &mo, &d, &h, &mi, &se) != 6)
+			return 0;
+		struct tm t = {};
+		t.tm_year = y - 1900;
+		t.tm_mon = mo - 1;
+		t.tm_mday = d;
+		t.tm_hour = h;
+		t.tm_min = mi;
+		t.tm_sec = se;
+		t.tm_isdst = 0;
+		const time_t tt = _mkgmtime(&t);
+		if (tt == (time_t)-1)
+			return 0;
+		return (uint64_t)tt * 1000ULL;
+	}
+
+	void ConsiderNewerFileTime(const FILETIME &candidate, FILETIME &best, bool &hasAny)
+	{
+		if (!hasAny || CompareFileTime(&candidate, &best) > 0)
+		{
+			best = candidate;
+			hasAny = true;
+		}
+	}
+
+	void GetLatestWriteTimeRecursive(const std::wstring &dirAbs, FILETIME &outBest, bool &hasAny)
+	{
+		std::wstring spec = dirAbs + L"\\*";
+		WIN32_FIND_DATAW fd{};
+		HANDLE h = FindFirstFileW(spec.c_str(), &fd);
+		if (h == INVALID_HANDLE_VALUE)
+			return;
+		do
+		{
+			if (wcscmp(fd.cFileName, L".") == 0 || wcscmp(fd.cFileName, L"..") == 0)
+				continue;
+			std::wstring full = dirAbs + L"\\" + fd.cFileName;
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				GetLatestWriteTimeRecursive(full, outBest, hasAny);
+			}
+			else
+			{
+				ConsiderNewerFileTime(fd.ftLastWriteTime, outBest, hasAny);
+			}
+		} while (FindNextFileW(h, &fd));
+		FindClose(h);
+	}
+
+	bool GoogleMaxFileModifiedMsInTree(const std::string &accessToken, const std::string &folderId, uint64_t &outMax,
+		bool &anyFile, std::string &err)
+	{
+		std::vector<nlohmann::json> files;
+		if (!GoogleListChildren(accessToken, folderId, files, err))
+			return false;
+		for (const auto &f : files)
+		{
+			std::string mime = f.value("mimeType", std::string());
+			std::string id = f.value("id", std::string());
+			if (mime == "application/vnd.google-apps.folder")
+			{
+				if (!GoogleMaxFileModifiedMsInTree(accessToken, id, outMax, anyFile, err))
+					return false;
+			}
+			else if (!id.empty())
+			{
+				ConsiderMaxParsedTime(ParseIso8601UtcToUnixMs(f.value("modifiedTime", std::string())), outMax, anyFile);
+			}
+		}
+		return true;
+	}
+
+	bool DropboxMaxModifiedInPrefix(const std::string &accessToken, const std::string &pathPrefix, uint64_t &outMax,
+		bool &anyFile, std::string &err)
+	{
+		outMax = 0;
+		anyFile = false;
+		std::vector<nlohmann::json> entries;
+		if (!DropboxListAll(accessToken, pathPrefix, entries, err))
+		{
+			if (err.find("not_found") != std::string::npos || err.find("path_not_found") != std::string::npos)
+			{
+				err.clear();
+				return true;
+			}
+			return false;
+		}
+		for (const auto &e : entries)
+		{
+			if (!e.contains(".tag") || e[".tag"] != "file")
+				continue;
+			ConsiderMaxParsedTime(ParseIso8601UtcToUnixMs(e.value("server_modified", std::string())), outMax, anyFile);
+		}
+		return true;
+	}
+
+	bool GraphMaxModifiedMsInTree(const std::string &accessToken, const std::string &itemId, uint64_t &outMax,
+		bool &anyFile, std::string &err)
+	{
+		std::vector<nlohmann::json> items;
+		if (!GraphListChildren(accessToken, itemId, items, err))
+			return false;
+		for (const auto &it : items)
+		{
+			std::string id = it.value("id", std::string());
+			if (it.contains("folder"))
+			{
+				if (!GraphMaxModifiedMsInTree(accessToken, id, outMax, anyFile, err))
+					return false;
+			}
+			else if (!id.empty())
+			{
+				ConsiderMaxParsedTime(ParseIso8601UtcToUnixMs(it.value("lastModifiedDateTime", std::string())), outMax,
+					anyFile);
+			}
+		}
+		return true;
+	}
+
+	bool RemoteWorldMaxModifiedUtcMs(const nlohmann::json &cfg, const std::string &accessToken, const std::string &seg,
+		uint64_t &outMs, bool &hasRemoteFiles, std::string &err)
+	{
+		outMs = 0;
+		hasRemoteFiles = false;
+		std::string provider = cfg.value("provider", std::string());
+		if (provider == "google")
+		{
+			std::string rootId = cfg.value("googleRootId", std::string());
+			if (rootId.empty())
+			{
+				err = "Missing googleRootId.";
+				return false;
+			}
+			std::string e2;
+			const std::string worldId = GoogleFindChildFolderId(accessToken, rootId, seg, e2);
+			if (worldId.empty())
+			{
+				err.clear();
+				return true;
+			}
+			return GoogleMaxFileModifiedMsInTree(accessToken, worldId, outMs, hasRemoteFiles, err);
+		}
+		if (provider == "dropbox")
+		{
+			std::string rootBase = cfg.value("dropboxRootPath", std::string("/Minecraft LCE Cloud Saves"));
+			if (rootBase.empty())
+				rootBase = "/Minecraft LCE Cloud Saves";
+			std::string prefix = rootBase + "/" + seg;
+			std::replace(prefix.begin(), prefix.end(), '\\', '/');
+			return DropboxMaxModifiedInPrefix(accessToken, prefix, outMs, hasRemoteFiles, err);
+		}
+		if (provider == "microsoft")
+		{
+			std::string rootItem = cfg.value("msRootId", std::string());
+			if (rootItem.empty())
+			{
+				err = "Missing msRootId.";
+				return false;
+			}
+			std::string e2;
+			const std::string worldId = GraphFindChildFolderId(accessToken, rootItem, seg, e2);
+			if (worldId.empty())
+			{
+				err.clear();
+				return true;
+			}
+			return GraphMaxModifiedMsInTree(accessToken, worldId, outMs, hasRemoteFiles, err);
+		}
+		err = "Unknown cloud provider.";
+		return false;
+	}
+
+	bool CollectCloudWorldFolderNames(const nlohmann::json &cfg, const std::string &accessToken,
+		std::vector<std::string> &outNames, std::string &err)
+	{
+		outNames.clear();
+		std::string provider = cfg.value("provider", std::string());
+		if (provider == "google")
+		{
+			std::string rootId = cfg.value("googleRootId", std::string());
+			if (rootId.empty())
+			{
+				err = "Missing googleRootId.";
+				return false;
+			}
+			return GoogleListCloudWorldFolderNames(accessToken, rootId, outNames, err);
+		}
+		if (provider == "dropbox")
+		{
+			std::string rootBase = cfg.value("dropboxRootPath", std::string("/Minecraft LCE Cloud Saves"));
+			if (rootBase.empty())
+				rootBase = "/Minecraft LCE Cloud Saves";
+			return DropboxListImmediateChildFolderNames(accessToken, rootBase, outNames, err);
+		}
+		if (provider == "microsoft")
+		{
+			std::string rootItem = cfg.value("msRootId", std::string());
+			if (rootItem.empty())
+			{
+				err = "Missing msRootId.";
+				return false;
+			}
+			return GraphListCloudWorldFolderNames(accessToken, rootItem, outNames, err);
+		}
+		err = "Unknown cloud provider.";
+		return false;
+	}
+
+	std::string LocalFolderNameForSeg(const std::string &seg, const std::vector<std::string> &localFolders)
+	{
+		for (const auto &L : localFolders)
+		{
+			if (SanitizeSegment(L.c_str()) == seg)
+				return L;
+		}
+		return seg;
+	}
+
+	void MergeWorldSegs(const std::vector<std::string> &localFolders, const std::vector<std::string> &cloudWorldNames,
+		std::vector<std::string> &outSegsSorted)
+	{
+		std::set<std::string> segset;
+		for (const auto &L : localFolders)
+			segset.insert(SanitizeSegment(L.c_str()));
+		for (const auto &c : cloudWorldNames)
+			segset.insert(c);
+		outSegsSorted.assign(segset.begin(), segset.end());
+	}
+
 	void EnumerateGameHddSaveFolderNames(std::vector<std::string> &outUtf8Folders)
 	{
 		outUtf8Folders.clear();
@@ -824,21 +1300,102 @@ namespace
 		if (!LoadPlayFabConfig(wlm, cfg, err))
 			return;
 
-		(void)cfg;
-		std::vector<std::string> folders;
-		EnumerateGameHddSaveFolderNames(folders);
-		if (folders.empty())
+		nlohmann::json tok;
+		if (!GetAccessTokenJson(wlm, tok, err))
 			return;
+		const std::string accessToken = tok["accessToken"].get<std::string>();
 
-		char dbg[160];
-		sprintf_s(dbg, "[Win64CloudSync] Title-screen cloud sync: %zu world(s)\n", folders.size());
+		/* Compare newest local file mtime vs newest cloud file modified time (per provider). */
+		const uint64_t kSlackMs = 3000;
+
+		std::vector<std::string> localFolders;
+		EnumerateGameHddSaveFolderNames(localFolders);
+
+		std::vector<std::string> cloudWorlds;
+		std::string errCloud;
+		if (!CollectCloudWorldFolderNames(cfg, accessToken, cloudWorlds, errCloud))
+		{
+			std::string em = errCloud.size() > 400 ? errCloud.substr(0, 400) + "..." : errCloud;
+			OutputDebugStringA(("[Win64CloudSync] Cloud root listing failed (continuing with local saves only): " + em + "\n").c_str());
+			cloudWorlds.clear();
+		}
+
+		std::vector<std::string> allSegs;
+		MergeWorldSegs(localFolders, cloudWorlds, allSegs);
+
+		char dbg[224];
+		sprintf_s(dbg, "[Win64CloudSync] Title-screen sync: %zu local save(s), %zu cloud world folder(s), %zu to reconcile\n",
+			localFolders.size(), cloudWorlds.size(), allSegs.size());
 		OutputDebugStringA(dbg);
 
-		for (const std::string &name : folders)
+		if (allSegs.empty())
 		{
-			std::string e;
-			(void)Win64CloudSync::DownloadSaveFolder(name.c_str(), e);
-			(void)Win64CloudSync::UploadSaveFolder(name.c_str(), e);
+			OutputDebugStringA(
+				"[Win64CloudSync] Title-screen sync: no local saves and no world folders under cloud root.\n");
+			if (cfg.value("provider", std::string()) == "google")
+			{
+				OutputDebugStringA(
+					"[Win64CloudSync] Google: put each world as a direct subfolder inside \"Minecraft LCE Cloud Saves\" "
+					"(the folder linked in PlayFab). If you use drive.google.com, OAuth must use scope "
+					"https://www.googleapis.com/auth/drive (not drive.file) or the API cannot see manual folders.\n");
+			}
+			return;
+		}
+
+		for (const std::string &seg : allSegs)
+		{
+			const std::string localName = LocalFolderNameForSeg(seg, localFolders);
+
+			std::wstring localRoot = Win64_GetGameHddRootW() + L"\\" + Utf8ToWide(localName);
+			FILETIME bestLocalWrite{};
+			bool hasLocalTime = false;
+			GetLatestWriteTimeRecursive(localRoot, bestLocalWrite, hasLocalTime);
+			const uint64_t localMs = hasLocalTime ? FileTimeToUnixMsUtc(bestLocalWrite) : 0;
+
+			uint64_t remoteMs = 0;
+			bool hasRemoteFiles = false;
+			std::string eMeta;
+			if (!RemoteWorldMaxModifiedUtcMs(cfg, accessToken, seg, remoteMs, hasRemoteFiles, eMeta))
+			{
+				LogCloudSyncPhase("Meta", localName, false, eMeta);
+				continue;
+			}
+
+			if (!hasRemoteFiles)
+			{
+				if (hasLocalTime && localMs > 0)
+				{
+					std::string eUp;
+					const bool upOk = Win64CloudSync::UploadSaveFolder(localName.c_str(), eUp);
+					LogCloudSyncPhase("Upload", localName, upOk, eUp);
+				}
+				else
+				{
+					char note[256];
+					sprintf_s(note, "[Win64CloudSync] Skip '%s' (no cloud files yet)\n", localName.c_str());
+					OutputDebugStringA(note);
+				}
+				continue;
+			}
+
+			if (localMs > remoteMs + kSlackMs)
+			{
+				std::string eUp;
+				const bool upOk = Win64CloudSync::UploadSaveFolder(localName.c_str(), eUp);
+				LogCloudSyncPhase("Upload", localName, upOk, eUp);
+			}
+			else if (remoteMs > localMs + kSlackMs)
+			{
+				std::string eDown;
+				const bool downOk = Win64CloudSync::DownloadSaveFolder(localName.c_str(), eDown);
+				LogCloudSyncPhase("Download", localName, downOk, eDown);
+			}
+			else
+			{
+				char note[320];
+				sprintf_s(note, "[Win64CloudSync] Skip '%s' (local and cloud in sync)\n", localName.c_str());
+				OutputDebugStringA(note);
+			}
 		}
 	}
 
@@ -966,22 +1523,29 @@ bool Win64CloudSync::UploadSaveFolder(const char *utf8SaveFolderName, std::strin
 			std::vector<unsigned char> bytes;
 			if (!ReadWholeFileW(lf.absPath, bytes, errOut))
 				return false;
-			if (bytes.size() > kLargeFileWarnBytes)
-			{
-				errOut =
-					"A file exceeds 4 MiB; Google Drive simple upload is not used for large files. Use Dropbox or split.";
-				return false;
-			}
-			std::string fileId, parent0;
-			if (!GoogleUploadMedia(accessToken, bytes, fileId, parent0, errOut))
-				return false;
-			if (!GooglePatchParents(accessToken, fileId, worldFolderId, parent0, errOut))
-				return false;
-			// set display name to leaf file name
 			size_t slash = lf.relPosix.find_last_of('/');
 			std::string leaf = slash == std::string::npos ? lf.relPosix : lf.relPosix.substr(slash + 1);
-			if (!leaf.empty() && !GooglePatchName(accessToken, fileId, leaf, errOut))
+			if (leaf.empty())
+			{
+				errOut = "Empty file name in save folder.";
 				return false;
+			}
+			/* <= 4 MiB: multipart media upload + move into world folder + rename (legacy path). */
+			if (bytes.size() > kLargeFileWarnBytes)
+			{
+				if (!GoogleDriveUploadResumable(accessToken, worldFolderId, leaf, bytes, errOut))
+					return false;
+			}
+			else
+			{
+				std::string fileId, parent0;
+				if (!GoogleUploadMedia(accessToken, bytes, fileId, parent0, errOut))
+					return false;
+				if (!GooglePatchParents(accessToken, fileId, worldFolderId, parent0, errOut))
+					return false;
+				if (!GooglePatchName(accessToken, fileId, leaf, errOut))
+					return false;
+			}
 		}
 		TouchLastSync(wlm);
 		return true;

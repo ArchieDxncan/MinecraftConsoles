@@ -188,7 +188,10 @@ async function startCloudOAuth(provider) {
 
   let url;
   if (provider === "google") {
-    const scope = encodeURIComponent("https://www.googleapis.com/auth/drive.file");
+    /* drive.file only sees files created/opened by this app — manual uploads in drive.google.com do not list.
+       Full drive scope lets sync see world folders you add under "Minecraft LCE Cloud Saves". Add scope in
+       Google Cloud Console OAuth consent, then disconnect/reconnect cloud in Account Manager. */
+    const scope = encodeURIComponent("https://www.googleapis.com/auth/drive");
     url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
       clientId
     )}&redirect_uri=${redir}&response_type=code&scope=${scope}&state=${st}&code_challenge=${ch}&code_challenge_method=S256&access_type=offline&prompt=consent`;
