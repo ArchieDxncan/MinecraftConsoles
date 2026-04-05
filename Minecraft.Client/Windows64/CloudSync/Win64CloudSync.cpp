@@ -20,6 +20,7 @@
 #include <ctime>
 #include <set>
 #include <thread>
+#include <utility>
 #include <vector>
 #include <windows.h>
 #include <winhttp.h>
@@ -1106,6 +1107,116 @@ namespace
 		return true;
 	}
 
+	/** Direct children of parentId with exact file name (not folders); newest modifiedTime first. */
+	bool GoogleListDirectChildFilesNamed(const std::string &accessToken, const std::string &parentId,
+		const std::string &leafName, std::vector<std::pair<std::string, uint64_t>> &outNewestFirst, std::string &err)
+	{
+		outNewestFirst.clear();
+		std::vector<nlohmann::json> files;
+		if (!GoogleListChildren(accessToken, parentId, files, err))
+			return false;
+		for (const auto &f : files)
+		{
+			if (f.value("mimeType", std::string()) == "application/vnd.google-apps.folder")
+				continue;
+			if (f.value("name", std::string()) != leafName)
+				continue;
+			std::string id = f.value("id", std::string());
+			if (id.empty())
+				continue;
+			uint64_t ms = ParseIso8601UtcToUnixMs(f.value("modifiedTime", std::string()));
+			outNewestFirst.push_back({ std::move(id), ms });
+		}
+		std::sort(outNewestFirst.begin(), outNewestFirst.end(),
+			[](const std::pair<std::string, uint64_t> &a, const std::pair<std::string, uint64_t> &b) {
+				return a.second > b.second;
+			});
+		return true;
+	}
+
+	bool GoogleDeleteFileById(const std::string &accessToken, const std::string &fileId, std::string &err)
+	{
+		std::wstring path = Utf8ToWide("/drive/v3/files/" + fileId);
+		std::string headers = "Authorization: Bearer " + accessToken + "\r\n";
+		long http = 0;
+		std::string resp;
+		if (!WinHttpRequest(L"DELETE", L"www.googleapis.com", path, headers, nullptr, 0, http, resp, err))
+			return false;
+		if (http < 200 || http >= 300)
+		{
+			err = "Drive delete HTTP " + std::to_string(http) + " " + resp;
+			return false;
+		}
+		return true;
+	}
+
+	bool GoogleUpdateFileMedia(const std::string &accessToken, const std::string &fileId,
+		const std::vector<unsigned char> &bytes, std::string &err)
+	{
+		std::wstring path = Utf8ToWide(std::string("/upload/drive/v3/files/") + fileId + "?uploadType=media");
+		std::string headers = "Authorization: Bearer " + accessToken + "\r\nContent-Type: application/octet-stream\r\n";
+		long http = 0;
+		std::string resp;
+		if (!WinHttpRequest(L"PATCH", L"www.googleapis.com", path, headers, bytes.data(), (DWORD)bytes.size(), http, resp, err))
+			return false;
+		if (http < 200 || http >= 300)
+		{
+			err = "Drive update media HTTP " + std::to_string(http) + " " + resp;
+			return false;
+		}
+		return true;
+	}
+
+	bool GoogleDriveResumableUpdate(const std::string &accessToken, const std::string &fileId,
+		const std::vector<unsigned char> &bytes, std::string &err)
+	{
+		std::wstring pathW = Utf8ToWide(std::string("/upload/drive/v3/files/") + fileId + "?uploadType=resumable");
+		std::string headers = "Authorization: Bearer " + accessToken +
+			"\r\nContent-Type: application/json; charset=UTF-8\r\nX-Upload-Content-Type: application/octet-stream\r\n"
+			"X-Upload-Content-Length: " +
+			std::to_string(bytes.size()) + "\r\n";
+		long http = 0;
+		std::string resp;
+		std::string location;
+		static const char kEmptyJson[] = "{}";
+		if (!WinHttpRequest(L"PATCH", L"www.googleapis.com", pathW, headers, kEmptyJson,
+				(DWORD)(sizeof(kEmptyJson) - 1u), http, resp, err, &location))
+			return false;
+		if (http < 200 || http >= 300)
+		{
+			err = "Drive resumable update init HTTP " + std::to_string(http) + " " + resp;
+			return false;
+		}
+		if (location.empty())
+		{
+			err = "Drive resumable update missing Location";
+			return false;
+		}
+		std::wstring putHost, putPath;
+		if (!ParseHttpsUrl(location, putHost, putPath))
+		{
+			err = "Drive resumable update bad Location URL";
+			return false;
+		}
+		std::string rangeHdr = bytes.empty() ? std::string("bytes */0")
+											 : ("bytes 0-" + std::to_string(bytes.size() - 1) + "/" + std::to_string(bytes.size()));
+		std::string putHeaders = "Authorization: Bearer " + accessToken +
+			"\r\nContent-Type: application/octet-stream\r\nContent-Length: " + std::to_string(bytes.size()) +
+			"\r\nContent-Range: " + rangeHdr + "\r\n";
+		long httpPut = 0;
+		std::string putResp;
+		const void *putBody = bytes.empty() ? nullptr : bytes.data();
+		const DWORD putLen = (DWORD)bytes.size();
+		if (!WinHttpRequest(L"PUT", putHost, putPath, putHeaders, putBody, putLen, httpPut, putResp, err, nullptr))
+			return false;
+		if (httpPut < 200 || httpPut >= 300)
+		{
+			err = "Drive resumable update PUT HTTP " + std::to_string(httpPut) + " " + putResp;
+			return false;
+		}
+		return true;
+	}
+
 	bool DropboxMaxModifiedInPrefix(const std::string &accessToken, const std::string &pathPrefix, uint64_t &outMax,
 		bool &anyFile, std::string &err)
 	{
@@ -1530,21 +1641,45 @@ bool Win64CloudSync::UploadSaveFolder(const char *utf8SaveFolderName, std::strin
 				errOut = "Empty file name in save folder.";
 				return false;
 			}
-			/* <= 4 MiB: multipart media upload + move into world folder + rename (legacy path). */
+			std::vector<std::pair<std::string, uint64_t>> existing;
+			if (!GoogleListDirectChildFilesNamed(accessToken, worldFolderId, leaf, existing, errOut))
+				return false;
+			for (size_t di = 1; di < existing.size(); ++di)
+			{
+				std::string ed;
+				(void)GoogleDeleteFileById(accessToken, existing[di].first, ed);
+			}
+			const bool haveExisting = !existing.empty();
 			if (bytes.size() > kLargeFileWarnBytes)
 			{
-				if (!GoogleDriveUploadResumable(accessToken, worldFolderId, leaf, bytes, errOut))
-					return false;
+				if (haveExisting)
+				{
+					if (!GoogleDriveResumableUpdate(accessToken, existing[0].first, bytes, errOut))
+						return false;
+				}
+				else
+				{
+					if (!GoogleDriveUploadResumable(accessToken, worldFolderId, leaf, bytes, errOut))
+						return false;
+				}
 			}
 			else
 			{
-				std::string fileId, parent0;
-				if (!GoogleUploadMedia(accessToken, bytes, fileId, parent0, errOut))
-					return false;
-				if (!GooglePatchParents(accessToken, fileId, worldFolderId, parent0, errOut))
-					return false;
-				if (!GooglePatchName(accessToken, fileId, leaf, errOut))
-					return false;
+				if (haveExisting)
+				{
+					if (!GoogleUpdateFileMedia(accessToken, existing[0].first, bytes, errOut))
+						return false;
+				}
+				else
+				{
+					std::string fileId, parent0;
+					if (!GoogleUploadMedia(accessToken, bytes, fileId, parent0, errOut))
+						return false;
+					if (!GooglePatchParents(accessToken, fileId, worldFolderId, parent0, errOut))
+						return false;
+					if (!GooglePatchName(accessToken, fileId, leaf, errOut))
+						return false;
+				}
 			}
 		}
 		TouchLastSync(wlm);
