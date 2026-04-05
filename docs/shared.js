@@ -7,7 +7,7 @@ const TITLE_ID = "C7923";
 const OAUTH_REDIRECT_URI = new URL("oauth-callback.html", window.location.href).href;
 
 const OAUTH_CLIENT_IDS = {
-  google: "",
+  google: "784521568846-s4oge3car67hrs4v3jpqem5odb941thd.apps.googleusercontent.com",
   microsoft: "",
   dropbox: "",
 };
