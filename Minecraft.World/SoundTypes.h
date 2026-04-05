@@ -218,12 +218,6 @@ enum eSOUND_TYPE
 	eSoundType_MOB_RABBIT_DEATH,
 	eSoundType_MOB_RABBIT_HOP,
 
-		eSoundType_MOB_PHANTOM_BITE,
-eSoundType_MOB_PHANTOM_DEATH,
-eSoundType_MOB_PHANTOM_FLAP,
-eSoundType_MOB_PHANTOM_HURT,
-eSoundType_MOB_PHANTOM_IDLE,
-eSoundType_MOB_PHANTOM_SWOOP,
 
 	eSoundType_MAX
 };
@@ -237,6 +231,9 @@ enum ESoundEffect
 	eSFX_Focus,
 	eSFX_Press,
 	eSFX_Scroll,
+	eSFX_BookTurn1,
+	eSFX_BookTurn2,
+	eSFX_BookTurn3,
 	eSFX_MAX
 };
 

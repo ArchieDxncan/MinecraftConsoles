@@ -1,6 +1,7 @@
 set(BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Common/")
 
 set(_MINECRAFT_CLIENT_COMMON_ROOT
+  "${CMAKE_CURRENT_SOURCE_DIR}/ClassDiagram.cd"
   "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt"
 )
 source_group("" FILES ${_MINECRAFT_CLIENT_COMMON_ROOT})
@@ -314,6 +315,10 @@ set(_MINECRAFT_CLIENT_COMMON_COMMON_UI_ALL_PLATFORMS
   "${BASE_DIR}/UI/IUIScene_PauseMenu.h"
   "${BASE_DIR}/UI/IUIScene_TradingMenu.cpp"
   "${BASE_DIR}/UI/IUIScene_TradingMenu.h"
+
+  "${BASE_DIR}/UI/IUIScene_WritingBookMenu.cpp"
+  "${BASE_DIR}/UI/IUIScene_WritingBookMenu.h"
+
   "${BASE_DIR}/UI/UIEnums.h"
   "${BASE_DIR}/UI/UIStructs.h"
 )
@@ -617,8 +622,7 @@ set(_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_MODEL
   "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandModel.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteModel.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteModel.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/PhantomModel.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/PhantomModel.h"
+
 )
 source_group("net/minecraft/client/model" FILES ${_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_MODEL})
 
@@ -893,12 +897,8 @@ set(_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_RENDERER_ENTITY
   "${CMAKE_CURRENT_SOURCE_DIR}/ZombieRenderer.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/RabbitRenderer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/RabbitRenderer.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/PhantomRenderer.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/PhantomRenderer.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandRenderer.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ArmorStandRenderer.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteRenderer.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/EndermiteRenderer.h"
 )
 source_group("net/minecraft/client/renderer/entity" FILES ${_MINECRAFT_CLIENT_COMMON_NET_MINECRAFT_CLIENT_RENDERER_ENTITY})
 

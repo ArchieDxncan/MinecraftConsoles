@@ -799,6 +799,21 @@ bool CMinecraftApp::LoadBeaconMenu(int iPad ,shared_ptr<Inventory> inventory, sh
 	return success;
 }
 
+bool CMinecraftApp::LoadWritingBookMenu(int iPad, shared_ptr<ItemInstance> instance, shared_ptr<Player> player, bool editable)
+{
+	bool success = true;
+
+	WritingBookMenuParams* initData = new WritingBookMenuParams();
+	initData->itemInstance = instance;
+	initData->player = player;
+	initData->iPad = iPad;
+	initData->isEditable = editable;
+
+	success = ui.NavigateToScene(iPad, eUIScene_BookMenu, initData);
+
+	return success;
+}
+
 //////////////////////////////////////////////
 // GAME SETTINGS
 //////////////////////////////////////////////
@@ -8733,8 +8748,7 @@ wstring CMinecraftApp::getEntityName(eINSTANCEOF type)
 		return app.GetString(IDS_BAT);
 	case eTYPE_RABBIT:
 		return app.GetString(IDS_RABBIT);
-	case eTYPE_PHANTOM:
-		return L"Phantom";
+	
 	};
 
 	return L"";

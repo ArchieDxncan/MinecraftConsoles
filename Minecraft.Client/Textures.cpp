@@ -175,8 +175,7 @@ const wchar_t *Textures::preLoaded[TN_COUNT] =
 	L"mob/rabbit/white_splotched",
 	L"mob/rabbit/toast",
 	L"mob/rabbit/caerbannog",
-	L"mob/phantom",
-	L"mob/phantom_eyes",
+	
 
 
 	L"item/trapped",

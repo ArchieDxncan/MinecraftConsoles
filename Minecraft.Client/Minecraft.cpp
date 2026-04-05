@@ -1537,12 +1537,15 @@ void Minecraft::run_middle()
 							}
 						}
 
-							for (int slot = 0; slot < 9; slot++)
-							{
-								if (g_KBMInput.IsKeyPressed('1' + slot))
+							//Prevent hotbar switching in menu
+							if (!ui.GetMenuDisplayed(0)) {
+								for (int slot = 0; slot < 9; slot++)
 								{
-									if (localplayers[i]->inventory)
-										localplayers[i]->inventory->selected = slot;
+									if (g_KBMInput.IsKeyPressed('1' + slot))
+									{
+										if (localplayers[i]->inventory)
+											localplayers[i]->inventory->selected = slot;
+									}
 								}
 							}
 						}
@@ -2645,6 +2648,12 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 
 				case Item::expBottle_Id:
 					if (bUseItem) *piUse=IDS_TOOLTIPS_THROW;
+					break;
+				case Item::writingBook_Id:
+					*piUse = IDS_TOOLTIPS_OPEN;
+					break;
+				case Item::writtenBook_Id:
+					*piUse = IDS_TOOLTIPS_READ;
 					break;
 				}
 			}
@@ -3891,7 +3900,8 @@ void Minecraft::tick(bool bFirst, bool bUpdateTextures)
 
 		if((player->ullButtonsPressed&(1LL<<MINECRAFT_ACTION_DROP)) && gameMode->isInputAllowed(MINECRAFT_ACTION_DROP))
 		{
-			player->drop();
+            bool ctrlHeld = g_KBMInput.IsKBMActive() && g_KBMInput.IsKeyDown(KeyboardMouseInput::KEY_CONTROL);
+			player->drop(ctrlHeld);
 		}
 
 		uint64_t ullButtonsPressed=player->ullButtonsPressed;
