@@ -1,7 +1,8 @@
 // PlayFab Classic CloudScript — third-party cloud save control plane (no PlayFab Cloud Save / Files).
 // Merge into your main CloudScript revision (Title → Automation → CloudScript).
 //
-// Title Internal Data (Game Manager → Title Data → Internal): key "LCE_CloudSave_Secrets"
+// Title INTERNAL data only — NOT public "Title Data".
+// Game Manager: Title settings → Internal title data (or Data → Title internal data), key "LCE_CloudSave_Secrets"
 //   JSON: {
 //     "google_client_id":"", "google_client_secret":"",
 //     "microsoft_client_id":"", "microsoft_client_secret":"",
@@ -31,12 +32,42 @@ function lceSafeJsonParse(s) {
 	}
 }
 
+function lceGetInternalDataEntry(dataObj, exactKey) {
+	if (!dataObj) return null;
+	var entry = dataObj[exactKey];
+	if (entry) return entry;
+	var want = String(exactKey).toLowerCase();
+	for (var k in dataObj) {
+		if (!Object.prototype.hasOwnProperty.call(dataObj, k)) continue;
+		if (String(k).toLowerCase() === want) return dataObj[k];
+	}
+	return null;
+}
+
+function lceEntryValue(entry) {
+	if (!entry) return null;
+	var v = entry.Value != null ? entry.Value : entry.value;
+	return v;
+}
+
 function lceGetSecrets() {
 	var res = server.GetTitleInternalData({ Keys: ["LCE_CloudSave_Secrets"] });
-	if (!res || !res.Data || !res.Data.LCE_CloudSave_Secrets) {
+	var dataObj = res && (res.Data || res.data);
+	var entry = lceGetInternalDataEntry(dataObj, "LCE_CloudSave_Secrets");
+	if (!entry) {
 		return null;
 	}
-	return lceSafeJsonParse(res.Data.LCE_CloudSave_Secrets.Value);
+	var raw = lceEntryValue(entry);
+	if (raw == null || String(raw).trim() === "") {
+		return null;
+	}
+	var parsed = lceSafeJsonParse(raw);
+	if (!parsed) {
+		throw new Error(
+			"LCE_CloudSave_Secrets value is not valid JSON. Fix the Value in Internal title data (matching quotes and braces)."
+		);
+	}
+	return parsed;
 }
 
 function lceFormEncode(obj) {
@@ -50,24 +81,39 @@ function lceFormEncode(obj) {
 
 function lceHttpPostForm(url, formBody) {
 	var h = null;
+	var hdr = { "Content-Type": "application/x-www-form-urlencoded" };
 	try {
-		h = http.request(url, "post", formBody, "application/x-www-form-urlencoded", null);
+		h = http.request(url, "post", formBody, "application/x-www-form-urlencoded", hdr);
 	} catch (e) {
-		return { ok: false, body: "", err: String(e) };
+		var em = e && (e.message || e.Message) ? String(e.message || e.Message) : String(e);
+		return {
+			ok: false,
+			body: "",
+			err:
+				em +
+				" — If this is an allowlist error, add this host in Title settings → API Features → External HTTP.",
+		};
 	}
 	return { ok: true, body: h, err: "" };
 }
 
 function lceHttpPostJson(url, jsonStr, authBearer) {
-	var headers = null;
+	var headers = { "Content-Type": "application/json" };
 	if (authBearer) {
-		headers = { Authorization: "Bearer " + authBearer };
+		headers.Authorization = "Bearer " + authBearer;
 	}
 	try {
 		var h = http.request(url, "post", jsonStr, "application/json", headers);
 		return { ok: true, body: h, err: "" };
 	} catch (e2) {
-		return { ok: false, body: "", err: String(e2) };
+		var em2 = e2 && (e2.message || e2.Message) ? String(e2.message || e2.Message) : String(e2);
+		return {
+			ok: false,
+			body: "",
+			err:
+				em2 +
+				" — If this is an allowlist error, add this host in Title settings → API Features → External HTTP.",
+		};
 	}
 }
 
@@ -298,7 +344,9 @@ function lceRefreshDropbox(secrets, refreshToken) {
 handlers.LCE_CloudSave_OAuthComplete = function (args, context) {
 	var secrets = lceGetSecrets();
 	if (!secrets) {
-		throw new Error("Title Internal Data LCE_CloudSave_Secrets is not configured.");
+		throw new Error(
+			"Missing Internal title data key LCE_CloudSave_Secrets. In PlayFab Game Manager open the same title your game uses, go to Internal title data (not public Title Data), add Key LCE_CloudSave_Secrets and paste your JSON Value, then Save."
+		);
 	}
 	var provider = (args && args.provider) || "";
 	var code = (args && args.code) || "";
@@ -361,7 +409,9 @@ handlers.LCE_CloudSave_GetConfig = function (args, context) {
 handlers.LCE_CloudSave_GetAccessToken = function (args, context) {
 	var secrets = lceGetSecrets();
 	if (!secrets) {
-		throw new Error("LCE_CloudSave_Secrets not configured.");
+		throw new Error(
+			"Missing Internal title data key LCE_CloudSave_Secrets (not public Title Data). Add it under Title settings → Internal title data."
+		);
 	}
 	var t = lceReadInternalTokens();
 	if (!t.refreshToken || !t.provider) {
