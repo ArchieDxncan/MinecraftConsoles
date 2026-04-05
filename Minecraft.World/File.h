@@ -34,6 +34,8 @@ public:
 	int64_t length();
 	int64_t lastModified();
 	const wstring getPath() const; // 4J Jev: TODO
+	// Win32 open: on UWP resolves packaged vs LocalState; elsewhere same as getPath().
+	wstring getResolvedOsPathForOpenW() const;
 	wstring getName() const;
 
 	static int hash_fnct(const File &k);

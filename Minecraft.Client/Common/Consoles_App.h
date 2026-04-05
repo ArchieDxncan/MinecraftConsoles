@@ -333,6 +333,10 @@ public:
 	void MountNextDLC(int iPad);
 	//static int DLCReadCallback(LPVOID pParam,C4JStorage::DLC_FILE_DETAILS *pDLCData);
 	void HandleDLC(DLCPack *pack);
+#if defined(_WINDOWS64)
+	// When GetInstalledDLC returns 0 (no store-backed mounts), load DLC shipped under Windows64\DLC\ in the package.
+	void DiscoverPackagedWindows64DlcFromLayout();
+#endif
 	bool DLCInstallPending()	{return m_bDLCInstallPending;}
 	bool DLCInstallProcessCompleted()	{return m_bDLCInstallProcessCompleted;}
 	void ClearDLCInstalled()	{ m_bDLCInstallProcessCompleted=false;}
@@ -659,6 +663,9 @@ private:
 	bool m_bDLCInstallPending;
 	int m_iTotalDLC;
 	int m_iTotalDLCInstalled;
+#if defined(_WINDOWS64)
+	bool m_bWindows64PackagedDlcScanned;
+#endif
 
 public:
 	// 4J Stu - We need to be able to detect when a guest player signs in or out causing other guest players to change their xuid

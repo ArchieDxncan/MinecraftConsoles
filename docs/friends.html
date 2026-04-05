@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Friends — LegacyDxncan Account Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="friends.html" class="nav-link nav-link-active">Friends</a>
+        <a href="cloud.html" class="nav-link">Cloud saves</a>
+      </nav>
+    </header>
+
+    <main class="page-main">
+      <h1>Friends</h1>
+      <p class="sub">PlayFab friends and LegacyDxncan friend requests.</p>
+
+      <div id="screen-guest" class="card">
+        <p>You need to sign in on the home page first.</p>
+        <p><a href="index.html" class="inline-link">Go to Home to sign in</a></p>
+      </div>
+
+      <div id="screen-app" class="hidden">
+        <div class="session-bar">
+          <span>Signed in as <strong id="signed-username"></strong></span>
+          <button type="button" id="btn-logout" class="btn-ghost">Sign out</button>
+        </div>
+
+        <div class="card">
+          <section class="social-section add-friend" aria-labelledby="add-friend-heading">
+            <h2 id="add-friend-heading">Add friend</h2>
+            <div class="social-section-body">
+              <label for="friend-username" class="visually-hidden">Minecraft username</label>
+              <div class="row add-friend-row">
+                <input
+                  id="friend-username"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="e.g. Notch"
+                  spellcheck="false"
+                />
+                <button type="button" id="btn-add-friend" class="btn-primary">Add</button>
+              </div>
+              <p class="social-section-note">
+                Same username as shown on the in-game leaderboard.
+              </p>
+            </div>
+          </section>
+
+          <div id="app-error" class="error hidden" role="alert"></div>
+
+          <section class="social-section friend-requests" aria-labelledby="friend-requests-heading">
+            <h2 id="friend-requests-heading">Friend requests</h2>
+            <div id="friend-requests-list"></div>
+          </section>
+
+          <section class="social-section friends" aria-labelledby="friends-heading">
+            <h2 id="friends-heading">Friends</h2>
+            <div id="friend-list"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script src="shared.js"></script>
+    <script src="friends-page.js"></script>
+  </body>
+</html>

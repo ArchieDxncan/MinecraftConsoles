@@ -170,6 +170,9 @@ CMinecraftApp::CMinecraftApp()
 	m_bDLCInstallPending=false;
 	m_iTotalDLC = 0;
 	m_iTotalDLCInstalled = 0;
+#if defined(_WINDOWS64)
+	m_bWindows64PackagedDlcScanned = false;
+#endif
 	mfTrialPausedTime=0.0f;
 	m_uiAutosaveTimer=0;
 	ZeroMemory(m_pszUniqueMapName,14);
@@ -258,11 +261,16 @@ void CMinecraftApp::DebugPrintf(const char *szFormat, ...)
     char    buf[1024];
     vsnprintf(buf, sizeof(buf), szFormat, ap);
     va_end(ap);
-    OutputDebugStringA(buf);
 #if defined(_WINDOWS64) && defined(_UWP)
-    // UWP: verbose game spew goes to OutputDebugString only (LogTrace); mc_debug.log stays small.
-    extern void LogTrace(const char *fmt, ...);
+    #if defined(NDEBUG)
+    extern void UwpLogDebugPrintfLine(const char* line);
+    UwpLogDebugPrintfLine(buf);
+    #else
+    extern void LogTrace(const char* fmt, ...);
     LogTrace("%s", buf);
+    #endif
+#else
+    OutputDebugStringA(buf);
 #endif
 #endif
 
@@ -319,6 +327,14 @@ void CMinecraftApp::DebugPrintf(int user, const char *szFormat, ...)
         OutputDebugStringA(buf);
         break;
     }
+#elif defined(_WINDOWS64) && defined(_UWP)
+    #if defined(NDEBUG)
+    extern void UwpLogDebugPrintfLine(const char* line);
+    UwpLogDebugPrintfLine(buf);
+    #else
+    extern void LogTrace(const char* fmt, ...);
+    LogTrace("%s", buf);
+    #endif
 #else
     OutputDebugStringA(buf);
 #endif
@@ -5408,10 +5424,159 @@ bool CMinecraftApp::StartInstallDLCProcess(int iPad)
 
 }
 
+#if defined(_WINDOWS64)
+namespace {
+bool Win64PathEndsWithPck(const std::wstring& name)
+{
+	static const wchar_t kSuf[] = L".pck";
+	const size_t n = sizeof(kSuf) / sizeof(kSuf[0]) - 1;
+	return name.length() >= n && _wcsicmp(name.c_str() + name.length() - n, kSuf) == 0;
+}
+
+std::wstring Win64StripPckExtension(std::wstring name)
+{
+	static const wchar_t kSuf[] = L".pck";
+	const size_t n = sizeof(kSuf) / sizeof(kSuf[0]) - 1;
+	if (name.length() >= n && _wcsicmp(name.c_str() + name.length() - n, kSuf) == 0)
+		name.resize(name.length() - n);
+	return name;
+}
+
+// On-disc layout: prefer Windows64Media\DLC (CMake copies Windows64Media next to exe); also accept Windows64\DLC.
+void ScanDlcRootFolder(const File& dlcRoot)
+{
+	std::vector<File*>* entries = dlcRoot.listFiles();
+	if (!entries)
+		return;
+
+	Minecraft* mc = Minecraft::GetInstance();
+
+	for (File* entry : *entries)
+	{
+		if (!entry)
+			continue;
+		const wstring& en = entry->getName();
+		if (en == L"." || en == L"..")
+		{
+			delete entry;
+			continue;
+		}
+
+		std::vector<std::string> pckPaths;
+		std::wstring displayName;
+
+		if (entry->isFile() && Win64PathEndsWithPck(entry->getName()) && entry->exists())
+		{
+			pckPaths.push_back(wstringtofilename(entry->getPath()));
+			displayName = Win64StripPckExtension(entry->getName());
+		}
+		else if (entry->isDirectory())
+		{
+			displayName = entry->getName();
+			const std::wstring dirPath = entry->getPath();
+			File preferred(dirPath + L"\\TexturePack.pck");
+			if (preferred.exists() && preferred.isFile())
+				pckPaths.push_back(wstringtofilename(preferred.getPath()));
+			else
+			{
+				File packDir(dirPath);
+				std::vector<File*>* inner = packDir.listFiles();
+				if (inner)
+				{
+					for (File* innerF : *inner)
+					{
+						if (innerF && innerF->isFile() && Win64PathEndsWithPck(innerF->getName()) && innerF->exists())
+							pckPaths.push_back(wstringtofilename(innerF->getPath()));
+						delete innerF;
+					}
+					delete inner;
+				}
+			}
+		}
+
+		delete entry;
+
+		if (pckPaths.empty())
+			continue;
+		if (displayName.empty())
+			displayName = L"Pack";
+
+		DLCPack* pack = new DLCPack(displayName, 1u);
+		app.m_dlcManager.addPack(pack);
+		DWORD dwFilesProcessed = 0;
+		bool anyOk = false;
+		for (const std::string& apath : pckPaths)
+		{
+			if (app.m_dlcManager.readDLCDataFile(dwFilesProcessed, apath, pack))
+				anyOk = true;
+		}
+		if (!anyOk || dwFilesProcessed == 0)
+		{
+			app.m_dlcManager.removePack(pack);
+			continue;
+		}
+		app.DebugPrintf("DiscoverPackagedWindows64DlcFromLayout: loaded pack \"%ls\" (%zu .pck) from %ls\n",
+			displayName.c_str(), pckPaths.size(), dlcRoot.getPath().c_str());
+		if (mc && mc->skins && pack->getDLCItemsCount(DLCManager::e_DLCType_Texture) > 0)
+			mc->skins->addTexturePackFromDLC(pack, pack->GetPackId());
+	}
+
+	delete entries;
+}
+} // namespace
+
+void CMinecraftApp::DiscoverPackagedWindows64DlcFromLayout()
+{
+	if (m_bWindows64PackagedDlcScanned)
+		return;
+
+	static const wchar_t* kDlcRelSuffixes[] = { L"Windows64Media\\DLC", L"Windows64\\DLC", nullptr };
+
+	bool anyScanned = false;
+	for (int si = 0; kDlcRelSuffixes[si] != nullptr; ++si)
+	{
+		const wchar_t* suffix = kDlcRelSuffixes[si];
+		File rel(suffix);
+		bool didScan = false;
+		if (rel.exists() && rel.isDirectory())
+		{
+			ScanDlcRootFolder(rel);
+			anyScanned = didScan = true;
+		}
+#if defined(_UWP)
+		if (!didScan)
+		{
+			extern char g_PackageRootPath[512];
+			std::string pkgA(g_PackageRootPath);
+			if (!pkgA.empty() && pkgA.back() != '\\' && pkgA.back() != '/')
+				pkgA += '\\';
+			char narrowSuffix[320] = {};
+			WideCharToMultiByte(CP_ACP, 0, suffix, -1, narrowSuffix, static_cast<int>(sizeof(narrowSuffix)) - 1, nullptr, nullptr);
+			pkgA += narrowSuffix;
+			File pkgDlc(convStringToWstring(pkgA));
+			if (pkgDlc.exists() && pkgDlc.isDirectory())
+			{
+				ScanDlcRootFolder(pkgDlc);
+				anyScanned = true;
+			}
+		}
+#endif
+	}
+
+	if (!anyScanned)
+		app.DebugPrintf("DiscoverPackagedWindows64DlcFromLayout: no Windows64Media\\DLC or Windows64\\DLC\n");
+	m_bWindows64PackagedDlcScanned = true;
+}
+#endif // _WINDOWS64
+
 // Installed DLC callback
 int CMinecraftApp::DLCInstalledCallback(LPVOID pParam,int iInstalledC,int iPad)
 {
 	app.DebugPrintf("--- CMinecraftApp::DLCInstalledCallback: totalDLC=%i, pad=%i.\n", iInstalledC, iPad);
+#if defined(_WINDOWS64)
+	if (iInstalledC == 0)
+		app.DiscoverPackagedWindows64DlcFromLayout();
+#endif
 	app.m_iTotalDLC = iInstalledC;
 	app.MountNextDLC(iPad);
 	return 0;
@@ -10159,7 +10324,7 @@ enum ETitleUpdateTexturePacks
 };
 
 #ifdef _WINDOWS64
-wstring titleUpdateTexturePackRoot = L"Windows64\\DLC\\";
+wstring titleUpdateTexturePackRoot = L"Windows64Media\\DLC\\";
 #elif defined(__ORBIS__)
 wstring titleUpdateTexturePackRoot = L"/app0/orbis/CU/DLC/";
 #elif defined(__PSVITA__)

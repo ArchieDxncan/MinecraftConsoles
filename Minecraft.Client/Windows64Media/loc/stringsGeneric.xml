@@ -9128,5 +9128,29 @@ All Ender Chests in a world are linked. Items placed into an Ender Chest are acc
 	<data name="IDS_DESC_BEETROOT_SOUP">
 		<value>Restores hunger when eaten. You keep the bowl when the soup is finished.</value>
 	</data>
+	<data name="IDS_TOOLTIPS_CLOUDSAVE">
+		<value>Cloud sync</value>
+	</data>
+	<data name="IDS_TEXT_CLOUDSAVE_SUB">
+		<value>Upload or download this world using the cloud provider linked in the LegacyDxncan Account Manager.</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_UPLOAD_BTN">
+		<value>Upload to cloud</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_DOWNLOAD_BTN">
+		<value>Download from cloud</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_CONFIRM_UPLOAD_TITLE">
+		<value>Upload to cloud</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_CONFIRM_UPLOAD_TEXT">
+		<value>Upload this world's files to your linked cloud storage?</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_CONFIRM_DOWNLOAD_TITLE">
+		<value>Download from cloud</value>
+	</data>
+	<data name="IDS_CLOUDSAVE_CONFIRM_DOWNLOAD_TEXT">
+		<value>Download from cloud will overwrite local files in this save. Continue?</value>
+	</data>
 
 </root>

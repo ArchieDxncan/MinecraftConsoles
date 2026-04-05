@@ -29,6 +29,7 @@
 #include "../../../Minecraft.World/NbtIo.h"
 #include "../../../Minecraft.World/compression.h"
 #include "../../../Minecraft.World/ConsoleSaveFileInputStream.h"
+#include "../../Windows64/Windows64_GameStoragePaths.h"
 
 static wstring FormatFolderSaveDisplayName(const wstring& rawName)
 {
@@ -110,31 +111,29 @@ static wstring ReadLevelNameFromSaveFile(const wstring& filePath)
     }
 
 #ifdef _UWP
-    // UWP folder-save filenames are generated as:
-    // v####-<worldName><MM>.<DD>.<HH>.<MM>.<SS>.mcs
-    // Use this deterministic extraction path to avoid heavy parsing in UI tick.
-    wstring fileNameOnly = filePath;
-    if (slashPos != wstring::npos && slashPos + 1 < filePath.size())
-        fileNameOnly = filePath.substr(slashPos + 1);
-
-    // Remove .mcs extension
-    if (fileNameOnly.size() > 4 && fileNameOnly.substr(fileNameOnly.size() - 4) == L".mcs")
-        fileNameOnly = fileNameOnly.substr(0, fileNameOnly.size() - 4);
-
-    // Remove version prefix v####-
-    size_t dashPos = fileNameOnly.find(L'-');
-    if (dashPos != wstring::npos && dashPos + 1 < fileNameOnly.size())
+    // Legacy flat save path only: v####-<worldName><MM>.<DD>.<HH>.<MM>.<SS>.mcs under Saves\ etc.
+    // GameHDD layout uses ...\<id>\saveData.ms — must fall through to NBT parsing below (same as desktop Win64).
+    if (filePath.size() >= 4 && _wcsicmp(filePath.c_str() + filePath.size() - 4, L".mcs") == 0)
     {
-        wstring payload = fileNameOnly.substr(dashPos + 1);
-        // Strip trailing timestamp (MM.DD.HH.MM.SS = 14 chars)
-        if (payload.size() > 14)
+        wstring fileNameOnly = filePath;
+        if (slashPos != wstring::npos && slashPos + 1 < filePath.size())
+            fileNameOnly = filePath.substr(slashPos + 1);
+
+        if (fileNameOnly.size() > 4 && _wcsicmp(fileNameOnly.c_str() + fileNameOnly.size() - 4, L".mcs") == 0)
+            fileNameOnly = fileNameOnly.substr(0, fileNameOnly.size() - 4);
+
+        size_t dashPos = fileNameOnly.find(L'-');
+        if (dashPos != wstring::npos && dashPos + 1 < fileNameOnly.size())
         {
-            wstring worldName = payload.substr(0, payload.size() - 14);
-            if (!worldName.empty() && worldName != L"world")
-                return worldName;
+            wstring payload = fileNameOnly.substr(dashPos + 1);
+            if (payload.size() > 14)
+            {
+                wstring worldName = payload.substr(0, payload.size() - 14);
+                if (!worldName.empty() && worldName != L"world")
+                    return worldName;
+            }
         }
     }
-    return L"";
 #endif
 
     // Parse through ConsoleSaveFileOriginal first (matches runtime save reader).
@@ -882,7 +881,7 @@ void UIScene_LoadOrJoinMenu::tick()
                     wchar_t wFilename[MAX_SAVEFILENAME_LENGTH];
                     ZeroMemory(wFilename, sizeof(wFilename));
                     mbstowcs(wFilename, m_pSaveDetails->SaveInfoA[origIdx].UTF8SaveFilename, MAX_SAVEFILENAME_LENGTH - 1);
-                    wstring filePath = wstring(L"Windows64\\GameHDD\\") + wstring(wFilename) + wstring(L"\\saveData.ms");
+                    wstring filePath = Win64_GetGameHddRootW() + L"\\" + wstring(wFilename) + L"\\saveData.ms";
 
                     HANDLE hFile = CreateFileW(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
                     DWORD fileSize = 0;
@@ -1587,7 +1586,7 @@ int UIScene_LoadOrJoinMenu::KeyboardCompleteWorldNameCallback(LPVOID lpParam,boo
                 // Build the sidecar path: Windows64\GameHDD\{folder}\worldname.txt
                 wchar_t wFilename[MAX_SAVEFILENAME_LENGTH] = {};
                 mbstowcs(wFilename, pClass->m_saveDetails[listPos].UTF8SaveFilename, MAX_SAVEFILENAME_LENGTH - 1);
-                wstring sidecarPath = wstring(L"Windows64\\GameHDD\\") + wstring(wFilename) + wstring(L"\\worldname.txt");
+                wstring sidecarPath = Win64_GetGameHddRootW() + L"\\" + wstring(wFilename) + L"\\worldname.txt";
 
                 FILE *fw = nullptr;
                 if (_wfopen_s(&fw, sidecarPath.c_str(), L"w") == 0 && fw)
@@ -2576,17 +2575,16 @@ int UIScene_LoadOrJoinMenu::DeleteSaveDialogReturned(void *pParam,int iPad,C4JSt
 
     if(result==C4JStorage::EMessage_ResultDecline && validSelection)
     {
-        if(
-#ifdef _UWP
-            app.GetLoadSavesFromFolderEnabled()
-#else
-            app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled()
-#endif
-          )
+        bool skipGameHddDelete = false;
+#if defined(_WINDOWS64) && !defined(_UWP)
+        // Debug-only flat Saves\*.mcs mode has no per-save GameHDD folder to remove here.
+        if (app.DebugSettingsOn() && app.GetLoadSavesFromFolderEnabled())
         {
-            pClass->m_bIgnoreInput=false;
+            pClass->m_bIgnoreInput = false;
+            skipGameHddDelete = true;
         }
-        else
+#endif
+        if (!skipGameHddDelete)
         {
 #ifdef _WINDOWS64
             {
@@ -2597,8 +2595,9 @@ int UIScene_LoadOrJoinMenu::DeleteSaveDialogReturned(void *pParam,int iPad,C4JSt
                 {
                     wchar_t wFilename[MAX_SAVEFILENAME_LENGTH] = {};
                     mbstowcs_s(nullptr, wFilename, MAX_SAVEFILENAME_LENGTH, pClass->m_saveDetails[displayIdx].UTF8SaveFilename, MAX_SAVEFILENAME_LENGTH - 1);
+                    std::wstring root = Win64_GetGameHddRootW();
                     wchar_t wFolderPath[MAX_PATH] = {};
-                    swprintf_s(wFolderPath, MAX_PATH, L"Windows64\\GameHDD\\%s", wFilename);
+                    swprintf_s(wFolderPath, MAX_PATH, L"%s\\%s", root.c_str(), wFilename);
                     bSuccess = Win64_DeleteSaveDirectory(wFolderPath);
                 }
                 UIScene_LoadOrJoinMenu::DeleteSaveDataReturned((LPVOID)pClass->GetCallbackUniqueId(), bSuccess);

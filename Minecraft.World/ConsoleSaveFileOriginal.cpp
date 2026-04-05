@@ -16,6 +16,10 @@
 #include <cstdio>
 #endif
 
+#if defined(_WINDOWS64)
+#include "../Minecraft.Client/Windows64/Windows64_GameStoragePaths.h"
+#endif
+
 #ifdef _XBOX
 #define RESERVE_ALLOCATION  MEM_RESERVE | MEM_LARGE_PAGES
 #define COMMIT_ALLOCATION  MEM_COMMIT | MEM_LARGE_PAGES
@@ -26,6 +30,57 @@
 
 unsigned int ConsoleSaveFileOriginal::pagesCommitted = 0;
 void *ConsoleSaveFileOriginal::pvHeap = nullptr;
+
+#if defined(_WINDOWS64)
+static void Win64_WriteWorldnameSidecarAfterSaveIfNeeded()
+{
+#ifndef _DURANGO
+	char saveFolder[MAX_SAVEFILENAME_LENGTH] = {};
+	StorageManager.GetSaveUniqueFilename(saveFolder);
+	if (saveFolder[0] == '\0')
+		return;
+
+	wchar_t wFolder[MAX_SAVEFILENAME_LENGTH] = {};
+	size_t conv = 0;
+	mbstowcs_s(&conv, wFolder, saveFolder, _TRUNCATE);
+	if (!wFolder[0])
+		return;
+
+	std::wstring sidecar = Win64_GetGameHddRootW() + L"\\" + std::wstring(wFolder) + L"\\worldname.txt";
+
+	DWORD sidecarAttr = GetFileAttributesW(sidecar.c_str());
+	const bool sidecarExists =
+		sidecarAttr != INVALID_FILE_ATTRIBUTES && !(sidecarAttr & FILE_ATTRIBUTE_DIRECTORY);
+	if (sidecarExists)
+		return;
+
+	wstring worldName;
+	if (MinecraftServer::getInstance() != nullptr &&
+		MinecraftServer::getInstance()->levels[0] != nullptr &&
+		MinecraftServer::getInstance()->levels[0]->getLevelData() != nullptr)
+	{
+		worldName = MinecraftServer::getInstance()->levels[0]->getLevelData()->getLevelName();
+	}
+	if (worldName.empty())
+		return;
+
+	bool looksLikeFileName = (worldName.find(L".mcs") != wstring::npos);
+	if (worldName == L"." || looksLikeFileName)
+		return;
+
+	char narrowName[512] = {};
+	WideCharToMultiByte(CP_ACP, 0, worldName.c_str(), -1, narrowName, static_cast<int>(sizeof(narrowName)) - 1, nullptr, nullptr);
+
+	FILE* fw = nullptr;
+	if (_wfopen_s(&fw, sidecar.c_str(), L"w") == 0 && fw)
+	{
+		fputs(narrowName, fw);
+		fputc('\n', fw);
+		fclose(fw);
+	}
+#endif
+}
+#endif
 
 ConsoleSaveFileOriginal::ConsoleSaveFileOriginal(const wstring &fileName, LPVOID pvSaveData /*= nullptr*/, DWORD dFileSize /*= 0*/, bool forceCleanSave /*= false*/, ESavePlatform plat /*= SAVE_FILE_PLATFORM_LOCAL*/)
 {
@@ -860,6 +915,11 @@ void ConsoleSaveFileOriginal::Flush(bool autosave, bool updateThumbnail )
 int ConsoleSaveFileOriginal::SaveSaveDataCallback(LPVOID lpParam,bool bRes)
 {
 	ConsoleSaveFile *pClass=static_cast<ConsoleSaveFile *>(lpParam);
+	(void)pClass;
+#if defined(_WINDOWS64)
+	if (bRes)
+		Win64_WriteWorldnameSidecarAfterSaveIfNeeded();
+#endif
 
 	return 0;
 }

@@ -9,6 +9,9 @@
 #ifdef __ORBIS__
 #include <error_dialog.h>
 #endif
+#ifdef _WINDOWS64
+#include "../../Windows64/CloudSync/Win64CloudSync.h"
+#endif
 
 Random *UIScene_MainMenu::random = new Random();
 
@@ -2002,6 +2005,10 @@ void UIScene_MainMenu::tick()
 		LoadTrial();
 	}
 
+#endif
+
+#ifdef _WINDOWS64
+	Win64CloudSync::TickTitleScreenCloudSync(static_cast<uint32_t>(GetTickCount()));
 #endif
 }
 

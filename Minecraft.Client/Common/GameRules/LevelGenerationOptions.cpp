@@ -472,7 +472,7 @@ void LevelGenerationOptions::loadBaseSaveData()
 
 			if (grf.exists())
 			{
-				wstring path = grf.getPath();
+				wstring path = grf.getResolvedOsPathForOpenW();
 				HANDLE fileHandle = CreateFileW(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 
 				if (fileHandle != INVALID_HANDLE_VALUE)
@@ -500,7 +500,7 @@ void LevelGenerationOptions::loadBaseSaveData()
 
 		if (save.exists())
 		{
-			wstring path = save.getPath();
+			wstring path = save.getResolvedOsPathForOpenW();
 			HANDLE fileHandle = CreateFileW(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 
 			if (fileHandle != INVALID_HANDLE_VALUE)

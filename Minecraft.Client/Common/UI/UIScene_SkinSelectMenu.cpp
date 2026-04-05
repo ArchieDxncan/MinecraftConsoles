@@ -1173,7 +1173,7 @@ std::wstring fakeWideToRealWide(const wchar_t* original)
 	int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, nullptr, 0);
 	std::wstring wName(len, 0);
 	MultiByteToWideChar(CP_UTF8, 0, name, -1, &wName[0], len);
-	return wName.c_str();
+	return wName;
 }
 
 void UIScene_SkinSelectMenu::updatePackDisplay()
@@ -1183,9 +1183,12 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(m_packIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(m_packIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		// Fix the incorrect string type on title to display correctly
+#if defined(_WINDOWS64)
+		// Real UTF-16 pack names from on-disc layout / DLC manager (not UTF-8 bytes in a wchar buffer).
+		setCentreLabel(thisPack->getName());
+#else
 		setCentreLabel(fakeWideToRealWide(thisPack->getName().c_str()));
-		//setCentreLabel(thisPack->getName().c_str());
+#endif
 	}
 	else
 	{
@@ -1204,9 +1207,11 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(nextPackIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(nextPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		// Fix the incorrect string type on title to display correctly
+#if defined(_WINDOWS64)
+		setRightLabel(thisPack->getName());
+#else
 		setRightLabel(fakeWideToRealWide(thisPack->getName().c_str()));
-		//setRightLabel(thisPack->getName().c_str());
+#endif
 	}
 	else
 	{
@@ -1225,9 +1230,11 @@ void UIScene_SkinSelectMenu::updatePackDisplay()
 	if(previousPackIndex >= SKIN_SELECT_MAX_DEFAULTS)
 	{
 		DLCPack *thisPack = app.m_dlcManager.getPack(previousPackIndex - SKIN_SELECT_MAX_DEFAULTS, DLCManager::e_DLCType_Skin);
-		// Fix the incorrect string type on title to display correctly
+#if defined(_WINDOWS64)
+		setLeftLabel(thisPack->getName());
+#else
 		setLeftLabel(fakeWideToRealWide(thisPack->getName().c_str()));
-		//setLeftLabel(thisPack->getName().c_str());
+#endif
 	}
 	else
 	{

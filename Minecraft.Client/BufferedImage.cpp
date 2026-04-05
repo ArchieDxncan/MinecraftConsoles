@@ -7,6 +7,27 @@
 extern void LogMsg(const char* fmt, ...);
 extern void LogTrace(const char* fmt, ...);
 
+#if defined(_WINDOWS64) && defined(_UWP)
+extern char g_PackageRootPath[512];
+
+static std::wstring UwpAbsoluteFromPackageRootW(const std::wstring& rel)
+{
+	if (rel.size() >= 2 && rel[1] == L':')
+		return rel;
+	if (rel.size() >= 2 && rel[0] == L'\\' && rel[1] == L'\\')
+		return rel;
+	std::wstring root;
+	int n = MultiByteToWideChar(CP_ACP, 0, g_PackageRootPath, -1, nullptr, 0);
+	if (n <= 1)
+		return rel;
+	root.resize(static_cast<size_t>(n - 1));
+	MultiByteToWideChar(CP_ACP, 0, g_PackageRootPath, -1, &root[0], n);
+	while (!root.empty() && (root.back() == L'\\' || root.back() == L'/'))
+		root.pop_back();
+	return root + L"\\" + rel;
+}
+#endif
+
 #ifdef _XBOX
 typedef struct
 {
@@ -162,6 +183,10 @@ BufferedImage::BufferedImage(const wstring& File, bool filenameHasExtension /*=f
 		{
 			name = wDrive + L"res" + filePath.substr(0,filePath.length()-4) + mipMapPath + L".png";
 		}
+
+#if defined(_WINDOWS64) && defined(_UWP)
+		name = UwpAbsoluteFromPackageRootW(name);
+#endif
 
 		const char *pchTextureName=wstringtofilename(name);
 

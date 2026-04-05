@@ -2425,3 +2425,11 @@
 #define IDS_DESC_BEETROOT                                      2419
 #define IDS_ITEM_BEETROOT_SOUP                                 2420
 #define IDS_DESC_BEETROOT_SOUP                                 2421
+#define IDS_TOOLTIPS_CLOUDSAVE                                 2422
+#define IDS_TEXT_CLOUDSAVE_SUB                                 2423
+#define IDS_CLOUDSAVE_UPLOAD_BTN                               2424
+#define IDS_CLOUDSAVE_DOWNLOAD_BTN                             2425
+#define IDS_CLOUDSAVE_CONFIRM_UPLOAD_TITLE                     2426
+#define IDS_CLOUDSAVE_CONFIRM_UPLOAD_TEXT                      2427
+#define IDS_CLOUDSAVE_CONFIRM_DOWNLOAD_TITLE                   2428
+#define IDS_CLOUDSAVE_CONFIRM_DOWNLOAD_TEXT                    2429

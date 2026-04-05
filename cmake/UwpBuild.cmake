@@ -212,6 +212,7 @@ set(UWP_ASSET_FOLDER_PAIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Common/Tutorial"      "Common/Tutorial"
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64Media"         "Windows64Media"
 )
+# On-disc DLC is expected under Minecraft.Client/Windows64Media/DLC (copied with Windows64Media above).
 setup_asset_folder_copy(MinecraftLCE "${UWP_ASSET_FOLDER_PAIRS}")
 add_copyredist_target(MinecraftLCE)
 add_gamehdd_target(MinecraftLCE)

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Signing in…</title>
+  </head>
+  <body>
+    <p style="font-family: system-ui, sans-serif; padding: 1rem">You can close this window.</p>
+    <script>
+      (function () {
+        var q = new URLSearchParams(window.location.search);
+        var code = q.get("code");
+        var err = q.get("error");
+        var state = q.get("state") || "";
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+              { type: "lce-oauth", code: code, error: err, state: state },
+              window.location.origin
+            );
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    </script>
+  </body>
+</html>

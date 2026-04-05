@@ -18,54 +18,152 @@
 #include <fstream>
 #include <cstdarg>
 #include <cstdio>
+#include <atomic>
+#include <mutex>
 #include <string>
 #include <vector>
 // NOTE: <collection.h> removed — it causes ABI::Windows::UI::Color redefinition
 //       when mixed with game headers. Not actually needed.
 
 // ============================================================================
-// Logging: LogTrace() -> OutputDebugString only. LogMsg() -> ODS + LocalState\mc_debug.log
-// (fatal/errors and a few milestones). Verbose paths use LogTrace so mc_debug.log stays small.
+// Logging (UWP LocalState\mc_debug.log)
+// - LogMsg [M]: milestones / errors / fatals — always to file (append), always ODS.
+// - LogTrace [T]: Debug builds -> ODS always. Release -> first kBootstrapTraceLines to file,
+//   ODS only if a debugger is attached (avoids noise + cost when nobody is listening).
+// - DebugPrintf (game) on Release UWP -> UwpLogDebugPrintfLine [D]: bounded bytes/lines so
+//   mc_debug.log stays useful without growing without limit.
+// File grows in append mode; if over kMaxLogFileBytes, rotated once to mc_debug.log.bak.
 // ============================================================================
+static std::mutex g_logMutex;
 static std::ofstream g_logFile;
+static bool g_logAnnouncedPath = false;
+// Log file path uses WinRT ApplicationData — unsafe before IFrameworkView::Initialize().
+static std::atomic<bool> g_uwpLogWinRtStorageReady{false};
+
 extern char g_LocalStatePath[512];
 extern char g_Win64Username[17];
 extern wchar_t g_Win64UsernameW[17];
-static void LogInit()
+
+static constexpr ULONGLONG kMaxLogFileBytes = 2ULL * 1024ULL * 1024ULL;
+#if defined(NDEBUG)
+static constexpr size_t kDebugPrintfLogMaxBytes = 384U * 1024U;
+static constexpr unsigned kDebugPrintfLogMaxLines = 600U;
+static constexpr unsigned kBootstrapTraceLinesToFile = 64U;
+#endif
+
+static void UwpLogFormatTimeUtc(char* out, size_t cap)
 {
-    if (g_logFile.is_open()) return;  // Already initialized
+    SYSTEMTIME st{};
+    GetSystemTime(&st);
+    _snprintf_s(out, cap, _TRUNCATE, "%04u-%02u-%02u %02u:%02u:%02u.%03uZ",
+        (unsigned)st.wYear, (unsigned)st.wMonth, (unsigned)st.wDay,
+        (unsigned)st.wHour, (unsigned)st.wMinute, (unsigned)st.wSecond,
+        (unsigned)st.wMilliseconds);
+}
+
+static bool UwpLogBuildMcDebugPath(char* pathA, size_t pathASz)
+{
     try {
         auto localFolder = Windows::Storage::ApplicationData::Current->LocalFolder;
         auto pathW = localFolder->Path;
-        char pathA[512];
-        WideCharToMultiByte(CP_ACP, 0, pathW->Data(), -1, pathA, 512, nullptr, nullptr);
-        strcat_s(pathA, "\\mc_debug.log");
-        g_logFile.open(pathA, std::ios::out | std::ios::trunc);
-        if (g_logFile.is_open())
-            g_logFile << "=== MinecraftLCE (mc_debug.log: fatal/errors/milestones only; verbose -> OutputDebugString) ===" << std::endl;
-        OutputDebugStringA("UWP: Log file at: ");
-        OutputDebugStringA(pathA);
-        OutputDebugStringA("\n");
+        if (WideCharToMultiByte(CP_ACP, 0, pathW->Data(), -1, pathA, (int)pathASz, nullptr, nullptr) <= 0)
+            return false;
+        if (strcat_s(pathA, pathASz, "\\mc_debug.log") != 0)
+            return false;
+        return true;
     } catch (...) {
-        OutputDebugStringA("UWP: Could not open log file!\n");
+        return false;
     }
 }
+
+static void UwpLogMaybeRotate(const char* logPath)
+{
+    WIN32_FILE_ATTRIBUTE_DATA info{};
+    if (!GetFileAttributesExA(logPath, GetFileExInfoStandard, &info))
+        return;
+    ULONGLONG sz = ((ULONGLONG)info.nFileSizeHigh << 32) | (ULONGLONG)info.nFileSizeLow;
+    if (sz < kMaxLogFileBytes)
+        return;
+
+    char bakPath[512];
+    if (strcpy_s(bakPath, logPath) != 0)
+        return;
+    if (strcat_s(bakPath, ".bak") != 0)
+        return;
+    DeleteFileA(bakPath);
+    MoveFileA(logPath, bakPath);
+}
+
+// Pre: g_logMutex held. Opens append after optional rotation.
+static void LogOpenOrRotateAppendingLocked()
+{
+    if (!g_uwpLogWinRtStorageReady.load(std::memory_order_relaxed))
+        return;
+    if (g_logFile.is_open())
+        return;
+
+    char pathA[512]{};
+    if (!UwpLogBuildMcDebugPath(pathA, sizeof(pathA)))
+        return;
+
+    UwpLogMaybeRotate(pathA);
+    g_logFile.open(pathA, std::ios::out | std::ios::app);
+    if (!g_logFile.is_open())
+        return;
+
+    char ts[40]{};
+    UwpLogFormatTimeUtc(ts, sizeof(ts));
+    g_logFile << "\n==== MinecraftLCE session " << ts
+              << " ([M]=milestone/error [T]=early trace [D]=budgeted game DebugPrintf) ====\n" << std::flush;
+
+    if (!g_logAnnouncedPath) {
+        g_logAnnouncedPath = true;
+        OutputDebugStringA("UWP: mc_debug.log (append): ");
+        OutputDebugStringA(pathA);
+        OutputDebugStringA("\n");
+    }
+}
+
+static void UwpLogFlushFile()
+{
+    std::lock_guard<std::mutex> lk(g_logMutex);
+    if (g_logFile.is_open())
+        g_logFile.flush();
+}
+
+void LogInit()
+{
+    std::lock_guard<std::mutex> lock(g_logMutex);
+    LogOpenOrRotateAppendingLocked();
+}
+
 void LogMsg(const char* fmt, ...)
 {
-    LogInit();
     char buf[1024];
     va_list args;
     va_start(args, fmt);
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
+
     OutputDebugStringA(buf);
-    if (g_logFile.is_open()) {
-        g_logFile << buf;
-        g_logFile.flush();
-    }
+
+    if (!g_uwpLogWinRtStorageReady.load(std::memory_order_relaxed))
+        return;
+
+    std::lock_guard<std::mutex> lock(g_logMutex);
+    LogOpenOrRotateAppendingLocked();
+    if (!g_logFile.is_open())
+        return;
+
+    char ts[40]{};
+    UwpLogFormatTimeUtc(ts, sizeof(ts));
+    g_logFile << '[' << ts << "] [M] " << buf;
+    size_t n = strlen(buf);
+    if (n == 0 || buf[n - 1] != '\n')
+        g_logFile << '\n';
+    g_logFile.flush();
 }
 
-// Debugger only — does not write mc_debug.log (keeps the file small).
 void LogTrace(const char* fmt, ...)
 {
     char buf[1024];
@@ -73,7 +171,71 @@ void LogTrace(const char* fmt, ...)
     va_start(args, fmt);
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
+
+#if defined(NDEBUG)
+    if (IsDebuggerPresent())
+        OutputDebugStringA(buf);
+
+    // CreateView() / App() run before Initialize(); ApplicationData is not usable yet.
+    if (!g_uwpLogWinRtStorageReady.load(std::memory_order_relaxed))
+        return;
+
+    std::lock_guard<std::mutex> lock(g_logMutex);
+    static unsigned s_traceLinesToFile = 0;
+    if (s_traceLinesToFile < kBootstrapTraceLinesToFile) {
+        ++s_traceLinesToFile;
+        LogOpenOrRotateAppendingLocked();
+        if (g_logFile.is_open()) {
+            char ts[40]{};
+            UwpLogFormatTimeUtc(ts, sizeof(ts));
+            g_logFile << '[' << ts << "] [T] " << buf;
+            size_t n = strlen(buf);
+            if (n == 0 || buf[n - 1] != '\n')
+                g_logFile << '\n';
+            g_logFile.flush();
+        }
+    }
+#else
     OutputDebugStringA(buf);
+#endif
+}
+
+// Release UWP: called from CMinecraftApp::DebugPrintf — capped file mirror (see kDebugPrintf*).
+void UwpLogDebugPrintfLine(const char* line)
+{
+    if (!line)
+        return;
+
+#if defined(NDEBUG)
+    if (IsDebuggerPresent())
+        OutputDebugStringA(line);
+
+    if (!g_uwpLogWinRtStorageReady.load(std::memory_order_relaxed))
+        return;
+
+    static size_t s_dbgBytes = 0;
+    static unsigned s_dbgLines = 0;
+
+    std::lock_guard<std::mutex> lock(g_logMutex);
+    if (s_dbgBytes >= kDebugPrintfLogMaxBytes || s_dbgLines >= kDebugPrintfLogMaxLines)
+        return;
+
+    LogOpenOrRotateAppendingLocked();
+    if (!g_logFile.is_open())
+        return;
+
+    char ts[40]{};
+    UwpLogFormatTimeUtc(ts, sizeof(ts));
+    g_logFile << '[' << ts << "] [D] " << line;
+    size_t n = strlen(line);
+    if (n == 0 || line[n - 1] != '\n')
+        g_logFile << '\n';
+    g_logFile.flush();
+    s_dbgBytes += (n < 1024 ? n : 1024) + 48;
+    ++s_dbgLines;
+#else
+    (void)line;
+#endif
 }
 
 static bool BuildLocalStateFilePath(char* outPath, size_t outPathSize, const char* fileName)
@@ -152,7 +314,7 @@ static LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
     } else {
         LogMsg("*** UNHANDLED EXCEPTION (no info) ***\n");
     }
-    g_logFile.flush();
+    UwpLogFlushFile();
     return EXCEPTION_CONTINUE_SEARCH; // let WER also handle it
 }
 
@@ -453,7 +615,7 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
         LogTrace("UWP: mss64.dll module handle = %p\n", hMss);
     }
 
-    g_logFile.flush(); // flush before risky call
+    UwpLogFlushFile(); // flush before risky call
     ui.init(g_pd3dDevice, g_pImmediateContext,
             g_pRenderTargetView, g_pDepthStencilView,
             g_rScreenWidth, g_rScreenHeight);
@@ -620,6 +782,33 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
     LogTrace("UWP: ProfileManager OK\n");
     // Note: On UWP, C_4JProfile::GetGamertag() is just g_Win64Username (Extrax64Stubs.cpp) — no separate Xbox source.
 
+    // Match desktop Win64: 4J storage uses relative paths like Windows64\GameHDD\... from the process CWD.
+    // stdafx_uwp_post.h stubs SetCurrentDirectoryA; call kernel32 directly and point CWD at writable LocalState
+    // (package install is read-only). Media archive already loaded above.
+    {
+        auto createDirIfNeeded = [](const wchar_t* pathW) -> bool {
+            DWORD a = GetFileAttributesW(pathW);
+            if (a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY))
+                return true;
+            return CreateDirectoryW(pathW, nullptr) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+        };
+        std::wstring wWin64(g_LocalStatePathW);
+        if (!wWin64.empty() && wWin64.back() != L'\\' && wWin64.back() != L'/')
+            wWin64.push_back(L'\\');
+        wWin64.append(L"Windows64");
+        std::wstring wGameHdd = wWin64 + L"\\GameHDD";
+        if (!createDirIfNeeded(wWin64.c_str()) || !createDirIfNeeded(wGameHdd.c_str()))
+            LogMsg("UWP: WARNING — could not create LocalState\\Windows64\\GameHDD (saves may fail)\n");
+
+        typedef BOOL(WINAPI* PFN_SetCurrentDirectoryA)(LPCSTR);
+        PFN_SetCurrentDirectoryA pSetCwd = reinterpret_cast<PFN_SetCurrentDirectoryA>(
+            GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetCurrentDirectoryA"));
+        if (pSetCwd && pSetCwd(g_LocalStatePath))
+            LogTrace("UWP: CWD set to LocalState for Win64-style storage paths\n");
+        else
+            LogMsg("UWP: WARNING — SetCurrentDirectoryA(LocalState) failed; GameHDD path may be wrong\n");
+    }
+
     // Align 4J Storage with LocalState (Init + TMS root) so GetMountedPath / profile / DLC paths match Minecraft::workingDirectory
     {
         static const char kUwpTitleStorageGroup[] = "A9C80F8E-5EAE-4883-89E6-0C456CADE89B";
@@ -637,12 +826,12 @@ static Minecraft* InitialiseMinecraftRuntime_UWP()
         StorageManager.SetSaveDisabled(false);
         for (int i = 0; i < XUSER_MAX_COUNT; ++i)
             StorageManager.SetSaveDeviceSelected(i, true);
-        // UWP: use folder-backed save IO/listing path in the sandboxed app data area.
-        app.SetLoadSavesFromFolderEnabled(true);
-        app.SetWriteSavesToFolderEnabled(true);
+        // Same as desktop Win64: StorageManager + Windows64\GameHDD under CWD (LocalState above).
+        app.SetLoadSavesFromFolderEnabled(false);
+        app.SetWriteSavesToFolderEnabled(false);
         LogTrace("UWP: StorageManager.Init OK (LocalState-backed)\n");
         LogTrace("UWP: StorageManager saveDisabled=%d\n", StorageManager.GetSaveDisabled() ? 1 : 0);
-        LogTrace("UWP: Folder save mode enabled (load=%d write=%d)\n",
+        LogTrace("UWP: GameHDD save mode (folder debug off: load=%d write=%d)\n",
                app.GetLoadSavesFromFolderEnabled() ? 1 : 0,
                app.GetWriteSavesToFolderEnabled() ? 1 : 0);
     }
@@ -717,6 +906,8 @@ App::App()
 // ============================================================================
 void App::Initialize(CoreApplicationView^ applicationView)
 {
+    // Allow mc_debug.log to use LocalFolder (LogTrace/DebugPrintf must not touch this earlier).
+    g_uwpLogWinRtStorageReady.store(true, std::memory_order_relaxed);
     LogInit();
     SetUnhandledExceptionFilter(CrashFilter);
     LogTrace("UWP: Initialize() START\n");
@@ -917,7 +1108,7 @@ void App::Run()
                 LogTrace("UWP: level=%p player=%p\n",
                        m_pMinecraft ? m_pMinecraft->level : nullptr,
                        m_pMinecraft ? m_pMinecraft->player.get() : nullptr);
-                g_logFile.flush();
+                UwpLogFlushFile();
             }
             s_wasGameStarted = nowStarted;
             s_tickCount++;
@@ -1056,7 +1247,7 @@ void App::GameTick()
                app.GetGameStarted(), s_gameStartedInTick,
                m_pMinecraft ? m_pMinecraft->level : nullptr,
                m_pMinecraft ? m_pMinecraft->player.get() : nullptr);
-        g_logFile.flush();
+        UwpLogFlushFile();
     }
 }
 

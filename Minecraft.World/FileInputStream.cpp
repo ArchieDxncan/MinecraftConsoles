@@ -2,6 +2,7 @@
 
 #include "File.h"
 #include "FileInputStream.h"
+#include "StringHelpers.h"
 #include <string>
 
 extern void LogMsg(const char* fmt, ...);
@@ -65,6 +66,18 @@ FileInputStream::FileInputStream(const File &file)
 	const char* openPath = pchFilename;
 #endif
 #ifdef _UNICODE
+#ifdef _UWP
+	// Must use resolved package/LocalState path — CreateFileW(file.getPath()) would miss packaged assets.
+	std::wstring wOpen = convStringToWstring(std::string(openPath));
+	m_fileHandle = CreateFileW(
+		wOpen.c_str(),
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		nullptr,
+		OPEN_EXISTING,
+		FILE_FLAG_SEQUENTIAL_SCAN,
+		nullptr);
+#else
 	m_fileHandle = CreateFile(
 		file.getPath().c_str(), // file name
 		GENERIC_READ, // access mode
@@ -74,6 +87,7 @@ FileInputStream::FileInputStream(const File &file)
 		FILE_FLAG_SEQUENTIAL_SCAN, // file attributes
 		nullptr // Unsupported
 		);
+#endif
 #else
 	m_fileHandle = CreateFileA(
 		openPath, // file name

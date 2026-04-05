@@ -8,6 +8,29 @@
 #include "../../TexturePackRepository.h"
 #include "Common/UI/UI.h"
 
+#if defined(_WINDOWS64) && defined(_UWP)
+extern char g_PackageRootPath[512];
+extern char g_LocalStatePath[512];
+
+static std::string DlcResolveWin64PathA(const std::string& path)
+{
+	if (path.empty())
+		return path;
+	if (GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES)
+		return path;
+	std::string pkg = std::string(g_PackageRootPath);
+	if (!pkg.empty() && pkg.back() != '\\' && pkg.back() != '/')
+		pkg.push_back('\\');
+	pkg += path;
+	if (GetFileAttributesA(pkg.c_str()) != INVALID_FILE_ATTRIBUTES)
+		return pkg;
+	std::string loc = std::string(g_LocalStatePath);
+	if (!loc.empty() && loc.back() != '\\' && loc.back() != '/')
+		loc.push_back('\\');
+	return loc + path;
+}
+#endif
+
 const WCHAR *DLCManager::wchTypeNamesA[]=
 {
 	L"XMLVERSION",
@@ -332,6 +355,9 @@ bool DLCManager::readDLCDataFile(DWORD &dwFilesProcessed, const string &path, DL
 #ifdef _WINDOWS64
 	string finalPath = StorageManager.GetMountedPath(path.c_str());
 	if(finalPath.size() == 0) finalPath = path;
+#if defined(_UWP)
+	finalPath = DlcResolveWin64PathA(finalPath);
+#endif
 	HANDLE file = CreateFileA(finalPath.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 #elif defined(_DURANGO)
 	wstring finalPath = StorageManager.GetMountedPath(wPath.c_str());
@@ -345,7 +371,6 @@ bool DLCManager::readDLCDataFile(DWORD &dwFilesProcessed, const string &path, DL
 		DWORD error = GetLastError();
 		app.DebugPrintf("Failed to open DLC data file with error code %d (%x)\n", error, error);
 		if( dwFilesProcessed == 0 ) removePack(pack);
-		assert(false);
 		return false;
 	}
 
@@ -525,7 +550,9 @@ bool DLCManager::processDLCDataFile(DWORD &dwFilesProcessed, PBYTE pbData, DWORD
 
 				if(dlcTexturePack->getDLCItemsCount(e_DLCType_Texture) > 0)
 				{
-					Minecraft::GetInstance()->skins->addTexturePackFromDLC(dlcTexturePack, dlcTexturePack->GetPackId() );
+					Minecraft* mcInst = Minecraft::GetInstance();
+					if (mcInst && mcInst->skins)
+						mcInst->skins->addTexturePackFromDLC(dlcTexturePack, dlcTexturePack->GetPackId() );
 				}
 			}
 			++dwFilesProcessed;
@@ -576,6 +603,9 @@ DWORD DLCManager::retrievePackIDFromDLCDataFile(const string &path, DLCPack *pac
 #ifdef _WINDOWS64
 	string finalPath = StorageManager.GetMountedPath(path.c_str());
 	if(finalPath.size() == 0) finalPath = path;
+#if defined(_UWP)
+	finalPath = DlcResolveWin64PathA(finalPath);
+#endif
 	HANDLE file = CreateFileA(finalPath.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 #elif defined(_DURANGO)
 	wstring finalPath = StorageManager.GetMountedPath(wPath.c_str());

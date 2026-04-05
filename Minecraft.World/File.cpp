@@ -80,9 +80,25 @@ File::File( const wstring& pathname ) //: parent( nullptr )
 	string finalPath = StorageManager.GetMountedPath(path.c_str());
 	if(finalPath.size() == 0) finalPath = path;
 	m_abstractPathName = convStringToWstring(finalPath);
+#else
+	// UWP: remapping every path through GetMountedPath breaks LocalState-relative saves. Desktop Win64 does
+	// full remapping in this ctor; only apply it for 4J virtual roots (TPACK:, DLCDrive:, etc.) — i.e. a ':'
+	// that is not the usual "C:" drive letter prefix.
+	{
+		const wstring& pw = m_abstractPathName;
+		const size_t ci = pw.find(L':');
+		const bool driveLetter =
+			(ci == 1 && pw.size() >= 2 &&
+			 ((pw[0] >= L'A' && pw[0] <= L'Z') || (pw[0] >= L'a' && pw[0] <= L'z')));
+		if (ci != std::wstring::npos && !driveLetter)
+		{
+			string path = wstringtochararray(m_abstractPathName);
+			string finalPath = StorageManager.GetMountedPath(path.c_str());
+			if (!finalPath.empty())
+				m_abstractPathName = convStringToWstring(finalPath);
+		}
+	}
 #endif
-	// UWP: keep absolute LocalState / package paths as-is; 4J GetMountedPath can remap incorrectly
-	// for the sandbox and break saves, options, and DLC path resolution.
 #elif defined(_DURANGO)
 	wstring finalPath = StorageManager.GetMountedPath(m_abstractPathName.c_str());
 	if(finalPath.size() == 0) finalPath = m_abstractPathName;
@@ -435,9 +451,25 @@ std::vector<File *> *File::listFiles() const
 	delete pBuf;
 #else
 
+#ifdef _UWP
+	{
+		WIN32_FIND_DATAW wfd;
+		const char* rawPath = wstringtofilename(getPath());
+		std::string resolvedDir = ResolveUwpPathA(rawPath, false);
+		std::wstring dirW = convStringToWstring(resolvedDir);
+		std::wstring pattern = dirW + L"\\*";
+		HANDLE hFind = FindFirstFileW(pattern.c_str(), &wfd);
+		if (hFind != INVALID_HANDLE_VALUE)
+		{
+			do
+			{
+				vOutput->push_back(new File(*this, std::wstring(wfd.cFileName)));
+			} while (FindNextFileW(hFind, &wfd));
+			FindClose(hFind);
+		}
+	}
+#elif defined _UNICODE
 	WIN32_FIND_DATA wfd;
-
-#ifdef _UNICODE
 	WCHAR path[MAX_PATH];
 	swprintf( path, L"%ls\\*", getPath().c_str() );
 	HANDLE hFind = FindFirstFile( path, &wfd);
@@ -453,6 +485,7 @@ std::vector<File *> *File::listFiles() const
 		FindClose( hFind);
 	}
 #else
+	WIN32_FIND_DATA wfd;
 	char path[MAX_PATH] {};
 	snprintf( path, MAX_PATH, "%s\\*", wstringtofilename( getPath() ) );
 	HANDLE hFind = FindFirstFile( path, &wfd);
@@ -525,7 +558,25 @@ std::vector<File *> *File::listFiles(FileFilter *filter) const
 	err = cellFsClose(fd);
 #else
 
-#ifdef _UNICODE
+#ifdef _UWP
+	{
+		WIN32_FIND_DATAW wfd;
+		const char* rawPath = wstringtofilename(getPath());
+		std::string resolvedDir = ResolveUwpPathA(rawPath, false);
+		std::wstring pattern = convStringToWstring(resolvedDir) + L"\\*";
+		HANDLE hFind = FindFirstFileW(pattern.c_str(), &wfd);
+		if (hFind != INVALID_HANDLE_VALUE)
+		{
+			do
+			{
+				File thisFile = File(*this, std::wstring(wfd.cFileName));
+				if (filter->accept(&thisFile))
+					vOutput->push_back(new File(*this, std::wstring(wfd.cFileName)));
+			} while (FindNextFileW(hFind, &wfd));
+			FindClose(hFind);
+		}
+	}
+#elif defined _UNICODE
 
 	WCHAR path[MAX_PATH];
 	WIN32_FIND_DATA wfd;
@@ -540,10 +591,7 @@ std::vector<File *> *File::listFiles(FileFilter *filter) const
 		{
 			File thisFile = File( *this, wfd.cFileName  );
 			if( filter->accept( &thisFile ) )
-			{
-				File storageFile = thisFile;
-				vOutput->push_back( &storageFile );
-			}
+				vOutput->push_back(new File(*this, wfd.cFileName));
 		} while( FindNextFile( hFind, &wfd) );
 		FindClose( hFind);
 	}
@@ -561,10 +609,7 @@ std::vector<File *> *File::listFiles(FileFilter *filter) const
 		{
 			File thisFile = File( *this, filenametowstring( wfd.cFileName ) );
 			if( filter->accept( &thisFile ) )
-			{
-				File storageFile = thisFile;
-				vOutput->push_back( &storageFile );
-			}
+				vOutput->push_back(new File(*this, filenametowstring(wfd.cFileName)));
 		} while( FindNextFile( hFind, &wfd) );
 		FindClose( hFind);
 	}
@@ -725,7 +770,14 @@ int64_t File::length()
 int64_t File::lastModified()
 {
 	WIN32_FILE_ATTRIBUTE_DATA fileInfoBuffer;
-#ifdef _UNICODE
+#ifdef _UWP
+	const char* rawLm = wstringtofilename(getPath());
+	std::string resolvedLm = ResolveUwpPathA(rawLm, false);
+	BOOL result = GetFileAttributesExA(
+		resolvedLm.c_str(),
+		GetFileExInfoStandard,
+		&fileInfoBuffer);
+#elif defined _UNICODE
 	BOOL result = GetFileAttributesEx(
 		getPath().c_str(), // file or directory name
 		GetFileExInfoStandard, // attribute 
@@ -768,6 +820,16 @@ const std::wstring File::getPath() const
 	path.append(m_abstractPathName);
 	*/
 	return m_abstractPathName;
+}
+
+wstring File::getResolvedOsPathForOpenW() const
+{
+#ifdef _UWP
+	const char* rawPath = wstringtofilename(getPath());
+	return convStringToWstring(ResolveUwpPathA(rawPath, false));
+#else
+	return getPath();
+#endif
 }
 
 std::wstring File::getName() const

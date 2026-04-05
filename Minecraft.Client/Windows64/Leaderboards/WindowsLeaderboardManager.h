@@ -60,8 +60,13 @@ private:
 	std::string m_playFabId;
 	std::mutex m_authMutex;
 
-	bool PlayFabEnabled() const { return !m_titleId.empty(); }
-	bool EnsureLoggedIn(std::string &err);
 	void TrySyncTitleDisplayName();
 	bool PostPlayFab(const char *path, const std::string &jsonBody, std::string &outResponseUtf8, std::string &err);
+
+public:
+	bool PlayFabEnabled() const { return !m_titleId.empty(); }
+	bool EnsureLoggedIn(std::string &err);
+	/** ExecuteCloudScript with session ticket; on success copies FunctionResult object JSON into outFunctionResultJson. */
+	bool ExecuteCloudScript(const char *functionName, const std::string &functionParameterJson,
+		std::string &outFunctionResultJson, std::string &err);
 };

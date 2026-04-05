@@ -631,6 +631,79 @@ bool WindowsLeaderboardManager::PostPlayFab(const char *path, const std::string 
 	return true;
 }
 
+bool WindowsLeaderboardManager::ExecuteCloudScript(const char *functionName, const std::string &functionParameterJson,
+	std::string &outFunctionResultJson, std::string &err)
+{
+	outFunctionResultJson.clear();
+	err.clear();
+	if (!PlayFabEnabled() || !functionName || !functionName[0])
+	{
+		err = "PlayFab or function name not set";
+		return false;
+	}
+	if (!EnsureLoggedIn(err))
+		return false;
+
+	nlohmann::json body;
+	body["FunctionName"] = functionName;
+	try
+	{
+		if (functionParameterJson.empty())
+			body["FunctionParameter"] = nlohmann::json::object();
+		else
+			body["FunctionParameter"] = nlohmann::json::parse(functionParameterJson);
+	}
+	catch (...)
+	{
+		err = "Invalid FunctionParameter JSON";
+		return false;
+	}
+
+	std::string raw;
+	if (!PostPlayFab("/Client/ExecuteCloudScript", body.dump(), raw, err))
+		return false;
+
+	nlohmann::json root;
+	try
+	{
+		root = nlohmann::json::parse(raw);
+	}
+	catch (...)
+	{
+		err = "ExecuteCloudScript response parse failed";
+		return false;
+	}
+
+	if (!root.contains("data") || !root["data"].is_object())
+	{
+		err = "ExecuteCloudScript missing data";
+		return false;
+	}
+
+	const nlohmann::json &d = root["data"];
+	if (d.contains("Error"))
+	{
+		const nlohmann::json &er = d["Error"];
+		if (er.is_object())
+			err = er.value("Message", er.value("message", std::string("CloudScript error")));
+		else
+			err = "CloudScript execution error";
+		return false;
+	}
+
+	if (d.contains("FunctionResult"))
+		outFunctionResultJson = d["FunctionResult"].dump();
+	else if (d.contains("functionResult"))
+		outFunctionResultJson = d["functionResult"].dump();
+	else
+	{
+		err = "FunctionResult missing";
+		return false;
+	}
+
+	return true;
+}
+
 bool WindowsLeaderboardManager::WriteStats(unsigned int viewCount, ViewIn views)
 {
 	if (!PlayFabEnabled() || viewCount == 0 || views == nullptr)

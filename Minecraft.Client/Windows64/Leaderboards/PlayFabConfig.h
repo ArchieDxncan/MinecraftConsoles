@@ -69,3 +69,14 @@
 #ifndef MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY
 #define MINECRAFT_PLAYFAB_LOBBY_MUTUAL_FRIENDS_ONLY 1
 #endif
+
+// Optional: CloudScript handlers in scripts/playfab-cloudscript-cloud-save.js (third-party Drive / OneDrive / Dropbox).
+#ifndef MINECRAFT_PLAYFAB_CLOUDSAVE_GET_TOKEN
+#define MINECRAFT_PLAYFAB_CLOUDSAVE_GET_TOKEN "LCE_CloudSave_GetAccessToken"
+#endif
+#ifndef MINECRAFT_PLAYFAB_CLOUDSAVE_GET_CONFIG
+#define MINECRAFT_PLAYFAB_CLOUDSAVE_GET_CONFIG "LCE_CloudSave_GetConfig"
+#endif
+#ifndef MINECRAFT_PLAYFAB_CLOUDSAVE_SET_SYNC
+#define MINECRAFT_PLAYFAB_CLOUDSAVE_SET_SYNC "LCE_CloudSave_SetLastSync"
+#endif
