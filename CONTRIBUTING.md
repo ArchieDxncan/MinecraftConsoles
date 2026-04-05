@@ -3,6 +3,9 @@ At the moment, this project's scope is focused on adding gameplay content to the
 
 All content from Title Updates prior to TU25 is considered already present in the base game. We do not reimplement or revisit pre-TU25 content unless it is buggy or broken.
 
+## Backporting
+If you're backporting a feature, please read [BACKPORTING.md](./BACKPORTING.md)
+
 ## Parity
 We are implementing LCE content as it existed at the time of each Title Update, in the order they were originally released. This means we will not be accepting changes that...
 - Add blocks, items, mobs, or mechanics from a Title Update that has not yet been reached in our current milestone order
