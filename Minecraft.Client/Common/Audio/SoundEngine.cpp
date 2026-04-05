@@ -103,6 +103,44 @@ char SoundEngine::m_szRedistName[]={"redist"};
 
 #endif
 
+#if defined(_WINDOWS64) && defined(_UWP)
+extern char g_PackageRootPath[512];
+#endif
+
+namespace {
+#if defined(_WINDOWS64)
+static bool SoundPathIsAbsoluteA(const char *p)
+{
+	return p && p[0] && ((p[1] == ':') || (p[0] == '\\' && p[1] == '\\'));
+}
+#endif
+/** UWP: CWD is LocalState; SFX/music under package need g_PackageRootPath (see UWP_App / File.cpp). */
+static void ResolveWin64MediaPath(const char *relPath, char *out, size_t outCap)
+{
+	if (!relPath || !out || outCap == 0)
+	{
+		if (out && outCap)
+			out[0] = 0;
+		return;
+	}
+#if defined(_WINDOWS64)
+	if (SoundPathIsAbsoluteA(relPath))
+	{
+		strncpy_s(out, outCap, relPath, _TRUNCATE);
+		return;
+	}
+#if defined(_UWP)
+	if (g_PackageRootPath[0] != '\0')
+	{
+		_snprintf_s(out, outCap, _TRUNCATE, "%s\\%s", g_PackageRootPath, relPath);
+		return;
+	}
+#endif
+#endif
+	strncpy_s(out, outCap, relPath, _TRUNCATE);
+}
+} // namespace
+
 const char *SoundEngine::m_szStreamFileA[eStream_Max]=
 {
 	"calm1",
@@ -471,13 +509,15 @@ void SoundEngine::play(int iSound, float x, float y, float z, float volume, floa
 	const char* extensions[] = { ".ogg", ".wav", ".mp3" };
 	size_t extCount = sizeof(extensions) / sizeof(extensions[0]);
 	bool found = false;
+	char resolvedPath[2048];
 
 	for (size_t extIdx = 0; extIdx < extCount; extIdx++)
 	{
 		char basePlusExt[256];
 		sprintf_s(basePlusExt, "%s%s", basePath, extensions[extIdx]);
-		
-		DWORD attr = GetFileAttributesA(basePlusExt);
+
+		ResolveWin64MediaPath(basePlusExt, resolvedPath, sizeof(resolvedPath));
+		DWORD attr = GetFileAttributesA(resolvedPath);
 		if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			sprintf_s(finalPath, "%s", basePlusExt);
@@ -496,8 +536,9 @@ void SoundEngine::play(int iSound, float x, float y, float z, float volume, floa
 			{
 				char numberedPath[256];
 				sprintf_s(numberedPath, "%s%d%s", basePath, i, extensions[extIdx]);
-				
-				DWORD attr = GetFileAttributesA(numberedPath);
+
+				ResolveWin64MediaPath(numberedPath, resolvedPath, sizeof(resolvedPath));
+				DWORD attr = GetFileAttributesA(resolvedPath);
 				if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					count = i;
@@ -512,8 +553,9 @@ void SoundEngine::play(int iSound, float x, float y, float z, float volume, floa
 			{
 				char numberedPath[256];
 				sprintf_s(numberedPath, "%s%d%s", basePath, chosen, extensions[extIdx]);
-				
-				DWORD attr = GetFileAttributesA(numberedPath);
+
+				ResolveWin64MediaPath(numberedPath, resolvedPath, sizeof(resolvedPath));
+				DWORD attr = GetFileAttributesA(resolvedPath);
 				if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY))
 				{
 					sprintf_s(finalPath, "%s", numberedPath);
@@ -541,15 +583,16 @@ void SoundEngine::play(int iSound, float x, float y, float z, float volume, floa
     s->info.bUseSoundsPitchVal = false;
     s->info.iSound = iSound + eSFX_MAX;
 
+	ResolveWin64MediaPath(finalPath, resolvedPath, sizeof(resolvedPath));
     if (ma_sound_init_from_file(
             &m_engine,
-            finalPath,
+            resolvedPath,
             MA_SOUND_FLAG_ASYNC,
             nullptr,
             nullptr,
             &s->sound) != MA_SUCCESS)
     {
-        app.DebugPrintf("Failed to initialize sound from file: %s\n", finalPath);
+        app.DebugPrintf("Failed to initialize sound from file: %s\n", resolvedPath);
         delete s;
         return;
     }
@@ -605,10 +648,12 @@ void SoundEngine::playUI(int iSound, float volume, float pitch)
 	const char* extensions[] = { ".ogg", ".wav", ".mp3" };
 	size_t count = sizeof(extensions) / sizeof(extensions[0]);
 	bool found = false;
+	char resolvedUI[2048];
 	for (size_t i = 0; i < count; i++)
 	{
 		sprintf_s(finalPath, "%s%s", basePath, extensions[i]);
-		if (FileExists(finalPath))
+		ResolveWin64MediaPath(finalPath, resolvedUI, sizeof(resolvedUI));
+		if (FileExists(resolvedUI))
 		{
 			found = true;
 			break;
@@ -630,14 +675,14 @@ void SoundEngine::playUI(int iSound, float volume, float pitch)
 
     if (ma_sound_init_from_file(
             &m_engine,
-            finalPath,
+            resolvedUI,
             MA_SOUND_FLAG_ASYNC,
             nullptr,
             nullptr,
             &s->sound) != MA_SUCCESS)
     {
         delete s;
-        app.DebugPrintf("ma_sound_init_from_file failed: %s\n", finalPath);
+        app.DebugPrintf("ma_sound_init_from_file failed: %s\n", resolvedUI);
         return;
     }
 
@@ -1034,7 +1079,7 @@ void SoundEngine::playMusicUpdate()
 					wstring &wstrSoundName=dlcAudioFile->GetSoundName(m_musicID);
 					wstring wstrFile=L"TPACK:\\Data\\" + wstrSoundName +L".wav";
 					std::wstring mountedPath = StorageManager.GetMountedPath(wstrFile);
-					wcstombs(m_szStreamName,mountedPath.c_str(),255);
+					strcpy_s(m_szStreamName, mountedPath.c_str());
 #else
 					wstring &wstrSoundName=dlcAudioFile->GetSoundName(m_musicID);
 					char szName[255];
@@ -1046,7 +1091,7 @@ void SoundEngine::playMusicUpdate()
 					string strFile="TPACK:\\Data\\" + string(szName) + ".wav";
 #endif
 					std::string mountedPath = StorageManager.GetMountedPath(strFile);
-					strcpy(m_szStreamName,mountedPath.c_str());
+					strcpy_s(m_szStreamName, mountedPath.c_str());
 #endif
 				}
 				else
@@ -1138,7 +1183,15 @@ void SoundEngine::playMusicUpdate()
 			// 			strcat((char *)szStreamName,SoundName);
 
 			FILE* pFile = nullptr;
-			
+
+#if defined(_WINDOWS64)
+			{
+				char resolvedMusic[2048];
+				ResolveWin64MediaPath(m_szStreamName, resolvedMusic, sizeof(resolvedMusic));
+				strncpy_s(m_szStreamName, sizeof(m_szStreamName), resolvedMusic, _TRUNCATE);
+			}
+#endif
+
 			if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
 			{
 				fclose(pFile);
@@ -1150,7 +1203,8 @@ void SoundEngine::playMusicUpdate()
 				bool found = false;
 
 				char* dotPos = strrchr(reinterpret_cast<char*>(m_szStreamName), '.');
-				if (dotPos != nullptr && (dotPos - reinterpret_cast<char*>(m_szStreamName)) < 250)
+				if (dotPos != nullptr &&
+					(size_t)(dotPos - reinterpret_cast<char*>(m_szStreamName)) < sizeof(m_szStreamName) - 8)
 				{
 					for (size_t i = 0; i < extCount; i++)
 					{
@@ -1199,10 +1253,18 @@ void SoundEngine::playMusicUpdate()
 					const bool isCD = (m_musicID >= m_iStream_CD_1);
 					const char* folder = isCD ? "cds/" : "music/";
 					
-					int n = sprintf_s(reinterpret_cast<char*>(m_szStreamName), 512, "%s%s%s.wav", m_szMusicPath, folder, m_szStreamFileA[m_musicID]);
-					
+					int n = sprintf_s(reinterpret_cast<char*>(m_szStreamName), sizeof(m_szStreamName), "%s%s%s.wav",
+						m_szMusicPath, folder, m_szStreamFileA[m_musicID]);
+
 					if (n > 0)
 					{
+#if defined(_WINDOWS64)
+						{
+							char resolvedMusic[2048];
+							ResolveWin64MediaPath(m_szStreamName, resolvedMusic, sizeof(resolvedMusic));
+							strncpy_s(m_szStreamName, sizeof(m_szStreamName), resolvedMusic, _TRUNCATE);
+						}
+#endif
 						FILE* pFile = nullptr;
 						if (fopen_s(&pFile, reinterpret_cast<char*>(m_szStreamName), "rb") == 0 && pFile)
 						{

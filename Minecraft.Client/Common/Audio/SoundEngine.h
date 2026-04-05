@@ -177,7 +177,8 @@ private:
 
 	C4JThread *m_openStreamThread;
 	static int OpenStreamThreadProc( void* lpParameter );
-	char m_szStreamName[255];
+	/** Long enough for UWP: package install path + relative music path (CWD is LocalState). */
+	char m_szStreamName[1536];
 	int CurrentSoundsPlaying[eSoundType_MAX+eSFX_MAX];
 
 	// streaming music files - will be different for mash-up packs
