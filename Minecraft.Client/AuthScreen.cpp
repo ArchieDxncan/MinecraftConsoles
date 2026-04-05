@@ -6,6 +6,7 @@
 #include "..\Minecraft.World\HttpClient.h"
 #include "..\Minecraft.World\StringHelpers.h"
 #include "Common/vendor/nlohmann/json.hpp"
+#include <chrono>
 #include <fstream>
 #include <shellapi.h>
 
@@ -351,7 +352,7 @@ void AuthFlow::microsoftFlowThread()
 		for (int ms = 0; ms < interval * 1000; ms += 250)
 		{
 			if (cancelRequested) return;
-			Sleep(250);
+			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
 
 		auto pollResp = HttpClient::post(

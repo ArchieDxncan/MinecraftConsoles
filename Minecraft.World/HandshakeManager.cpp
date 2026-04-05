@@ -19,15 +19,10 @@ HandshakeManager::HandshakeManager(bool isServer)
 {
 }
 
-HandshakeManager::~HandshakeManager()
+void HandshakeManager::registerModule(unique_ptr<AuthModule> module)
 {
-	for (auto &[name, module] : modules)
-		delete module;
-}
-
-void HandshakeManager::registerModule(AuthModule *module)
-{
-	modules[module->schemeName()] = module;
+	wstring name = module->schemeName();
+	modules[std::move(name)] = std::move(module);
 }
 
 void HandshakeManager::setCredentials(const wstring &token, const wstring &uid, const wstring &username, const wstring &variation)
@@ -70,7 +65,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleServer(const shared_ptr<AuthPacke
 		if (modules.empty())
 			return fail();
 
-		activeModule = modules.begin()->second;
+		activeModule = modules.begin()->second.get();
 		state = HandshakeState::SCHEME_DECLARED;
 		return makePacket(AuthStage::DECLARE_SCHEME, {
 			{L"version", PROTOCOL_VERSION},
@@ -145,7 +140,7 @@ shared_ptr<AuthPacket> HandshakeManager::handleClient(const shared_ptr<AuthPacke
 		if (it == modules.end())
 			return fail();
 
-		activeModule = it->second;
+		activeModule = it->second.get();
 
 		auto variations = activeModule->supportedVariations();
 		if (!preferredVariation.empty() &&

@@ -28,7 +28,7 @@ class HandshakeManager
 private:
 	bool isServer;
 	HandshakeState state;
-	unordered_map<wstring, AuthModule *> modules;
+	unordered_map<wstring, unique_ptr<AuthModule>> modules;
 	AuthModule *activeModule;
 	wstring activeVariation;
 	wstring protocolVersion;
@@ -45,9 +45,9 @@ public:
 	wstring finalUsername;
 
 	HandshakeManager(bool isServer);
-	~HandshakeManager();
+	~HandshakeManager() = default;
 
-	void registerModule(AuthModule *module);
+	void registerModule(unique_ptr<AuthModule> module);
 	void setCredentials(const wstring &token, const wstring &uid, const wstring &username, const wstring &variation = L"");
 	shared_ptr<AuthPacket> handlePacket(const shared_ptr<AuthPacket> &packet);
 	shared_ptr<AuthPacket> createInitialPacket();

@@ -2,6 +2,7 @@
 #include "UUID.h"
 #include "Random.h"
 #include <cstring>
+#include <vector>
 static void sha1_block(uint32_t h[5], const uint8_t block[64])
 {
 	uint32_t w[80];
@@ -119,15 +120,12 @@ GameUUID GameUUID::v4(uint64_t high, uint64_t low)
 
 GameUUID GameUUID::v5(const GameUUID& ns, const std::string& name)
 {
-	uint8_t input[256];
-	ns.toBytes(input);
-	size_t total = 16 + name.size();
-	// names over 240 chars would be insane but just in case
-	if (name.size() <= sizeof(input) - 16)
-		memcpy(input + 16, name.data(), name.size());
+	std::vector<uint8_t> input(16 + name.size());
+	ns.toBytes(input.data());
+	memcpy(input.data() + 16, name.data(), name.size());
 
 	uint8_t hash[20];
-	sha1(input, total, hash);
+	sha1(input.data(), input.size(), hash);
 	GameUUID u = fromBytes(hash);
 	u.msb = (u.msb & ~0xF000ULL) | 0x5000ULL;
 	u.lsb = (u.lsb & ~0xC000000000000000ULL) | 0x8000000000000000ULL;

@@ -413,9 +413,9 @@ void PendingConnection::initAuth()
 {
 	handshakeManager = new HandshakeManager(true);
 	if (server->authMode == "session")
-		handshakeManager->registerModule(new SessionAuthModule());
+		handshakeManager->registerModule(std::make_unique<SessionAuthModule>());
 	else
-		handshakeManager->registerModule(new OfflineAuthModule());
+		handshakeManager->registerModule(std::make_unique<OfflineAuthModule>());
 }
 
 void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)

@@ -4141,9 +4141,9 @@ ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<
 void ClientConnection::beginAuth()
 {
 	handshakeManager = new HandshakeManager(false);
-	handshakeManager->registerModule(new SessionAuthModule());
-	handshakeManager->registerModule(new KeypairOfflineAuthModule());
-	handshakeManager->registerModule(new OfflineAuthModule());
+	handshakeManager->registerModule(std::make_unique<SessionAuthModule>());
+	handshakeManager->registerModule(std::make_unique<KeypairOfflineAuthModule>());
+	handshakeManager->registerModule(std::make_unique<OfflineAuthModule>());
 
 	const auto &profiles = AuthProfileManager::getProfiles();
 	int idx = AuthProfileManager::getSelectedIndex();
