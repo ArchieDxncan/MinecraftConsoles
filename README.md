@@ -29,6 +29,7 @@ The following features have been added by me:
 - Reimplementation of Leaderboards using PlayFab Leaderboards.
 - Implementation of world broadcasting using PlayFab lobbies that only displays worlds from PlayFab friends.
 - Fully featured account manager that allows you to add friends via username and authenticates using your uid.
+- A cloud save system that integrates with Google Drive to sync saves between games that have the same UID (Setup in Account Manager).
 
 ---
 
