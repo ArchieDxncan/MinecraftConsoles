@@ -15,7 +15,8 @@
 #include "..\Minecraft.World\SharedConstants.h"
 #include "Settings.h"
 #include "..\Minecraft.World\HandshakeManager.h"
-#include "..\Minecraft.World\AuthModule.h"
+#include "..\Minecraft.World\SessionAuthModule.h"
+#include "..\Minecraft.World\OfflineAuthModule.h"
 #if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
 #include "..\Minecraft.Server\ServerLogManager.h"
 #include "..\Minecraft.Server\Access\Access.h"

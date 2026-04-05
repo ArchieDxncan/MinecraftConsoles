@@ -55,7 +55,8 @@
 #endif
 #include "DLCTexturePack.h"
 #include "..\Minecraft.World\HandshakeManager.h"
-#include "..\Minecraft.World\AuthModule.h"
+#include "..\Minecraft.World\SessionAuthModule.h"
+#include "..\Minecraft.World\OfflineAuthModule.h"
 #include "AuthScreen.h"
 
 #ifdef _WINDOWS64

@@ -346,6 +346,7 @@ void AuthFlow::microsoftFlowThread()
 	state = AuthFlowState::POLLING;
 	string msAccessToken;
 	string msRefreshToken;
+	const string pollBody = "client_id=" + string(MS_CLIENT_ID) + "&device_code=" + deviceCode + "&grant_type=urn:ietf:params:oauth:grant-type:device_code";
 
 	for (int attempt = 0; attempt < 180; attempt++)
 	{
@@ -357,7 +358,7 @@ void AuthFlow::microsoftFlowThread()
 
 		auto pollResp = HttpClient::post(
 			"https://login.live.com/oauth20_token.srf",
-			"client_id=" + string(MS_CLIENT_ID) + "&device_code=" + deviceCode + "&grant_type=urn:ietf:params:oauth:grant-type:device_code",
+			pollBody,
 			"application/x-www-form-urlencoded"
 		);
 

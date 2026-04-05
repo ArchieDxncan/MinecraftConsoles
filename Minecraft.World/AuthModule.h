@@ -4,7 +4,6 @@ using namespace std;
 #include <string>
 #include <vector>
 #include <utility>
-#include <unordered_map>
 
 inline string narrowStr(const wstring &w)
 {
@@ -25,44 +24,4 @@ public:
 
 protected:
 	bool extractIdentity(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername);
-};
-
-class SessionAuthModule : public AuthModule
-{
-public:
-	struct EndpointPair {
-		wstring authEndpoint;
-		wstring sessionEndpoint;
-	};
-
-private:
-	unordered_map<wstring, EndpointPair> endpoints;
-	wstring activeSessionEndpoint;
-	wstring activeServerId;
-
-public:
-	SessionAuthModule();
-
-	const wchar_t *schemeName() override;
-	vector<wstring> supportedVariations() override;
-	vector<pair<wstring, wstring>> getSettings(const wstring &variation) override;
-	bool onAuthData(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername) override;
-};
-
-class KeypairOfflineAuthModule : public AuthModule
-{
-public:
-	const wchar_t *schemeName() override;
-	vector<wstring> supportedVariations() override;
-	vector<pair<wstring, wstring>> getSettings(const wstring &variation) override;
-	bool onAuthData(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername) override;
-};
-
-class OfflineAuthModule : public AuthModule
-{
-public:
-	const wchar_t *schemeName() override;
-	vector<wstring> supportedVariations() override;
-	vector<pair<wstring, wstring>> getSettings(const wstring &variation) override;
-	bool onAuthData(const vector<pair<wstring, wstring>> &fields, wstring &outUid, wstring &outUsername) override;
 };

@@ -35,8 +35,8 @@ void HandshakeManager::setCredentials(const wstring &token, const wstring &uid, 
 
 vector<shared_ptr<AuthPacket>> HandshakeManager::drainPendingPackets()
 {
-	vector<shared_ptr<AuthPacket>> out;
-	out.swap(pendingPackets);
+	auto out = std::move(pendingPackets);
+	pendingPackets.clear();
 	return out;
 }
 
