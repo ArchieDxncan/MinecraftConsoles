@@ -367,6 +367,29 @@ async function loginFromHomePage() {
   }
 }
 
+function formatCloudScriptFailure(d) {
+  const err = d.Error || d.error;
+  if (typeof err === "string" && err.trim()) return err.trim();
+  const msg = err && (err.Message || err.message);
+  const stack =
+    err && (err.StackTrace || err.stackTrace || err.Stack || err.stack || "");
+  const logsArr = d.Logs || d.logs;
+  let logText = "";
+  if (Array.isArray(logsArr)) {
+    logText = logsArr
+      .map((l) => (l && (l.Message || l.message)) || "")
+      .filter(Boolean)
+      .join("\n");
+  }
+  const parts = [];
+  if (msg) parts.push(String(msg).trim());
+  if (stack) parts.push(String(stack).trim());
+  if (logText) parts.push(logText.trim());
+  const combined = parts.filter(Boolean).join("\n\n");
+  if (combined) return combined;
+  return "CloudScript failed (no details). Check PlayFab → Automation → CloudScript revision logs.";
+}
+
 async function executeCloudScript(functionName, functionParameter) {
   const data = await playFabPost(
     "/Client/ExecuteCloudScript",
@@ -378,8 +401,8 @@ async function executeCloudScript(functionName, functionParameter) {
   );
   const d = data.data || {};
   const err = d.Error || d.error;
-  if (err && (err.Message || err.message)) {
-    throw new Error(err.Message || err.message);
+  if (err) {
+    throw new Error(formatCloudScriptFailure(d));
   }
   return d.FunctionResult ?? d.functionResult;
 }
