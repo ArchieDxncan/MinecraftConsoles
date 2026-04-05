@@ -413,7 +413,6 @@ public:
 	//purpur_double_slab 204
 	//purpur_slab		205
 	//end_bricks		206
-	static const int beetroots_Id = 207;
 	//grass_path		208
 	//end_gateway		209
 	//frosted_ice		212
@@ -581,7 +580,6 @@ public:
 	static Tile *flowerPot;
 	static Tile *carrots;
 	static Tile *potatoes;
-	static Tile *beetroots;
 	static Tile *anvil;
 	static Tile *chest_trap;
 	static Tile *weightedPlate_light;

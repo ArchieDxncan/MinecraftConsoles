@@ -437,10 +437,6 @@ public:
 	static Item* prismarine_crystal;
 	static Item* prismarine_shard;
 
-	static Item *beetroot_seeds;
-	static Item *beetroot;
-	static Item *beetroot_soup;
-
 	static const int shovel_iron_Id			= 256;
 	static const int pickAxe_iron_Id		= 257;
 	static const int hatchet_iron_Id		= 258;
@@ -669,13 +665,6 @@ public:
 	static const int door_jungle_Id = 429;
 	static const int door_acacia_Id = 430;
 	static const int door_dark_Id = 431;
-
-	// TU31 — beetroot (runtime item ids; Item() ctor takes short id 176–178 → 256+)
-	static const int beetroot_seeds_Id = 432;
-	static const int beetroot_Id = 433;
-	static const int beetroot_soup_Id = 434;
-
-
 
 public:
 	const int id;

@@ -949,14 +949,9 @@ Recipes::Recipes()
 		Item::gunpowder, Item::blazePowder,new ItemInstance(Item::coal, 1, CoalItem::CHAR_COAL),
 		L'T');
 
-	addShapelessRecipy(new ItemInstance(Item::beetroot_soup, 1), //
-		L"iiiiiiig",
-		Item::beetroot, Item::beetroot, Item::beetroot, Item::beetroot, Item::beetroot, Item::beetroot, Item::bowl,
-		L'F');
-
 	addShapelessRecipy(new ItemInstance(Item::dye_powder, 1, DyePowderItem::RED), //
 		L"ig",
-		Item::beetroot,
+		Tile::rose,
 		L'F');
 
 	addShapedRecipy(new ItemInstance(Item::lead, 2), //

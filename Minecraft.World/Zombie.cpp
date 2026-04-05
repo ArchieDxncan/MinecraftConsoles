@@ -272,7 +272,7 @@ MobType Zombie::getMobType()
 
 void Zombie::dropRareDeathLoot(int rareLootLevel)
 {
-	switch (random->nextInt(4))
+	switch (random->nextInt(3))
 	{
 	case 0:
 		spawnAtLocation(Item::ironIngot_Id, 1);
@@ -282,9 +282,6 @@ void Zombie::dropRareDeathLoot(int rareLootLevel)
 		break;
 	case 2:
 		spawnAtLocation(Item::potato_Id, 1);
-		break;
-	case 3:
-		spawnAtLocation(Item::beetroot_Id, 1);
 		break;
 	}
 }

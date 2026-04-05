@@ -442,21 +442,12 @@ void UIScene_LeaderboardsMenu::ReadStats(int startIndex)
 		// m_newReadSize	= min((int)READ_SIZE, (int)m_leaderboard.m_totalEntryCount-(startIndex-1));
 	}
 
-	//app.DebugPrintf("Requesting stats read %d - %d - %d\n", m_currentLeaderboard, startIndex == -1 ? m_currentFilter : LeaderboardManager::eFM_TopRank, m_currentDifficulty);
-	
-	LeaderboardManager::EFilterMode filtermode;
-	if (	m_currentFilter == LeaderboardManager::eFM_MyScore
-		||	m_currentFilter == LeaderboardManager::eFM_TopRank )
-	{
-		filtermode = (startIndex == -1 ? m_currentFilter : LeaderboardManager::eFM_TopRank);
-	}
-	else
-	{
-		// 4J-JEV: Friends filter shouldn't switch to toprank.
-		filtermode = m_currentFilter;
-	}
+	//app.DebugPrintf("Requesting stats read %d - %d - %d\n", m_currentLeaderboard, m_currentFilter, m_currentDifficulty);
 
-	switch (filtermode)
+	// My Score is a single "around local player" window (e.g. PlayFab GetLeaderboardAroundPlayer). Pagination
+	// must not switch to TopRank — that pulled global slices and looked like the full leaderboard.
+
+	switch (m_currentFilter)
 	{
 	case LeaderboardManager::eFM_TopRank:
 		{
@@ -593,13 +584,7 @@ bool UIScene_LeaderboardsMenu::RetrieveStats()
 	{
 		m_leaderboard.m_entries.clear();
 
-#if _DURANGO
-		m_leaderboard.m_totalEntryCount = m_numStats;
-#else
-		m_leaderboard.m_totalEntryCount = (m_currentFilter == LeaderboardManager::eFM_Friends) ? m_newEntriesCount : m_numStats;
-#endif
-
-		if( m_leaderboard.m_totalEntryCount == 0 || m_newEntriesCount == 0 )
+		if( m_newEntriesCount == 0 )
 		{
 			//LeaderboardManager::Instance()->SetStatsRetrieved(false);
 			return false;
@@ -613,32 +598,48 @@ bool UIScene_LeaderboardsMenu::RetrieveStats()
 			CopyLeaderboardEntry(&(m_stats.m_queries[entryIndex]), entryIndex, isDistanceLeaderboard);
 		}
 
-		m_newEntryIndex = 0;
-
-		// Clear these values so that we know whether or not they are set in the next block
-		m_newTop = -1;
-		m_newSel = -1;
-
-		// If the filter mode is "My Score" then centre the list around the entries and select the player's score
-		if( m_currentFilter == LeaderboardManager::eFM_MyScore)
+		// Later legacy: My Score lists only the signed-in player.
+		if( m_currentFilter == LeaderboardManager::eFM_MyScore )
 		{
-			//Centre the leaderboard list on the entries
-			m_newTop = GetEntryStartIndex();
-
-			//Select the player entry
-			for( unsigned int i = GetEntryStartIndex(); i< GetEntryStartIndex() + m_leaderboard.m_entries.size(); ++i )
+			std::vector<LeaderboardEntry> one;
+			for( size_t i = 0; i < m_leaderboard.m_entries.size(); ++i )
 			{
-				if( m_leaderboard.m_entries[i - GetEntryStartIndex()].m_bPlayer )
+				if( m_leaderboard.m_entries[i].m_bPlayer )
 				{
-					m_newSel = i; // this might be off the screen!
-					// and reposition the top one
-					if(m_newSel-m_newTop>9)
-					{
-						m_newTop=m_newSel-9;
-					}
+					one.push_back(m_leaderboard.m_entries[i]);
 					break;
 				}
 			}
+			m_leaderboard.m_entries.swap(one);
+			m_newEntriesCount = static_cast<unsigned int>(m_leaderboard.m_entries.size());
+			if( m_newEntriesCount == 0 )
+				return false;
+			m_leaderboard.m_entries[0].m_row = 0;
+		}
+
+#if _DURANGO
+		if( m_currentFilter == LeaderboardManager::eFM_MyScore )
+			m_leaderboard.m_totalEntryCount = m_newEntriesCount;
+		else
+			m_leaderboard.m_totalEntryCount = m_numStats;
+#else
+		if( m_currentFilter == LeaderboardManager::eFM_Friends )
+			m_leaderboard.m_totalEntryCount = m_newEntriesCount;
+		else if( m_currentFilter == LeaderboardManager::eFM_MyScore )
+			m_leaderboard.m_totalEntryCount = m_newEntriesCount;
+		else
+			m_leaderboard.m_totalEntryCount = m_numStats;
+#endif
+
+		m_newEntryIndex = 0;
+
+		m_newTop = -1;
+		m_newSel = -1;
+
+		if( m_currentFilter == LeaderboardManager::eFM_MyScore )
+		{
+			m_newTop = 0;
+			m_newSel = 0;
 		}
 
 		// If not set, default to start index
@@ -852,6 +853,13 @@ void UIScene_LeaderboardsMenu::CopyLeaderboardEntry(LeaderboardManager::ReadScor
 		}
 #endif
 	}
+#else
+	PlayerUID myXuid;
+	ProfileManager.GetXUID(ProfileManager.GetPrimaryPad(), &myXuid, true);
+	leaderboardEntry->m_bPlayer = (statsRow->m_uid == myXuid);
+	leaderboardEntry->m_bOnline = false;
+	leaderboardEntry->m_bFriend = false;
+	leaderboardEntry->m_bRequestedFriend = false;
 #endif
 }
 
@@ -997,6 +1005,9 @@ void UIScene_LeaderboardsMenu::handleSelectionChanged(F64 selectedId)
 // Handle a request from Iggy for more data
 void UIScene_LeaderboardsMenu::handleRequestMoreData(F64 startIndex, bool up)
 {
+	if (m_currentFilter == LeaderboardManager::eFM_MyScore)
+		return;
+
 	unsigned int item = static_cast<int>(startIndex);
 
 	if( m_leaderboard.m_totalEntryCount > 0 && (item+1) < GetEntryStartIndex() )

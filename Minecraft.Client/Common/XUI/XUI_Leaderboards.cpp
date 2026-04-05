@@ -570,7 +570,9 @@ void CScene_Leaderboards::ReadStats(int startIndex)
 		m_numFilteredFriends,
 		m_filteredFriends);*/
 
-	switch (startIndex == -1 ? m_currentFilter : LeaderboardManager::eFM_TopRank)
+	// My Score is one around-player fetch; do not treat list scroll pagination as TopRank.
+
+	switch (m_currentFilter)
 	{
 	case LeaderboardManager::eFM_TopRank:
 		LeaderboardManager::Instance()->ReadStats_TopRank(	this, 
@@ -700,24 +702,29 @@ bool CScene_Leaderboards::RetrieveStats()
 		for( unsigned int entryIndex=0 ; entryIndex<m_leaderboard.m_currentEntryCount ; ++entryIndex )
 			CopyLeaderboardEntry(&(m_stats->pViews[0].pRows[entryIndex]), &(m_leaderboard.m_entries[entryIndex]), isDistanceLeaderboard);
 
-		//If the filter mode is "My Score" then centre the list around the entries and select the player's score
+		// Later legacy: My Score lists only the signed-in player.
 		if( m_currentFilter == LeaderboardManager::eFM_MyScore )
 		{
-			//Centre the leaderboard list on the entries
-			m_newTop = m_leaderboard.m_entryStartIndex-1;
-
-			//Select the player entry
-			for( unsigned int i=m_leaderboard.m_entryStartIndex ; i<m_leaderboard.m_entryStartIndex+m_leaderboard.m_currentEntryCount ; ++i )
-				if( m_leaderboard.m_entries[i-m_leaderboard.m_entryStartIndex].m_bPlayer )
+			unsigned int pi = m_leaderboard.m_currentEntryCount;
+			for( unsigned int e = 0; e < m_leaderboard.m_currentEntryCount; ++e )
+			{
+				if( m_leaderboard.m_entries[e].m_bPlayer )
 				{
-					m_newSel = i-1; // this might be off the screen!
-					// and reposition the top one
-					if(m_newSel-m_newTop>9)
-					{
-						m_newTop=m_newSel-9;
-					}
+					pi = e;
 					break;
 				}
+			}
+			if( pi >= m_leaderboard.m_currentEntryCount )
+				return false;
+			if( pi != 0 )
+				m_leaderboard.m_entries[0] = m_leaderboard.m_entries[pi];
+			m_leaderboard.m_currentEntryCount = 1;
+			m_leaderboard.m_totalEntryCount = 1;
+			m_leaderboard.m_entryStartIndex = 1;
+			m_leaderboard.m_entries[0].m_row = 0;
+
+			m_newTop = 0;
+			m_newSel = 0;
 		}
 	}
 	//Additional read
@@ -815,7 +822,8 @@ HRESULT CScene_Leaderboards::OnGetSourceDataText(XUIMessageGetSourceText *pGetSo
 
 		unsigned int item = pGetSourceTextData->iItem;
 
-		if( m_leaderboard.m_totalEntryCount > 0 && (item+1) < m_leaderboard.m_entryStartIndex )
+		if( m_currentFilter != LeaderboardManager::eFM_MyScore
+			&& m_leaderboard.m_totalEntryCount > 0 && (item+1) < m_leaderboard.m_entryStartIndex )
 		{
 			if( LeaderboardManager::Instance()->isIdle() )
 			{
@@ -826,7 +834,8 @@ HRESULT CScene_Leaderboards::OnGetSourceDataText(XUIMessageGetSourceText *pGetSo
 				ReadStats(readIndex);
 			}
 		}
-		else if( m_leaderboard.m_totalEntryCount > 0 && (item+1) >= (m_leaderboard.m_entryStartIndex+m_leaderboard.m_currentEntryCount) )
+		else if( m_currentFilter != LeaderboardManager::eFM_MyScore
+			&& m_leaderboard.m_totalEntryCount > 0 && (item+1) >= (m_leaderboard.m_entryStartIndex+m_leaderboard.m_currentEntryCount) )
 		{
 			if( LeaderboardManager::Instance()->isIdle() )
 			{
@@ -874,11 +883,13 @@ HRESULT CScene_Leaderboards::OnGetSourceDataImage(XUIMessageGetSourceImage* pGet
 		}
 
 		unsigned int item = pGetImage->iItem;
-		if( m_leaderboard.m_totalEntryCount > 0 && (item+1) < m_leaderboard.m_entryStartIndex )
+		if( m_currentFilter != LeaderboardManager::eFM_MyScore
+			&& m_leaderboard.m_totalEntryCount > 0 && (item+1) < m_leaderboard.m_entryStartIndex )
 		{
 			//Do nothing, reading handled in OnGetSourceDataText
 		}
-		else if( m_leaderboard.m_totalEntryCount > 0 && (item+1) >= (m_leaderboard.m_entryStartIndex+m_leaderboard.m_currentEntryCount) )
+		else if( m_currentFilter != LeaderboardManager::eFM_MyScore
+			&& m_leaderboard.m_totalEntryCount > 0 && (item+1) >= (m_leaderboard.m_entryStartIndex+m_leaderboard.m_currentEntryCount) )
 		{
 			//Do nothing, reading handled in OnGetSourceDataText
 		}

@@ -52,6 +52,11 @@ void DLCAudioFile::addParameter(EAudioType type, EAudioParameterType ptype, cons
 {
 	switch(ptype)
 	{
+		case e_AudioParamType_Cuename:
+			if (type < 0 || type >= e_AudioType_Max)
+				return;
+			m_parameters[type].push_back(value);
+			break;
 
 		case e_AudioParamType_Credit: // If this parameter exists, then mark this as free
 			//add it to the DLC credits list
@@ -113,9 +118,7 @@ void DLCAudioFile::addParameter(EAudioType type, EAudioParameterType ptype, cons
 
 			}
 			break;
-		case e_AudioParamType_Cuename:
-			m_parameters[type].push_back(value);
-			//m_parameters[(int)type] = value;
+		default:
 			break;
 	}
 }
@@ -133,63 +136,95 @@ bool DLCAudioFile::processDLCDataFile(PBYTE pbData, DWORD dwLength)
 
 	if(uiVersion < CURRENT_AUDIO_VERSION_NUM)
 	{
-		if(pbData!=nullptr) delete [] pbData;
+		// pbData is owned by the parent DLCPack buffer — do not delete here (would corrupt heap).
 		app.DebugPrintf("DLC version of %d is too old to be read\n", uiVersion);
 		return false;
 	}
 	
 	unsigned int uiParameterTypeCount=*(unsigned int *)&pbData[uiCurrentByte];
 	uiCurrentByte+=sizeof(int);
-	C4JStorage::DLC_FILE_PARAM *pParams = (C4JStorage::DLC_FILE_PARAM *)&pbData[uiCurrentByte];
-	
+	C4JStorage::DLC_FILE_PARAM *pParams = nullptr;
+
 	for(unsigned int i=0;i<uiParameterTypeCount;i++)
 	{
-		// Map DLC strings to application strings, then store the DLC index mapping to application index
-		wstring parameterName(static_cast<WCHAR *>(pParams->wchData));
+		if (uiCurrentByte + 2u * sizeof(DWORD) > dwLength)
+			return false;
+		pParams = (C4JStorage::DLC_FILE_PARAM *)&pbData[uiCurrentByte];
+		const DWORD nameWch = pParams->dwWchCount;
+		const size_t mapStride = sizeof(C4JStorage::DLC_FILE_PARAM) + (size_t)nameWch * sizeof(WCHAR);
+		if (mapStride < sizeof(C4JStorage::DLC_FILE_PARAM) || uiCurrentByte + mapStride > dwLength)
+			return false;
+		// wchData is length-prefixed; not guaranteed null-terminated (do not use wchar_t* ctor alone).
+		wstring parameterName(pParams->wchData, nameWch);
 		EAudioParameterType type = getParameterType(parameterName);
 		if( type != e_AudioParamType_Invalid )
 		{
 			parameterMapping[pParams->dwType] = type;
 		}
-		uiCurrentByte+= sizeof(C4JStorage::DLC_FILE_PARAM)+(pParams->dwWchCount*sizeof(WCHAR));
-		pParams = (C4JStorage::DLC_FILE_PARAM *)&pbData[uiCurrentByte];
+		uiCurrentByte += mapStride;
 	}
 	unsigned int uiFileCount=*(unsigned int *)&pbData[uiCurrentByte];
 	uiCurrentByte+=sizeof(int);
-	C4JStorage::DLC_FILE_DETAILS *pFile = (C4JStorage::DLC_FILE_DETAILS *)&pbData[uiCurrentByte];
+	if (uiCurrentByte > dwLength)
+		return false;
+	C4JStorage::DLC_FILE_DETAILS *pFile = nullptr;
 
-	DWORD dwTemp=uiCurrentByte;
-	for(unsigned int i=0;i<uiFileCount;i++)
+	DWORD dwTemp = uiCurrentByte;
+	for (unsigned int i = 0; i < uiFileCount; i++)
 	{
-		dwTemp+=sizeof(C4JStorage::DLC_FILE_DETAILS)+pFile->dwWchCount*sizeof(WCHAR);
+		if (dwTemp + sizeof(C4JStorage::DLC_FILE_DETAILS) > dwLength)
+			return false;
 		pFile = (C4JStorage::DLC_FILE_DETAILS *)&pbData[dwTemp];
+		const DWORD pathWch = pFile->dwWchCount;
+		const size_t detailStride = sizeof(C4JStorage::DLC_FILE_DETAILS) + (size_t)pathWch * sizeof(WCHAR);
+		if (detailStride < sizeof(C4JStorage::DLC_FILE_DETAILS) || dwTemp + detailStride > dwLength)
+			return false;
+		dwTemp += static_cast<DWORD>(detailStride);
 	}
-	PBYTE pbTemp=((PBYTE )pFile);
+	// First byte after all DLC_FILE_DETAILS headers (matches original scan loop end state).
+	PBYTE pbTemp = pbData + dwTemp;
 	pFile = (C4JStorage::DLC_FILE_DETAILS *)&pbData[uiCurrentByte];
 
 	for(unsigned int i=0;i<uiFileCount;i++)
 	{
+		if (uiCurrentByte + sizeof(C4JStorage::DLC_FILE_DETAILS) > dwLength)
+			return false;
+		pFile = (C4JStorage::DLC_FILE_DETAILS *)&pbData[uiCurrentByte];
+		const DWORD pathWch = pFile->dwWchCount;
+		const size_t detailStride = sizeof(C4JStorage::DLC_FILE_DETAILS) + (size_t)pathWch * sizeof(WCHAR);
+		if (detailStride < sizeof(C4JStorage::DLC_FILE_DETAILS) || uiCurrentByte + detailStride > dwLength)
+			return false;
+
 		EAudioType type = static_cast<EAudioType>(pFile->dwType);
 		// Params
+		if (pbTemp + sizeof(unsigned int) > pbData + dwLength)
+			return false;
 		unsigned int uiParameterCount=*(unsigned int *)pbTemp;
 		pbTemp+=sizeof(int);
-		pParams = (C4JStorage::DLC_FILE_PARAM *)pbTemp;
 		for(unsigned int j=0;j<uiParameterCount;j++)
 		{
-			//EAudioParameterType paramType = e_AudioParamType_Invalid;
+			if (pbTemp + 2u * sizeof(DWORD) > pbData + dwLength)
+				return false;
+			pParams = (C4JStorage::DLC_FILE_PARAM *)pbTemp;
+			const DWORD valWch = pParams->dwWchCount;
+			const size_t paramStride = sizeof(C4JStorage::DLC_FILE_PARAM) + (size_t)valWch * sizeof(WCHAR);
+			if (paramStride < sizeof(C4JStorage::DLC_FILE_PARAM) || pbTemp + paramStride > pbData + dwLength)
+				return false;
 
 			auto it = parameterMapping.find(pParams->dwType);
 
 			if(it != parameterMapping.end() )
 			{
- 				addParameter(type,static_cast<EAudioParameterType>(pParams->dwType),(WCHAR *)pParams->wchData);
+				wstring paramValue(pParams->wchData, valWch);
+				addParameter(type, it->second, paramValue);
 			}
-			pbTemp+=sizeof(C4JStorage::DLC_FILE_PARAM)+(sizeof(WCHAR)*pParams->dwWchCount);
-			pParams = (C4JStorage::DLC_FILE_PARAM *)pbTemp;
+			pbTemp += paramStride;
 		}
 		// Move the pointer to the start of the next files data;
-		pbTemp+=pFile->uiFileSize;
-		uiCurrentByte+=sizeof(C4JStorage::DLC_FILE_DETAILS)+pFile->dwWchCount*sizeof(WCHAR);
+		if (pbTemp + pFile->uiFileSize < pbTemp || pbTemp + pFile->uiFileSize > pbData + dwLength)
+			return false;
+		pbTemp += pFile->uiFileSize;
+		uiCurrentByte += static_cast<unsigned int>(detailStride);
 
 		pFile=(C4JStorage::DLC_FILE_DETAILS *)&pbData[uiCurrentByte];
 

@@ -270,10 +270,6 @@ Item* Item::armor_stand = nullptr;
 Item* Item::rabbitStew = nullptr;
 Item* Item::prismarine_crystal = nullptr;
 Item* Item::prismarine_shard = nullptr;
-Item *Item::beetroot_seeds = nullptr;
-Item *Item::beetroot = nullptr;
-Item *Item::beetroot_soup = nullptr;
-
 
 void Item::staticCtor()
 {
@@ -539,19 +535,6 @@ void Item::staticCtor()
 	Item::prismarine_crystal = (new Item(154))->setIconName(L"prismarineCrystal")->setDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL)->setUseDescriptionId(IDS_ITEM_PRISMARINE_CRYSTAL_DESC);
 	Item::prismarine_shard = (new Item(153))->setIconName(L"prismarineShard")->setDescriptionId(IDS_ITEM_PRISMARINE_SHARD)->setUseDescriptionId(IDS_ITEM_PRISMARINE_SHARD_DESC);
 
-	// Short ids 176–178 → runtime ids 432–434 (256 + short). Do not pass beetroot_*_Id here — those are already shifted.
-	Item::beetroot_seeds = (new SeedItem(176, Tile::beetroots_Id, Tile::farmland_Id))
-		->setIconName(L"beetroot_seeds")
-		->setDescriptionId(IDS_ITEM_BEETROOT_SEEDS)
-		->setUseDescriptionId(IDS_DESC_BEETROOT_SEEDS);
-	Item::beetroot = (new FoodItem(177, 1, FoodConstants::FOOD_SATURATION_LOW, false))
-		->setIconName(L"beetroot")
-		->setDescriptionId(IDS_BEETROOT)
-		->setUseDescriptionId(IDS_DESC_BEETROOT);
-	Item::beetroot_soup = (new BowlFoodItem(178, 6))
-		->setIconName(L"beetroot_soup")
-		->setDescriptionId(IDS_ITEM_BEETROOT_SOUP)
-		->setUseDescriptionId(IDS_DESC_BEETROOT_SOUP);
 }
 
 
@@ -962,10 +945,6 @@ wstring Item::getHoverName(shared_ptr<ItemInstance> itemInstance)
 	LPCWSTR s = app.GetString(getDescriptionId(itemInstance));
 	if (s && s[0])
 		return s;
-	// No languages.loc entry yet (static table index missing): English display names for beetroot
-	if (this == Item::beetroot_seeds) return L"Beetroot Seeds";
-	if (this == Item::beetroot) return L"Beetroot";
-	if (this == Item::beetroot_soup) return L"Beetroot Soup";
 	return s ? wstring(s) : L"";
 }
 

@@ -960,6 +960,37 @@ void WindowsLeaderboardManager::StartReadJob(EFilterMode filter)
 			outScores[i].m_isLocalPlayer = (!myPfId.empty() && !pfId.empty() && pfId == myPfId);
 		}
 
+		// Match later legacy My Score UI: only the local player's row (before column fetches for other players).
+		if (filter == eFM_MyScore)
+		{
+			unsigned int idx = outN;
+			for (unsigned int i = 0; i < outN; ++i)
+			{
+				if (outScores[i].m_isLocalPlayer)
+				{
+					idx = i;
+					break;
+				}
+			}
+			if (idx >= outN)
+			{
+				delete[] outScores;
+				outScores = nullptr;
+				outN = 0;
+				outRet = eStatsReturn_NoResults;
+				finish();
+				return;
+			}
+			const std::string keepPf = pfIds[idx];
+			ReadScore keepSc = outScores[idx];
+			delete[] outScores;
+			outScores = new ReadScore[1];
+			outScores[0] = keepSc;
+			pfIds.clear();
+			pfIds.push_back(keepPf);
+			outN = 1;
+		}
+
 		// GetLeaderboard only returns _Sum. Column breakdowns come from MC_*_C0.. stats.
 		// Local player: Client/GetPlayerStatistics (no profile constraint). Others: Client/GetPlayerProfile
 		// needs Title settings → Client Profile Options → allow statistics on profiles (ShowStatistics).

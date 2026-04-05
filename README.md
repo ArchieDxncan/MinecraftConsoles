@@ -24,7 +24,6 @@ It is primarily used for:
 
 The following features have been added by me:
 
-- (TU43) Beetroot, Beetroot Seeds, Beetroot Soup.
 - Adapted/Continued hugozz26's implementation of UWP support.
 - Reimplementation of Leaderboards using PlayFab Leaderboards.
 - Implementation of world broadcasting using PlayFab lobbies that only displays worlds from PlayFab friends.

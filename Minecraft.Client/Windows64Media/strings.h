@@ -2417,15 +2417,6 @@
 #define IDS_DESC_ROSE_BUSH                                     2411
 #define IDS_DESC_PEONY                                         2412
 #define IDS_ENDERMITE                                      	   2413
-#define IDS_TILE_BEETROOTS                                     2414
-#define IDS_DESC_BEETROOTS                                     2415
-#define IDS_ITEM_BEETROOT_SEEDS                                2416
-#define IDS_DESC_BEETROOT_SEEDS                                2417
-#define IDS_BEETROOT                                           2418
-#define IDS_DESC_BEETROOT                                      2419
-#define IDS_ITEM_BEETROOT_SOUP                                 2420
-#define IDS_DESC_BEETROOT_SOUP                                 2421
-#define IDS_ENDERMITE                                      	   2413
 #define IDS_ITEM_WRITTENBOOK								   2414
 #define IDS_DESC_WRITTENBOOK								   2415
 #define IDS_ITEM_WRITINGBOOK								   2416

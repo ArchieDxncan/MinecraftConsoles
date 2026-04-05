@@ -1769,8 +1769,6 @@ int VillagePieces::Farmland::selectCrops(Random *random)
 		return Tile::carrots_Id;
 	case 1:
 		return Tile::potatoes_Id;
-	case 2:
-		return Tile::beetroots_Id;
 	}
 }
 
@@ -1897,8 +1895,6 @@ int VillagePieces::DoubleFarmland::selectCrops(Random *random)
 		return Tile::carrots_Id;
 	case 1:
 		return Tile::potatoes_Id;
-	case 2:
-		return Tile::beetroots_Id;
 	}
 }
 
