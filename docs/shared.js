@@ -205,7 +205,8 @@ async function startCloudOAuth(provider) {
     throw new Error("Unknown provider");
   }
 
-  const w = window.open(url, "lce_oauth", "width=520,height=720,noopener,noreferrer");
+  // Do not use noopener: oauth-callback.html must keep window.opener so it can postMessage back.
+  const w = window.open(url, "lce_oauth", "width=520,height=720");
   if (!w) throw new Error("Popup blocked — allow popups for this site.");
 }
 
