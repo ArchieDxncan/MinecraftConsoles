@@ -11,8 +11,8 @@ UIScene_MessageBox::UIScene_MessageBox(int iPad, void *initData, UILayer *parent
 
 	m_buttonCount = param->uiOptionC;
 
-	IggyDataValue result;
-	IggyDataValue value[2];
+	IggyDataValue result{};
+	IggyDataValue value[2]{};
 	value[0].type = IGGY_DATATYPE_number;
 	value[0].number = param->uiOptionC;
 
@@ -20,26 +20,38 @@ UIScene_MessageBox::UIScene_MessageBox(int iPad, void *initData, UILayer *parent
 	value[1].number = param->dwFocusButton;
 	IggyResult out = IggyPlayerCallMethodRS ( getMovie() , &result, IggyPlayerRootPath( getMovie() ), m_funcInit , 2 , value );
 
+	auto buttonLabel = [&](int idx) -> UIString {
+		if (param->rawOptions && param->rawOptions[idx])
+			return UIString(param->rawOptions[idx]);
+		return app.GetString(param->uiOptionA[idx]);
+	};
+
 	int buttonIndex = 0;
 	if(param->uiOptionC > 3)
 	{
-		m_buttonButtons[eControl_Button0].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+		m_buttonButtons[eControl_Button0].init(buttonLabel(buttonIndex),buttonIndex);
 		++buttonIndex;
 	}
 	if(param->uiOptionC > 2)
 	{
-		m_buttonButtons[eControl_Button1].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+		m_buttonButtons[eControl_Button1].init(buttonLabel(buttonIndex),buttonIndex);
 		++buttonIndex;
 	}
 	if(param->uiOptionC > 1)
 	{
-	m_buttonButtons[eControl_Button2].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+	m_buttonButtons[eControl_Button2].init(buttonLabel(buttonIndex),buttonIndex);
 		++buttonIndex;
 	}
-	m_buttonButtons[eControl_Button3].init(app.GetString(param->uiOptionA[buttonIndex]),buttonIndex);
+	m_buttonButtons[eControl_Button3].init(buttonLabel(buttonIndex),buttonIndex);
 
-	m_labelTitle.init(app.GetString(param->uiTitle));
-	m_labelContent.init(app.GetString(param->uiText));
+	if (param->rawTitle)
+		m_labelTitle.init(UIString(param->rawTitle));
+	else
+		m_labelTitle.init(app.GetString(param->uiTitle));
+	if (param->rawText)
+		m_labelContent.init(UIString(param->rawText));
+	else
+		m_labelContent.init(app.GetString(param->uiText));
 
 	out = IggyPlayerCallMethodRS ( getMovie() , &result, IggyPlayerRootPath( getMovie() ), m_funcAutoResize , 0 , nullptr );
 
@@ -78,8 +90,8 @@ void UIScene_MessageBox::updateTooltips()
 
 void UIScene_MessageBox::handleReload()
 {
-	IggyDataValue result;
-	IggyDataValue value[2];
+	IggyDataValue result{};
+	IggyDataValue value[2]{};
 	value[0].type = IGGY_DATATYPE_number;
 	value[0].number = m_buttonCount;
 
@@ -136,14 +148,15 @@ void UIScene_MessageBox::handlePress(F64 controlId, F64 childId)
 		break;
 	}
 
-	navigateBack();
+	if (!m_keepOpen)
+		navigateBack();
 	if(m_Func) m_Func(m_lpParam, m_iPad, result);
 }
 
 void UIScene_MessageBox::updateContent(const wchar_t *text)
 {
 	m_labelContent.init(text);
-	IggyDataValue result;
+	IggyDataValue result{};
 	IggyPlayerCallMethodRS(getMovie(), &result, IggyPlayerRootPath(getMovie()), m_funcAutoResize, 0, nullptr);
 }
 

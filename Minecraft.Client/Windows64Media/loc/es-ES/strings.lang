@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_NULL">
 		<value>Sin usar</value>
 	</data>	
@@ -5272,7 +5272,7 @@ Pulsa{*CONTROLLER_VK_A*} para continuar el tutorial.{*B*}
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Tienda de Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

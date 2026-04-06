@@ -66,6 +66,8 @@ PendingConnection::PendingConnection(MinecraftServer *server, Socket *socket, co
 
 PendingConnection::~PendingConnection()
 {
+	delete handshakeManager;
+	handshakeManager = nullptr;
 	delete connection;
 }
 
@@ -408,7 +410,7 @@ void PendingConnection::initAuth()
 		handshakeManager->registerModule(std::make_unique<OfflineAuthModule>());
 }
 
-void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+void PendingConnection::handleAuth(shared_ptr<AuthPacket> packet)
 {
 	if (done || authComplete) return;
 
@@ -417,6 +419,9 @@ void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
 
 	auto response = handshakeManager->handlePacket(packet);
 	if (response) send(response);
+
+	for (auto &p : handshakeManager->drainPendingPackets())
+		send(p);
 
 	if (handshakeManager->isComplete())
 	{

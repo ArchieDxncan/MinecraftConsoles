@@ -227,6 +227,8 @@ ClientConnection::~ClientConnection()
 {
 	m_trackedEntityIds.clear();
 	m_visibleChunks.clear();
+	delete handshakeManager;
+	handshakeManager = nullptr;
 	delete connection;
 	delete random;
 	delete savedDataStorage;
@@ -4200,8 +4202,26 @@ ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<
 	m_packet = packet;
 }
 
+bool ClientConnection::finishPreJoinAuthHandshake()
+{
+	if (!connection || !createdOk)
+		return false;
+	beginAuth();
+	for (int i = 0; i < 600; ++i)
+	{
+		if (done)
+			return false;
+		if (authComplete)
+			return true;
+		tick();
+		Sleep(50);
+	}
+	return false;
+}
+
 void ClientConnection::beginAuth()
 {
+	delete handshakeManager;
 	handshakeManager = new HandshakeManager(false);
 	handshakeManager->registerModule(std::make_unique<SessionAuthModule>());
 	handshakeManager->registerModule(std::make_unique<KeypairOfflineAuthModule>());
@@ -4222,7 +4242,7 @@ void ClientConnection::beginAuth()
 	if (initial) send(initial);
 }
 
-void ClientConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+void ClientConnection::handleAuth(shared_ptr<AuthPacket> packet)
 {
 	if (done || authComplete) return;
 	if (!handshakeManager) return;

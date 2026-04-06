@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_NULL">
 		<value>Não Usado</value>
 	</data>	
@@ -5254,7 +5254,7 @@ Também pode ser usado para pouca iluminação.</value>
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Loja Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "net.minecraft.network.packet.h"
+#include "AuthPackets.h"
 #include "PacketListener.h"
 
 void PacketListener::handleBlockRegionUpdate(shared_ptr<BlockRegionUpdatePacket> packet) 
@@ -490,4 +491,9 @@ void PacketListener::handleXZ(shared_ptr<XZPacket> packet)
 void PacketListener::handleGameCommand(shared_ptr<GameCommandPacket> packet)
 {
 	onUnhandledPacket( (shared_ptr<Packet> ) packet);
+}
+
+void PacketListener::handleAuth(shared_ptr<AuthPacket> packet)
+{
+	onUnhandledPacket(static_pointer_cast<Packet>(packet));
 }

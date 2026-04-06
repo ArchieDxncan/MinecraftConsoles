@@ -2982,7 +2982,7 @@ C4JStorage::EMessageResult UIController::RequestMessageBox(UINT uiTitle, UINT ui
 														   int( *Func)(LPVOID,int,const C4JStorage::EMessageResult),LPVOID lpParam, WCHAR *pwchFormatString,DWORD dwFocusButton, bool bIsError)
 
 {
-	MessageBoxInfo param;
+	MessageBoxInfo param = {};
 	param.uiTitle = uiTitle;
 	param.uiText = uiText;
 	param.uiOptionA = uiOptionA;
@@ -2992,6 +2992,9 @@ C4JStorage::EMessageResult UIController::RequestMessageBox(UINT uiTitle, UINT ui
 	param.lpParam = lpParam;
 	param.pwchFormatString = pwchFormatString;
 	param.dwFocusButton = dwFocusButton;
+	param.rawTitle = nullptr;
+	param.rawText = nullptr;
+	param.rawOptions = nullptr;
 
 	EUILayer layer = bIsError?eUILayer_Error:eUILayer_Alert;
 

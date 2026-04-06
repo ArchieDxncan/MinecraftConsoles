@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_TIPS_GAMETIP_NEWDLC">
 		<value>Sono disponibili nuovi contenuti scaricabili! Per accedervi, seleziona il pulsante Negozio di Minecraft nel menu principale.</value>
 	</data>	
@@ -4948,7 +4948,7 @@ Di notte, i mostri vagano in libertà, quindi costruisci un riparo per tempo.</v
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Negozio di Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

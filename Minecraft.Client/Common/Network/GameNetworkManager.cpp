@@ -418,6 +418,16 @@ bool	CGameNetworkManager::StartNetworkGame(Minecraft *minecraft, LPVOID lpParame
 			return false;
 		}
 
+		if (!connection->finishPreJoinAuthHandshake())
+		{
+			app.DebugPrintf("Pre-login auth handshake failed or timed out\n");
+			connection->close();
+			delete connection;
+			connection = nullptr;
+			MinecraftServer::HaltServer();
+			return false;
+		}
+
 		connection->send(std::make_shared<PreLoginPacket>(minecraft->user->name));
 
 	// Tick connection until we're ready to go. The stages involved in this are:
@@ -517,12 +527,20 @@ bool	CGameNetworkManager::StartNetworkGame(Minecraft *minecraft, LPVOID lpParame
 			Socket *socket = pNetworkPlayer->GetSocket();
 			connection = new ClientConnection(minecraft, socket, idx);
 
-			minecraft->addPendingLocalConnection(idx, connection);
 			//minecraft->createExtraLocalPlayer(idx, (convStringToWstring( ProfileManager.GetGamertag(idx) )).c_str(), idx, connection);
 
 			// Open the socket on the server end to accept incoming data
 			Socket::addIncomingSocket(socket);
 
+			if (!connection->finishPreJoinAuthHandshake())
+			{
+				app.DebugPrintf("Pre-login auth handshake failed for local player idx %d\n", idx);
+				connection->close();
+				delete connection;
+				continue;
+			}
+
+			minecraft->addPendingLocalConnection(idx, connection);
 			connection->send(std::make_shared<PreLoginPacket>(convStringToWstring(ProfileManager.GetGamertag(idx))));
 
 			createdConnections.push_back( connection );
@@ -1604,8 +1622,18 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 			ClientConnection* connection = new ClientConnection(pMinecraft, socket, padIdx);
 			if (connection->createdOk)
 			{
-				connection->send(shared_ptr<PreLoginPacket>(new PreLoginPacket(pNetworkPlayer->GetOnlineName())));
-				pMinecraft->addPendingLocalConnection(padIdx, connection);
+				if (!connection->finishPreJoinAuthHandshake())
+				{
+					app.DebugPrintf("Pre-login auth handshake failed for split-screen pad %d\n", padIdx);
+					connection->close();
+					pMinecraft->connectionDisconnected(padIdx, DisconnectPacket::eDisconnect_ConnectionCreationFailed);
+					delete connection;
+				}
+				else
+				{
+					connection->send(shared_ptr<PreLoginPacket>(new PreLoginPacket(pNetworkPlayer->GetOnlineName())));
+					pMinecraft->addPendingLocalConnection(padIdx, connection);
+				}
 			}
 			else
 			{
@@ -1638,8 +1666,19 @@ void CGameNetworkManager::CreateSocket( INetworkPlayer *pNetworkPlayer, bool loc
 
 			if( connection->createdOk )
 			{
-				connection->send(std::make_shared<PreLoginPacket>(pNetworkPlayer->GetOnlineName()));
-				pMinecraft->addPendingLocalConnection(idx, connection);
+				if (!connection->finishPreJoinAuthHandshake())
+				{
+					app.DebugPrintf("Pre-login auth handshake failed for in-game local idx %d\n", idx);
+					connection->close();
+					pMinecraft->connectionDisconnected(idx, DisconnectPacket::eDisconnect_ConnectionCreationFailed);
+					delete connection;
+					connection = nullptr;
+				}
+				else
+				{
+					connection->send(std::make_shared<PreLoginPacket>(pNetworkPlayer->GetOnlineName()));
+					pMinecraft->addPendingLocalConnection(idx, connection);
+				}
 			}
 			else
 			{

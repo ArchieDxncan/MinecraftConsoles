@@ -8,7 +8,7 @@
 #include "../Windows64_GameStoragePaths.h"
 #include "Common/Leaderboards/LeaderboardManager.h"
 
-#include <nlohmann/json.hpp>
+#include "Common/vendor/nlohmann/json.hpp"
 
 #include "../4JLibs/inc/4J_Profile.h"
 #include "../4JLibs/inc/4J_Storage.h"

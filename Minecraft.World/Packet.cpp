@@ -88,6 +88,7 @@ void Packet::staticCtor()
 
 	map(70, true, false, false, false, typeid(GameEventPacket), GameEventPacket::create);
 	map(71, true, false, false, false, typeid(AddGlobalEntityPacket), AddGlobalEntityPacket::create);
+	map(72, true, true, true, false, typeid(AuthPacket), AuthPacket::create);
 
 	map(100, true, false, true, false, typeid(ContainerOpenPacket), ContainerOpenPacket::create);
 	map(101, true, true, true, false, typeid(ContainerClosePacket), ContainerClosePacket::create);
@@ -160,6 +161,11 @@ IllegalArgumentException::IllegalArgumentException(const wstring& information)
 IOException::IOException(const wstring& information)
 {
 	this->information = information;
+}
+
+RuntimeException::RuntimeException(const wstring& information)
+{
+	(void)information;
 }
 
 Packet::Packet() : createTime( System::currentTimeMillis() )

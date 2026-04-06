@@ -18,6 +18,7 @@ private:
 	int( *m_Func)(LPVOID,int,const C4JStorage::EMessageResult);
 	LPVOID m_lpParam;
 	int m_buttonCount;
+	bool m_keepOpen = false;
 
 	UIControl_Button m_buttonButtons[eControl_COUNT];
 	UIControl_Label m_labelTitle, m_labelContent;
@@ -54,6 +55,8 @@ public:
 	virtual void handleReload();
 	virtual void handleInput(int iPad, int key, bool repeat, bool pressed, bool released, bool &handled);	
 	virtual bool hasFocus(int iPad);
+	void updateContent(const wchar_t *text);
+	void setKeepOpen(bool keepOpen) { m_keepOpen = keepOpen; }
 
 protected:
 	void handlePress(F64 controlId, F64 childId);

@@ -1,6 +1,8 @@
 #pragma once
 #include <unordered_set>
 #include "../Minecraft.World/net.minecraft.network.h"
+class HandshakeManager;
+class AuthPacket;
 class Minecraft;
 class MultiPlayerLevel;
 class SavedDataStorage;
@@ -29,6 +31,8 @@ private:
 	Minecraft *minecraft;
     MultiPlayerLevel *level;
     bool started;
+	HandshakeManager *handshakeManager = nullptr;
+	bool authComplete = false;
 
 	// 4J Stu - I don't think we are interested in the PlayerInfo data, so I'm not going to use it at the moment
 	//Map<String, PlayerInfo> playerInfoMap = new HashMap<String, PlayerInfo>();
@@ -100,6 +104,11 @@ public:
     virtual void handleAnimate(shared_ptr<AnimatePacket> packet);
     virtual void handleEntityActionAtPosition(shared_ptr<EntityActionAtPositionPacket> packet);
     virtual void handlePreLogin(shared_ptr<PreLoginPacket> packet);
+	virtual void handleAuth(shared_ptr<AuthPacket> packet);
+	void beginAuth();
+	/** Runs session/offline auth with the server; call before PreLoginPacket. */
+	bool finishPreJoinAuthHandshake();
+	bool isAuthComplete() const { return authComplete; }
     void close();
     virtual void handleAddMob(shared_ptr<AddMobPacket> packet);
     virtual void handleSetTime(shared_ptr<SetTimePacket> packet);

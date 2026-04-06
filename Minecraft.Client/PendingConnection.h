@@ -1,5 +1,7 @@
 #pragma once
 #include "../Minecraft.World/PacketListener.h"
+class HandshakeManager;
+class AuthPacket;
 class MinecraftServer;
 class Socket;
 class LoginPacket;
@@ -26,6 +28,10 @@ private:
 	wstring name;
 	shared_ptr<LoginPacket> acceptedLogin;
 	wstring loginKey;
+	HandshakeManager *handshakeManager = nullptr;
+	bool authComplete = false;
+
+	void initAuth();
 
 public:
 	PendingConnection(MinecraftServer *server, Socket *socket, const wstring& id);
@@ -38,6 +44,7 @@ public:
 	virtual void onDisconnect(DisconnectPacket::eDisconnectReason reason, void *reasonObjects);
 	virtual void handleGetInfo(shared_ptr<GetInfoPacket> packet);
 	virtual void handleKeepAlive(shared_ptr<KeepAlivePacket> packet);
+	virtual void handleAuth(shared_ptr<AuthPacket> packet);
 	virtual void onUnhandledPacket(shared_ptr<Packet> packet);
 	void send(shared_ptr<Packet> packet);
 	wstring getName();

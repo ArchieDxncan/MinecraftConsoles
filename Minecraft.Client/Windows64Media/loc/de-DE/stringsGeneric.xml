@@ -4957,7 +4957,7 @@ Nachts treiben sich Monster herum, du solltest dir einen Unterstand bauen, bevor
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Minecraft Store</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

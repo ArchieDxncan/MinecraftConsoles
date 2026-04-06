@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_NULL">
 		<value>Inutilisé</value>
 	</data>	
@@ -5264,7 +5264,7 @@ La nuit, les monstres sont de sortie ; tâchez donc d'aménager un abri avant l
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Magasin Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

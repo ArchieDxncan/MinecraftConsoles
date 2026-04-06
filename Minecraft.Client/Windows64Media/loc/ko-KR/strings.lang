@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_NULL">
 		<value>사용 안 함</value>
 	</data>	
@@ -5262,7 +5262,7 @@ Ender에 들어서면 친구가 그들의 지도에서 요새 내부에 있는 E
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Minecraft 상점</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

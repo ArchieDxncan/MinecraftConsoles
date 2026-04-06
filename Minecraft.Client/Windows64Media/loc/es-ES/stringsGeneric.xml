@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_TIPS_GAMETIP_NEWDLC">
 		<value>¡Nueva descarga de contenido disponible! Utiliza el botón Tienda de Minecraft del menú principal para acceder a él.</value>
 	</data>	
@@ -4960,7 +4960,7 @@ Pulsa{*CONTROLLER_VK_A*} para continuar el tutorial.{*B*}
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Tienda de Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

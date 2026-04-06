@@ -1,4 +1,4 @@
-﻿<root>
+<root>
 	<data name="IDS_TIPS_GAMETIP_NEWDLC">
 		<value>Un nouveau contenu téléchargeable est disponible ! Pour y accéder, utilisez le bouton Magasin Minecraft dans le menu principal.</value>
 	</data>	
@@ -4952,7 +4952,7 @@ La nuit, les monstres sont de sortie ; tâchez donc d'aménager un abri avant l
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Magasin Minecraft</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

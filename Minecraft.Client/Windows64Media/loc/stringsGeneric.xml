@@ -5716,7 +5716,7 @@ Press{*CONTROLLER_VK_B*} if you already know about Fireworks.</value>
 	</data>	
 
 	<data name="IDS_DOWNLOADABLECONTENT">
-		<value>Minecraft Store</value>
+		<value>auth</value>
 	</data>	
 
 	<data name="IDS_CONFIRM_LEAVE_VIA_INVITE">

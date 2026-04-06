@@ -9,7 +9,7 @@
 #include "../Minecraft.World/StringHelpers.h"
 #include "Common/Consoles_App.h"
 
-#include <nlohmann/json.hpp>
+#include "Common/vendor/nlohmann/json.hpp"
 
 #include <algorithm>
 #include <climits>

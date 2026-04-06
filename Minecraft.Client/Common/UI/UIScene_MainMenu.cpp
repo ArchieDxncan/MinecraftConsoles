@@ -6,6 +6,7 @@
 #include "../../MinecraftServer.h"
 #include "UI.h"
 #include "UIScene_MainMenu.h"
+#include "../../AuthScreen.h"
 #ifdef __ORBIS__
 #include <error_dialog.h>
 #endif
@@ -361,6 +362,16 @@ void UIScene_MainMenu::handlePress(F64 controlId, F64 childId)
 	case eControl_UnlockOrDLC:
 		//CD - Added for audio
 		ui.PlayUISFX(eSFX_Press);
+
+#ifdef _WINDOWS64
+		// Full game on PC: this control is account/auth, not the console DLC store
+		if (ProfileManager.IsFullVersion())
+		{
+			m_bIgnorePress = false;
+			ShowAuthMenu(primaryPad, this);
+			break;
+		}
+#endif
 
 		m_eAction=eAction_RunUnlockOrDLC;
 		signInReturnedFunc = &UIScene_MainMenu::UnlockFullGame_SignInReturned;
@@ -1885,6 +1896,15 @@ void UIScene_MainMenu::RunUnlockOrDLC(int iPad)
 {
 	UINT uiIDA[1];
 	uiIDA[0]=IDS_OK;
+
+#ifdef _WINDOWS64
+	if (ProfileManager.IsFullVersion())
+	{
+		m_bIgnorePress = false;
+		ShowAuthMenu(iPad, this);
+		return;
+	}
+#endif
 
 	// Check if this means downloadable content
 	if(ProfileManager.IsFullVersion())
