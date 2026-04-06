@@ -13,6 +13,7 @@ private:
 	wstring m_win64TextBuffer;
 	int m_win64MaxChars;
 	bool m_bPCMode; // Hides on-screen keyboard buttons; physical keyboard only
+	C_4JInput::EKeyboardMode m_eKeyboardMode;
 	int m_iCursorPos;
 #endif
 

@@ -59,6 +59,7 @@
 #include "PlayerChunkMap.h"
 #include "Common/Telemetry/TelemetryManager.h"
 #include "PlayerConnection.h"
+#include "AuthScreen.h"
 #ifdef _XBOX_ONE
 #include "Durango/Network/NetworkPlayerDurango.h"
 #endif
@@ -647,6 +648,19 @@ bool MinecraftServer::initServer(int64_t seed, NetworkGameInitData *initData, DW
 	//onlineMode = settings->getBoolean(L"online-mode", true);
 	//motd = settings->getString(L"motd", L"A Minecraft Server");
 	//motd.replace('�', '$');
+
+	if (ShouldUseDedicatedServerProperties())
+	{
+		wstring am = GetDedicatedServerString(settings, L"auth-mode", L"session");
+		authMode = (am == L"offline") ? "offline" : "session";
+	}
+	else
+	{
+		int idx = AuthProfileManager::getSelectedIndex();
+		const auto &profiles = AuthProfileManager::getProfiles();
+		authMode = (idx >= 0 && idx < static_cast<int>(profiles.size()) &&
+			profiles[idx].type != AuthProfile::OFFLINE) ? "session" : "offline";
+	}
 
 	setAnimals(GetDedicatedServerBool(settings, L"spawn-animals", true));
 	setNpcsEnabled(GetDedicatedServerBool(settings, L"spawn-npcs", true));

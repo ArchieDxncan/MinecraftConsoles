@@ -196,6 +196,7 @@ namespace ServerRuntime
 				case DisconnectPacket::eDisconnect_Banned: return "banned";
 				case DisconnectPacket::eDisconnect_NotFriendsWithHost: return "not-friends-with-host";
 				case DisconnectPacket::eDisconnect_NATMismatch: return "nat-mismatch";
+				case DisconnectPacket::eDisconnect_AuthFailed: return "auth-failed";
 				default: return "unknown";
 				}
 			}

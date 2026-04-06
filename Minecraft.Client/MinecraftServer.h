@@ -113,6 +113,7 @@ private:
 	CRITICAL_SECTION m_consoleInputCS;
 public:
     bool onlineMode;
+	std::string authMode;
     bool animals;
 	bool npcs;
     bool pvp;

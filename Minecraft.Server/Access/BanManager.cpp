@@ -2,12 +2,13 @@
 
 #include "BanManager.h"
 
-#include "../Common/AccessStorageUtils.h"
-#include "../Common/FileUtils.h"
-#include "../Common/NetworkUtils.h"
-#include "../Common/StringUtils.h"
-#include "../ServerLogger.h"
+#include "..\Common\AccessStorageUtils.h"
+#include "..\Common\FileUtils.h"
+#include "..\Common\NetworkUtils.h"
+#include "..\Common\StringUtils.h"
+#include "..\ServerLogger.h"
 #include "../vendor/nlohmann/json.hpp"
+#include "..\..\Minecraft.World\UUID.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -121,9 +122,19 @@ namespace ServerRuntime
 			{
 				return false;
 			}
+			bool dirty = false;
+			for (auto &entry : players)
+			{
+				if (!entry.uuid.empty() || entry.xuid.empty()) continue;
+				try {
+					uint64_t xuid = std::stoull(entry.xuid, nullptr, 0);
+					if (xuid) { entry.uuid = GameUUID::fromXuid(xuid).toString(); dirty = true; }
+				} catch (...) {}
+			}
 
 			m_bannedPlayers.swap(players);
 			m_bannedIps.swap(ips);
+			if (dirty) Save();
 			return true;
 		}
 
@@ -199,6 +210,7 @@ namespace ServerRuntime
 				}
 
 				AccessStorageUtils::TryGetStringField(object, "name", &entry.name);
+				AccessStorageUtils::TryGetStringField(object, "uuid", &entry.uuid);
 				AccessStorageUtils::TryGetStringField(object, "created", &entry.metadata.created);
 				AccessStorageUtils::TryGetStringField(object, "source", &entry.metadata.source);
 				AccessStorageUtils::TryGetStringField(object, "expires", &entry.metadata.expires);
@@ -302,6 +314,8 @@ namespace ServerRuntime
 			{
 				OrderedJson object = OrderedJson::object();
 				object["xuid"] = AccessStorageUtils::NormalizeXuid(entry.xuid);
+				if (!entry.uuid.empty())
+					object["uuid"] = entry.uuid;
 				object["name"] = entry.name;
 				object["created"] = entry.metadata.created;
 				object["source"] = entry.metadata.source;

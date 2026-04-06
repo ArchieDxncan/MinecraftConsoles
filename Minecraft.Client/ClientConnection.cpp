@@ -54,6 +54,10 @@
 #include "PS3/Network/SonyVoiceChat.h"
 #endif
 #include "DLCTexturePack.h"
+#include "..\Minecraft.World\HandshakeManager.h"
+#include "..\Minecraft.World\SessionAuthModule.h"
+#include "..\Minecraft.World\OfflineAuthModule.h"
+#include "AuthScreen.h"
 
 #ifdef _WINDOWS64
 #include "Xbox/Network/NetworkPlayerXbox.h"
@@ -897,6 +901,7 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 	player->yRotp = packet->yRot;
 	player->yHeadRot = packet->yHeadRot * 360 / 256.0f;
 	player->setXuid(packet->xuid);
+	player->setGameUUID(packet->gameUuid);
 
 #ifdef _DURANGO
 	// On Durango request player display name from network manager
@@ -4193,6 +4198,55 @@ ClientConnection::DeferredEntityLinkPacket::DeferredEntityLinkPacket(shared_ptr<
 {
 	m_recievedTick = GetTickCount();
 	m_packet = packet;
+}
+
+void ClientConnection::beginAuth()
+{
+	handshakeManager = new HandshakeManager(false);
+	handshakeManager->registerModule(std::make_unique<SessionAuthModule>());
+	handshakeManager->registerModule(std::make_unique<KeypairOfflineAuthModule>());
+	handshakeManager->registerModule(std::make_unique<OfflineAuthModule>());
+
+	const auto &profiles = AuthProfileManager::getProfiles();
+	int idx = AuthProfileManager::getSelectedIndex();
+	if (idx >= 0 && idx < static_cast<int>(profiles.size()))
+	{
+		const auto &p = profiles[idx];
+		wstring variation;
+		if (p.type == AuthProfile::MICROSOFT) variation = L"mojang";
+		else if (p.type == AuthProfile::ELYBY) variation = L"elyby";
+		handshakeManager->setCredentials(p.token, p.uid, p.username, variation);
+	}
+
+	auto initial = handshakeManager->createInitialPacket();
+	if (initial) send(initial);
+}
+
+void ClientConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+{
+	if (done || authComplete) return;
+	if (!handshakeManager) return;
+
+	auto response = handshakeManager->handlePacket(packet);
+	if (response) send(response);
+
+	for (auto &p : handshakeManager->drainPendingPackets())
+		send(p);
+	if (handshakeManager->isComplete())
+	{
+		authComplete = true;
+		const wstring &authName = handshakeManager->finalUsername;
+		minecraft->user->name = authName;
+		extern char g_Win64Username[17];
+		extern wchar_t g_Win64UsernameW[17];
+		wcsncpy_s(g_Win64UsernameW, authName.c_str(), 16);
+		wcstombs_s(nullptr, g_Win64Username, g_Win64UsernameW, 16);
+	}
+	else if (handshakeManager->isFailed())
+	{
+		done = true;
+		message = L"Auth handshake failed";
+	}
 }
 
 void ClientConnection::checkDeferredSetEquippedItemPackets(int newEntityId)

@@ -27,6 +27,7 @@ UIScene_Keyboard::UIScene_Keyboard(int iPad, void *initData, UILayer *parentLaye
 	const wchar_t* defaultText = L"";
 
 	m_bPCMode = false;
+	m_eKeyboardMode = C_4JInput::EKeyboardMode_Default;
 	if (initData)
 	{
 		UIKeyboardInitData* kbData = static_cast<UIKeyboardInitData *>(initData);
@@ -36,6 +37,7 @@ UIScene_Keyboard::UIScene_Keyboard(int iPad, void *initData, UILayer *parentLaye
 		if (kbData->defaultText) defaultText      = kbData->defaultText;
 		m_win64MaxChars = kbData->maxChars;
 		m_bPCMode = kbData->pcMode;
+		m_eKeyboardMode = kbData->keyboardMode;
 	}
 
 	m_win64TextBuffer = defaultText;
@@ -171,7 +173,7 @@ void UIScene_Keyboard::tick()
 	// Sync our buffer from Flash so we pick up changes made via controller/on-screen buttons.
 	// Without this, switching between controller and keyboard would use stale text.
 	// In PC mode we own the buffer — skip sync to preserve cursor position.
-	if (!m_bPCMode)
+	if (!m_bPCMode && m_eKeyboardMode != C_4JInput::EKeyboardMode_Password)
 	{
 		const wchar_t* flashText = m_KeyboardTextInput.getLabel();
 		if (flashText)
@@ -276,7 +278,12 @@ void UIScene_Keyboard::tick()
 	}
 
 	if (changed)
-		m_KeyboardTextInput.setLabel(m_win64TextBuffer.c_str(), true /*instant*/);
+	{
+		if (m_eKeyboardMode == C_4JInput::EKeyboardMode_Password)
+			m_KeyboardTextInput.setLabel(wstring(m_win64TextBuffer.length(), L'*').c_str(), true);
+		else
+			m_KeyboardTextInput.setLabel(m_win64TextBuffer.c_str(), true /*instant*/);
+	}
 
 	if (m_bPCMode)
 	{
@@ -410,8 +417,12 @@ void UIScene_Keyboard::KeyboardDonePressed()
 	// Use getLabel() here — this is a timer callback (not an Iggy callback) so it's safe.
 	// getLabel() reflects both physical keyboard input (pushed via setLabel) and
 	// on-screen button input (set directly by Flash ActionScript).
-	const wchar_t* finalText = m_KeyboardTextInput.getLabel();
-	app.DebugPrintf("UI Keyboard - DONE - [%ls]\n", finalText);
+	// in password mode the label is masked with asterisks, so use the real buffer instead
+	const wchar_t* finalText = (m_eKeyboardMode == C_4JInput::EKeyboardMode_Password)
+		? m_win64TextBuffer.c_str()
+		: m_KeyboardTextInput.getLabel();
+	app.DebugPrintf("UI Keyboard - DONE - [%ls]\n",
+		(m_eKeyboardMode == C_4JInput::EKeyboardMode_Password) ? L"<password>" : finalText);
 
 	// Store the typed text so callbacks can retrieve it via Win64_GetKeyboardText()
 	wcsncpy_s(g_Win64KeyboardResult, 256, finalText, _TRUNCATE);

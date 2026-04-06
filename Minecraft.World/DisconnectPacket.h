@@ -44,6 +44,7 @@ public:
 		eDisconnect_Banned,
 		eDisconnect_NotFriendsWithHost,
 		eDisconnect_NATMismatch,
+		eDisconnect_AuthFailed,
 #ifdef __ORBIS__
 		eDisconnect_NetworkError,
 #endif

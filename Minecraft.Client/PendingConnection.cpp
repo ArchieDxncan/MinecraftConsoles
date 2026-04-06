@@ -14,6 +14,9 @@
 #include "../Minecraft.World/net.minecraft.world.item.h"
 #include "../Minecraft.World/SharedConstants.h"
 #include "Settings.h"
+#include "..\Minecraft.World\HandshakeManager.h"
+#include "..\Minecraft.World\SessionAuthModule.h"
+#include "..\Minecraft.World\OfflineAuthModule.h"
 #if defined(_WINDOWS64) && defined(MINECRAFT_SERVER_BUILD)
 #include "../Minecraft.Server/ServerLogManager.h"
 #include "../Minecraft.Server/Access/Access.h"
@@ -112,7 +115,8 @@ void PendingConnection::handlePreLogin(shared_ptr<PreLoginPacket> packet)
 		return;
 	}
 	//	printf("Server: handlePreLogin\n");
-	name = packet->loginKey; // 4J Stu - Change from the login packet as we know better on client end during the pre-login packet
+	if (!authComplete)
+		name = packet->loginKey;
 	sendPreLoginResponse();
 }
 
@@ -393,4 +397,34 @@ bool PendingConnection::isServerPacketListener()
 bool PendingConnection::isDisconnected()
 {
 	return done;
+}
+
+void PendingConnection::initAuth()
+{
+	handshakeManager = new HandshakeManager(true);
+	if (server->authMode == "session")
+		handshakeManager->registerModule(std::make_unique<SessionAuthModule>());
+	else
+		handshakeManager->registerModule(std::make_unique<OfflineAuthModule>());
+}
+
+void PendingConnection::handleAuth(const shared_ptr<AuthPacket> &packet)
+{
+	if (done || authComplete) return;
+
+	if (!handshakeManager)
+		initAuth();
+
+	auto response = handshakeManager->handlePacket(packet);
+	if (response) send(response);
+
+	if (handshakeManager->isComplete())
+	{
+		authComplete = true;
+		name = std::move(handshakeManager->finalUsername);
+	}
+	else if (handshakeManager->isFailed())
+	{
+		disconnect(DisconnectPacket::eDisconnect_AuthFailed);
+	}
 }

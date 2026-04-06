@@ -73,7 +73,7 @@ namespace ServerRuntime
 		bool doTileDrops;
 		bool naturalRegeneration;
 		bool doDaylightCycle;
-
+		std::string authMode;
 		/** other MinecraftServer runtime settings */
 		int maxBuildHeight;
 		std::string levelType;

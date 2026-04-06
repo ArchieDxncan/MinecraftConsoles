@@ -8,6 +8,7 @@ using namespace std;
 #include "PlayerEnderChestContainer.h"
 #include "CommandSender.h"
 #include "ScoreHolder.h"
+#include "UUID.h"
 
 class AbstractContainerMenu;
 class Stats;
@@ -417,7 +418,8 @@ public:
 	PlayerUID getXuid()																			{ return m_xuid; }
 	void setOnlineXuid(PlayerUID xuid)															{ m_OnlineXuid = xuid; }
 	PlayerUID getOnlineXuid()																	{ return m_OnlineXuid; }
-
+	void setGameUUID(const GameUUID& uuid)														{ m_gameUuid = uuid; }
+	GameUUID getGameUUID() const																{ return m_gameUuid; }
 	void setPlayerIndex(DWORD dwIndex)														{ m_playerIndex = dwIndex; }
 	DWORD getPlayerIndex()																	{ return m_playerIndex; }
 
@@ -431,6 +433,7 @@ public:
 private:
 	PlayerUID m_xuid;
 	PlayerUID m_OnlineXuid;
+	GameUUID m_gameUuid;
 
 protected:
 	bool m_bShownOnMaps;

@@ -27,4 +27,6 @@ target_compile_definitions(Minecraft.World PRIVATE
 )
 target_precompile_headers(Minecraft.World PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:stdafx.h>")
 
+target_link_libraries(Minecraft.World PUBLIC CURL::libcurl)
+
 configure_compiler_target(Minecraft.World)

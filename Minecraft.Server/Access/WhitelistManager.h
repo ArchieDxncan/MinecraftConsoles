@@ -16,6 +16,7 @@ namespace ServerRuntime
 		struct WhitelistedPlayerEntry
 		{
 			std::string xuid;
+			std::string uuid;
 			std::string name;
 			WhitelistMetadata metadata;
 		};

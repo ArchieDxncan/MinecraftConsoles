@@ -55,6 +55,7 @@ AddPlayerPacket::AddPlayerPacket(shared_ptr<Player> player, PlayerUID xuid, Play
 
 	this->xuid = xuid;
 	this->OnlineXuid = OnlineXuid;
+	this->gameUuid = player->getGameUUID();
 	m_playerIndex = static_cast<BYTE>(player->getPlayerIndex());
 	m_skinId = player->getCustomSkin();
 	m_capeId = player->getCustomCape();
@@ -77,6 +78,8 @@ void AddPlayerPacket::read(DataInputStream *dis) //throws IOException
 	carriedItem = dis->readShort();
 	xuid = dis->readPlayerUID();
 	OnlineXuid = dis->readPlayerUID();
+	gameUuid.msb = dis->readLong();
+	gameUuid.lsb = dis->readLong();
 	m_playerIndex = dis->readByte();
 	INT skinId = dis->readInt();
 	m_skinId = *(DWORD *)&skinId;	
@@ -102,6 +105,8 @@ void AddPlayerPacket::write(DataOutputStream *dos) //throws IOException
 	dos->writeShort(carriedItem);
 	dos->writePlayerUID(xuid);
 	dos->writePlayerUID(OnlineXuid);
+	dos->writeLong(gameUuid.msb);
+	dos->writeLong(gameUuid.lsb);
 	dos->writeByte(m_playerIndex);
 	dos->writeInt(m_skinId);
 	dos->writeInt(m_capeId);
@@ -117,7 +122,7 @@ void AddPlayerPacket::handle(PacketListener *listener)
 
 int AddPlayerPacket::getEstimatedSize()
 {
-	int iSize= sizeof(int) + Player::MAX_NAME_LENGTH + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(BYTE) + sizeof(BYTE) +sizeof(short) + sizeof(PlayerUID) + sizeof(PlayerUID) + sizeof(int) + sizeof(BYTE) + sizeof(unsigned int) + sizeof(byte);
+	int iSize= sizeof(int) + Player::MAX_NAME_LENGTH + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(BYTE) + sizeof(BYTE) +sizeof(short) + sizeof(PlayerUID) + sizeof(PlayerUID) + sizeof(GameUUID) + sizeof(int) + sizeof(BYTE) + sizeof(unsigned int) + sizeof(byte);
 
 	if( entityData != nullptr )
 	{

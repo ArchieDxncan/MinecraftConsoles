@@ -8,6 +8,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+include(FetchContent)
+set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(CURL_DISABLE_LDAP ON CACHE BOOL "" FORCE)
+set(CURL_DISABLE_LDAPS ON CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  curl
+  URL https://github.com/curl/curl/releases/download/curl-8_11_1/curl-8.11.1.tar.xz
+  URL_HASH SHA256=c7ca7db48b0909743eaef34250da02c19bc61d4f1dcedd6603f109409536ab56
+  FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(curl)
 
 if(NOT WIN32 AND NOT CMAKE_CROSSCOMPILING)
   message(FATAL_ERROR "This CMake build currently supports Windows only. For cross-compilation from Linux, use the clang-cl toolchain.")
@@ -22,7 +37,6 @@ set(CMAKE_CONFIGURATION_TYPES
   "Release"
   CACHE STRING "" FORCE
 )
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 function(configure_compiler_target target)
   # MSVC and compatible compilers (like Clang-cl)

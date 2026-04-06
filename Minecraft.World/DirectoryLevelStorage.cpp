@@ -11,6 +11,8 @@
 #include "LevelData.h"
 #include "DirectoryLevelStorage.h"
 #include "ConsoleSaveFileIO.h"
+#include "UUID.h"
+#include "StringHelpers.h"
 
 const wstring DirectoryLevelStorage::sc_szPlayerDir(L"players/");
 
@@ -168,6 +170,8 @@ DirectoryLevelStorage::DirectoryLevelStorage(ConsoleSaveFile *saveFile, const Fi
 #ifdef _LARGE_WORLDS
 	m_usedMappings = byteArray(MAXIMUM_MAP_SAVE_DATA/8);
 #endif
+
+	migratePlayerXuidsToUuids();
 }
 
 DirectoryLevelStorage::~DirectoryLevelStorage()
@@ -398,7 +402,7 @@ void DirectoryLevelStorage::save(shared_ptr<Player> player)
 #elif defined(_DURANGO)
 		ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + player->getXuid().toString() + L".dat" );
 #else
-		const ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + std::to_wstring( player->getXuid() ) + L".dat" );
+		const ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + player->getGameUUID().toWString() + L".dat" );
 #endif
 		// If saves are disabled (e.g. because we are writing the save buffer to disk) then cache this player data
 		if(StorageManager.GetSaveDisabled())
@@ -447,7 +451,7 @@ CompoundTag *DirectoryLevelStorage::loadPlayerDataTag(PlayerUID xuid)
 #elif defined(_DURANGO)
 	ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + xuid.toString() + L".dat" );
 #else
-	const ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + std::to_wstring( xuid ) + L".dat" );
+	const ConsoleSavePath realFile = ConsoleSavePath( playerDir.getName() + GameUUID::fromXuid(xuid).toWString() + L".dat" );
 #endif
 	const auto it = m_cachedSaveData.find(realFile.getName());
 	if(it != m_cachedSaveData.end() )
@@ -817,4 +821,43 @@ void DirectoryLevelStorage::saveAllCachedData()
 		}
 	}
 	m_mapFilesToDelete.clear();
+}
+void DirectoryLevelStorage::migratePlayerXuidsToUuids()
+{
+	if (!m_saveFile) return;
+
+	const ConsoleSavePath marker(L"migration_v1.dat");
+	if (m_saveFile->doesFileExist(marker)) return;
+
+	if (vector<FileEntry *> *playerFiles = m_saveFile->getFilesWithPrefix(playerDir.getName()))
+	{
+		for (FileEntry *file : *playerFiles)
+		{
+			wstring stem = replaceAll(replaceAll(file->data.filename, playerDir.getName(), L""), L".dat", L"");
+
+			if (stem.empty() || !std::all_of(stem.begin(), stem.end(), [](wchar_t c) { return c >= L'0' && c <= L'9'; })) continue;
+
+			const PlayerUID xuid = _fromString<PlayerUID>(stem);
+			if (xuid == INVALID_XUID) continue;
+
+			ConsoleSaveFileInputStream fis(m_saveFile, file);
+			CompoundTag *tag = NbtIo::readCompressed(&fis);
+			if (!tag) continue;
+
+			const wstring uuidStr = GameUUID::fromXuid(xuid).toWString();
+			tag->putString(L"UUID", uuidStr);
+
+			ConsoleSaveFileOutputStream fos(m_saveFile, ConsoleSavePath(playerDir.getName() + uuidStr + L".dat"));
+			NbtIo::writeCompressed(tag, &fos);
+			delete tag;
+
+			m_saveFile->deleteFile(file);
+			app.DebugPrintf("migrated player %ls -> %ls\n", stem.c_str(), uuidStr.c_str());
+		}
+		delete playerFiles;
+	}
+
+	DWORD written = 0;
+	const uint8_t ver = 1;
+	m_saveFile->writeFile(m_saveFile->createFile(marker), &ver, 1, &written);
 }

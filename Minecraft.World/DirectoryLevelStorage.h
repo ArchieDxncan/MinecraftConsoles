@@ -139,6 +139,7 @@ public:
 	static wstring getPlayerDir() { return sc_szPlayerDir; }
 
 private:
+	void migratePlayerXuidsToUuids();
 	void dontSaveMapMappingForPlayer(PlayerUID xuid);
 	void deleteMapFilesForPlayer(PlayerUID xuid);
 };

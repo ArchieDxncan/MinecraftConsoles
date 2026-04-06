@@ -140,6 +140,13 @@ void UIScene_MessageBox::handlePress(F64 controlId, F64 childId)
 	if(m_Func) m_Func(m_lpParam, m_iPad, result);
 }
 
+void UIScene_MessageBox::updateContent(const wchar_t *text)
+{
+	m_labelContent.init(text);
+	IggyDataValue result;
+	IggyPlayerCallMethodRS(getMovie(), &result, IggyPlayerRootPath(getMovie()), m_funcAutoResize, 0, nullptr);
+}
+
 bool UIScene_MessageBox::hasFocus(int iPad)
 {
 	// 4J-JEV: Fix for PS4 #5204 - [TRC][R4033] The application can be locked up by second user logging out of the system. 

@@ -3,6 +3,7 @@ using namespace std;
 
 #include "Packet.h"
 #include "SynchedEntityData.h"
+#include "UUID.h"
 
 class Player;
 
@@ -21,6 +22,7 @@ public:
     int carriedItem;
 	PlayerUID xuid; // 4J Added
 	PlayerUID OnlineXuid; // 4J Added
+	GameUUID gameUuid;
 	BYTE m_playerIndex; // 4J Added
 	DWORD m_skinId; // 4J Added
 	DWORD m_capeId; // 4J Added

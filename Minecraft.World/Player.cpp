@@ -762,6 +762,8 @@ unsigned int Player::getSkinAnimOverrideBitmask(DWORD skinId)
 void Player::setXuid(PlayerUID xuid)
 {
 	m_xuid = xuid;
+	if (m_gameUuid.isNil() && xuid != INVALID_XUID)
+		m_gameUuid = GameUUID::fromXuid(xuid);
 #ifdef _XBOX_ONE
 	// 4J Stu - For XboxOne (and probably in the future all other platforms) we store a UUID for the player to use as the owner key for tamed animals
 	// This should just be a string version of the xuid

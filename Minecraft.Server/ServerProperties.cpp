@@ -40,6 +40,7 @@ static const ServerPropertyDefault kServerPropertyDefaults[] =
 {
 	{ "allow-flight", "true" },
 	{ "allow-nether", "true" },
+	{ "auth-mode", "session" },
 	{ "autosave-interval", "60" },
 	{ "bedrock-fog", "true" },
 	{ "bonus-chest", "false" },
@@ -864,6 +865,9 @@ ServerPropertiesConfig LoadServerPropertiesConfig()
 
 	config.maxBuildHeight = ReadNormalizedIntProperty(&merged, "max-build-height", 256, 64, 256, &shouldWrite);
 	config.motd = ReadNormalizedStringProperty(&merged, "motd", "A Minecraft Server", 255, &shouldWrite);
+	config.authMode = ReadNormalizedStringProperty(&merged, "auth-mode", "session", 16, &shouldWrite);
+	if (config.authMode != "session" && config.authMode != "offline")
+		config.authMode = "session";
 
 	if (shouldWrite)
 	{
